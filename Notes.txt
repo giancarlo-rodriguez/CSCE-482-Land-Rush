@@ -1,0 +1,15 @@
+***Create your virtual python env activate first then follow the steps***
+
+1. activate the virutal env.
+command: source venv/bin/activate
+
+2. install pip packages (complete this set everytime to make sure you have all packages).
+command: pip install -r requirements.txt
+
+3.run server.
+command: python run.py
+
+
+
+n. turn off virtual env.
+command: deactivate
