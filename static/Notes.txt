@@ -1,0 +1,4 @@
+=========== To Run the React App ===========
+
+1. "npm install" to pull all dependencies not installed locally
+2. "npm start"
