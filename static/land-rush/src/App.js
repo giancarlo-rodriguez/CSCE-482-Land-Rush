@@ -10,31 +10,31 @@ import StudentLanding from './pages/student-view/student-landing';
 
 
 function App() {
-return (
+  return (
     <Router>
-        <div className="container">
-            <nav>
-            <ul>
-                <li><Link to="/admin">Admin</Link></li>
-                <li><Link to="/college">College/University</Link></li>
-                <li><Link to="/home">Home</Link></li>
-                <li><Link to="/org">Organization</Link></li>
-                <li><Link to="/student">Student</Link></li>
-            </ul>
-            </nav>
+      <div className="container">
+        <nav className="navbar">
+          <ul>
+            <li><Link to="/admin">Admin</Link></li>
+            <li><Link to="/college">College/University</Link></li>
+            <li><Link to="/home">Home</Link></li>
+            <li><Link to="/org">Organization</Link></li>
+            <li><Link to="/student">Student</Link></li>
+          </ul>
+        </nav>
     
-            <Routes>
-                <Route path="/" exact element={<HomeLanding />} />
-                <Route path="/admin" element={<AdminLanding />} />
-                <Route path="/college" element={<CollegeLanding />} />
-                <Route path="/home" element={<HomeLanding />} />
-                <Route path="/org" element={<OrgLanding />} />
-                <Route path="/student" element={<StudentLanding />} />
-            </Routes>
-        </div>
+        <Routes>
+          <Route path="/" exact element={<HomeLanding />} />
+          <Route path="/admin" element={<AdminLanding />} />
+          <Route path="/college" element={<CollegeLanding />} />
+          <Route path="/home" element={<HomeLanding />} />
+          <Route path="/org" element={<OrgLanding />} />
+          <Route path="/student" element={<StudentLanding />} />
+        </Routes>
+      </div>
     </Router>
-    );
-  }
+  );
+}
   
   
-  export default App;
+export default App;
