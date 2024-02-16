@@ -1,18 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
-
-function App() {
-  return (
-    <div className="PageBase">
-      <header className="PageBase-header">
-        <p>
-          Test
-        </p>
-      </header>
-    </div>
-  );
-}
+import App from './App';
 
 ReactDOM.render(
   <React.StrictMode>
