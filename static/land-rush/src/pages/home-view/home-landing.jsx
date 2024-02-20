@@ -1,5 +1,9 @@
 import React from 'react';
 
+import HomeAboutus from './home-aboutus';
+import HomeRegister from './home-register';
+import HomeSignin from './home-signin';
+
 function HomeLanding() {
   return (
     <div className="container">
@@ -8,5 +12,6 @@ function HomeLanding() {
     </div>
   );
 }
-
+  
+  
 export default HomeLanding;
