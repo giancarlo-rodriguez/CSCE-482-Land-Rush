@@ -2,12 +2,15 @@ import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import './App.css';
 
-import AdminLanding from './pages/admin-view/admin-landing';
-import CollegeLanding from './pages/college-view/college-landing';
+//import AdminLanding from './pages/admin-view/admin-landing';
+//import CollegeLanding from './pages/college-view/college-landing';
 import HomeLanding from './pages/home-view/home-landing';
-import OrgLanding from './pages/org-view/org-landing';
-import StudentLanding from './pages/student-view/student-landing';
+//import OrgLanding from './pages/org-view/org-landing';
+//import StudentLanding from './pages/student-view/student-landing';
 
+/*  navbar contents to be replaced with homepage nav
+      Home About_Us Register Sign_In
+*/
 
 function App() {
   return (
