@@ -2,8 +2,13 @@ import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Link, useLocation } from 'react-router-dom';
 import './App.css';
 
+// Pages
 import AdminLanding from './pages/admin-view/admin-landing';
+
+
 import CollegeLanding from './pages/college-view/college-landing';
+import CollegePlots from './pages/college-view/college-plots';
+
 import HomeLanding from './pages/home-view/home-landing';
 import OrgLanding from './pages/org-view/org-landing';
 import StudentLanding from './pages/student-view/student-landing';
@@ -37,6 +42,7 @@ function NavBar() {
     navLinks = (
       <>
         <li><Link to="/college">College</Link></li>
+        <li><Link to="/college/plots">Plots</Link></li>
         <li><Link to="/home">Signout</Link></li>
         {/* Add more */}
       </>
@@ -108,8 +114,6 @@ function App() {
     <Router>
       <div className="container">
         <NavBar />
-
-    
         <Routes>
           <Route path="/" element={<HomeLanding />} />
           <Route path="/home" element={<HomeLanding />} />
@@ -117,6 +121,7 @@ function App() {
           <Route path="/org" element={<OrgLanding />} />
           <Route path="/student" element={<StudentLanding />} />
           <Route path="/admin" element={<AdminLanding />} />
+          <Route path="/college/plots" element={<CollegePlots />} />
         </Routes>
 
         <AdminBar />
