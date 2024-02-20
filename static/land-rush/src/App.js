@@ -78,19 +78,48 @@ function NavBar() {
   );
 }
 
+function AdminBar() {
+  const location = useLocation();
+
+  // Define navigation links based on the current route
+  let navLinks;
+  navLinks = (
+    <>
+      <li><Link to="/admin">Admin</Link></li>
+      <li><Link to="/college">College</Link></li>
+      <li><Link to="/home">Home</Link></li>
+      <li><Link to="/org">Organization</Link></li>
+      <li><Link to="/student">Student</Link></li>
+    </>
+  );
+  
+
+  return (
+    <nav className="navbar">
+      <ul>
+        {navLinks}
+      </ul>
+    </nav>
+  );
+}
+
 function App() {
   return (
     <Router>
       <div className="container">
         <NavBar />
+
     
         <Routes>
           <Route path="/" element={<HomeLanding />} />
+          <Route path="/home" element={<HomeLanding />} />
           <Route path="/college" element={<CollegeLanding />} />
           <Route path="/org" element={<OrgLanding />} />
           <Route path="/student" element={<StudentLanding />} />
           <Route path="/admin" element={<AdminLanding />} />
         </Routes>
+
+        <AdminBar />
       </div>
     </Router>
   );
