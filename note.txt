@@ -1,0 +1,42 @@
+===== GET SET UP =====
+***Create your virtual python env activate first then follow the steps***
+
+1. activate the virutal env
+    command: source venv/bin/activate
+
+2. install pip packages
+    (complete this set everytime to make sure you have all packages)
+    command: pip install -r requirements.txt
+
+3. run server
+    command: python manage.py runserver
+
+4. Freeze any installs
+    command: pip freeze > requirements.txt
+
+n. turn off virtual env.
+    command: deactivate
+
+===== MIGRATIONS =====
+python manage.py makemigrations
+python manage.py migrate
+
+sync: python manage.py migrate --run-syncdb
+
+
+===== PROJECT LAYOUT =====
+landrush/
+    -project directory
+
+    manage.py
+        -create apps, work with db, start dev web server
+    __init__.py
+        -empty file, tells Python to treat 'landrush' subdir as Python package
+    settings.py
+        -all app settings
+    urls.py
+        -defines URL mapping code
+    wsgi.py
+        -helps django app communicate with webserver
+    asgi.py
+        -used as entry-point for ASGI-compatible web servers to serve app
