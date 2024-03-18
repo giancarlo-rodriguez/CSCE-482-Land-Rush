@@ -1,0 +1,241 @@
+/* college-events */
+
+.college-events-list {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border: 2px solid #ccc;
+    border-radius: 10px;
+    overflow: hidden;
+    padding: 10px;
+}
+
+.event-bar {
+    display: flex;
+    align-items: center;
+    width: calc(90%);
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    padding: 10px;
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+.event-bar:hover {
+    transform: translateY(-5px);
+    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.event-bar:hover img {
+    filter: none;
+}
+
+.event-bar-thumbnail {
+    width: 96px;
+    height: 96px;
+    border-radius: 8px;
+    margin-right: 10px;
+}
+
+.event-bar-name {
+    font-weight: bold;
+    color: #333;
+}
+
+.event-bar-details {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.college-events-grid {
+    border: 2px solid #ccc;
+    border-radius: 10px;
+    padding: 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(calc(30% - 20px), 1fr));
+    grid-gap: 20px;
+    align-items: center;
+    justify-content: center;
+    display: flex;
+    flex-direction: row;
+}
+
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(200px, 1fr));
+    grid-gap: 10px;
+}
+
+.event-block {
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    overflow: hidden;
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    cursor: pointer;
+}
+
+.event-block:hover {
+    transform: translateY(-5px);
+    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.event-block-thumbnail {
+    width: 100%;
+    height: auto;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+.event-block-name {
+    display: block;
+    padding: 10px;
+    text-align: center;
+    font-weight: bold;
+    color: #333;
+}
+
+.event-block-details {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.view-button {
+    border-radius: 8px;
+    padding: 5px 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+/* college-plots.css */
+
+.college-plots-list {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border: 2px solid #ccc;
+    border-radius: 10px;
+    overflow: hidden;
+    padding: 10px;
+}
+
+.plot-bar {
+    display: flex;
+    align-items: center;
+    width: calc(90%);
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    padding: 10px;
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+.plot-bar:hover {
+    transform: translateY(-5px);
+    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.plot-bar:hover img {
+    filter: none;
+}
+
+.plot-bar-thumbnail {
+    width: 96px;
+    height: 96px;
+    border-radius: 8px;
+    margin-right: 10px;
+}
+
+.plot-bar-name {
+    font-weight: bold;
+    color: #333;
+}
+
+.plot-bar-details {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* college-plots-tool */
+
+.popup-content {
+    background-color: #f0f0f0;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    height: 100%;
+    max-width: 800px;
+    max-height: 800px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .box {
+    width: 100%;
+    height: 100%;
+    max-width: 600px;
+    max-height: 600px;
+    overflow: hidden;
+  }
+
+  .map-container {
+    flex-grow: 1;
+    height: 0;
+  }
+
+  /* college-orgs */
+
+.org-list-container {
+    margin: 20px;
+    background-color: #f2f2f2;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.org-search-bar {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+}
+
+.org-grid-container {
+    overflow-x: auto;
+}
+
+.org-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.org-th,
+.org-td {
+    border-bottom: 1px solid #ddd;
+    border-right: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+.org-th {
+    background-color: maroon;
+    color: white;
+}
+
+.org-tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+.org-tr:hover {
+    background-color: #ddd;
+}

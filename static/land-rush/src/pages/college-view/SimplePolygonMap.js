@@ -59,17 +59,25 @@ import React, { useEffect, useRef, useState } from 'react';
    
   //adds points to a shape when drawing mode is activated.
   useEffect(() => {
-     if (map && drawingMode) {
-       const clickListener = map.addListener('click', (event) => {
-         const path = polygon.getPath();
-         path.push(event.latLng);
-       });
- 
-       return () => {
-         window.google.maps.event.removeListener(clickListener);
-       };
-     }
-   }, [map, polygon, drawingMode]);
+    if (map && drawingMode) {
+      const clickListener = map.addListener('click', (event) => {
+        const path = polygon.getPath();
+        path.push(event.latLng);
+      });
+
+      const rightClickListener = map.addListener('rightclick', () => {
+        const path = polygon.getPath();
+        if (path.getLength() > 0) {
+          path.pop(); // Remove the last point from the path
+        }
+      });
+
+      return () => {
+        window.google.maps.event.removeListener(clickListener);
+        window.google.maps.event.removeListener(rightClickListener);
+      };
+    }
+  }, [map, polygon, drawingMode]);
  
     //highlights shapes when clicked or unclicked
    useEffect(() => {
@@ -171,17 +179,16 @@ import React, { useEffect, useRef, useState } from 'react';
   
   
    return (
-     <div style={{ height: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-       <div ref={mapRef} style={{ height: '80%', width: '100%' }}></div>
-       <div style={{ marginTop: '10px' }}>
-         <button onClick={handleAddPoint} disabled={drawingMode}>Draw Shape</button>
-         <button onClick={handleCompleteShape} disabled={!drawingMode && currentCoordDinatePoints > 2}>Complete Shape</button>
-         <button onClick={handleDeleteShape} disabled={!highlightedShapes.length}>Delete Shape(s)</button>
-         <button onClick={handleCoordinates} >Print Coordinates</button>
-
-       </div>
-     </div>
-   );
- };
+    <div style={{ height: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <div ref={mapRef} style={{ height: '80%', width: '100%' }}></div>
+      <div style={{ marginTop: '10px' }}>
+        <button onClick={handleAddPoint} disabled={drawingMode}>Draw Shape</button>
+        <button onClick={handleCompleteShape} disabled={!drawingMode && currentCoordDinatePoints > 2}>Complete Shape</button>
+        <button onClick={handleDeleteShape} disabled={!highlightedShapes.length}>Delete Shape(s)</button>
+        <button onClick={handleCoordinates} >Print Coordinates</button>
+      </div>
+    </div>
+  );
+};
 
 export default SimplePolygonMap;
