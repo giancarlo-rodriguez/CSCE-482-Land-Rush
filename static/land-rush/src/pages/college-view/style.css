@@ -337,3 +337,12 @@
 .msg-tr:hover {
     background-color: #ddd;
 }
+
+.page-select {
+    margin-top: 10px;
+    text-align: center;
+  }
+  
+  .page-select button {
+    margin: 0 5px;
+  }
