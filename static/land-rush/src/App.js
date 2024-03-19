@@ -77,7 +77,7 @@ function NavBar() {
         <li><Link to="/org/events">Upcoming Events</Link></li>
         <li><Link to="/org/members">Current Members</Link></li>
         <li><Link to="/org/info">Organization Information</Link></li>
-        <li><Link to="/org/messages">Current Members</Link></li>
+        <li><Link to="/org/messages">Messages</Link></li>
         <li><Link to="/student">Return to Student View</Link></li>
         {/* Modify as needed*/}
       </>

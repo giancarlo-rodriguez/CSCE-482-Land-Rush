@@ -1,6 +1,6 @@
-/* college-events */
+/* org-events */
 
-.college-events-list {
+.org-events-list {
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -50,7 +50,7 @@
     justify-content: space-between;
 }
 
-.college-events-grid {
+.org-events-grid {
     border: 2px solid #ccc;
     border-radius: 10px;
     padding: 20px;
@@ -113,188 +113,57 @@
     cursor: pointer;
 }
 
-/* college-plots.css */
+/* org-members */
 
-.college-plots-list {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    border: 2px solid #ccc;
-    border-radius: 10px;
-    overflow: hidden;
-    padding: 10px;
-}
-
-.plot-bar {
-    display: flex;
-    align-items: center;
-    width: calc(90%);
-    margin-bottom: 10px;
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    padding: 10px;
-    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-}
-
-.plot-bar:hover {
-    transform: translateY(-5px);
-    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.3);
-}
-
-.plot-bar:hover img {
-    filter: none;
-}
-
-.plot-bar-thumbnail {
-    width: 96px;
-    height: 96px;
-    border-radius: 8px;
-    margin-right: 10px;
-}
-
-.plot-bar-name {
-    font-weight: bold;
-    color: #333;
-}
-
-.plot-bar-details {
-    flex-grow: 1;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.college-plots-grid {
-    border: 2px solid #ccc;
-    border-radius: 10px;
-    padding: 20px;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(calc(30% - 20px), 1fr));
-    grid-gap: 20px;
-    align-items: center;
-    justify-content: center;
-    display: flex;
-    flex-direction: row;
-}
-
-.plot-block {
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    overflow: hidden;
-    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-    cursor: pointer;
-}
-
-.plot-block:hover {
-    transform: translateY(-5px);
-    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.3);
-}
-
-.plot-block:hover img {
-    filter: none;
-}
-
-.plot-block-thumbnail {
-    width: 96px;
-    height: 96px;
-    border-radius: 8px;
-    margin-right: 10px;
-}
-
-.plot-block-name {
-    display: block;
-    padding: 10px;
-    text-align: center;
-    font-weight: bold;
-    color: #333;
-}
-
-.plot-block-details {
-    flex-grow: 1;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-/* college-plots-tool */
-
-.popup-content {
-    background-color: #f0f0f0;
-    padding: 20px;
-    border-radius: 5px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    width: 100%;
-    height: 100%;
-    max-width: 800px;
-    max-height: 800px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  
-  .box {
-    width: 100%;
-    height: 100%;
-    max-width: 600px;
-    max-height: 600px;
-    overflow: hidden;
-  }
-
-  .map-container {
-    flex-grow: 1;
-    height: 0;
-  }
-
-/* college-orgs */
-
-.org-list-container {
+.member-list-container {
     margin: 20px;
     background-color: #f2f2f2;
     padding: 20px;
     border-radius: 10px;
 }
 
-.org-search-bar {
+.member-search-bar {
     width: 41%;
     padding: 10px;
     margin-bottom: 10px;
     border-radius: 5px;
 }
 
-.org-grid-container {
+.member-grid-container {
     overflow-x: auto;
 }
 
-.org-table {
+.member-table {
     width: 100%;
     border-collapse: collapse;
 }
 
-.org-th,
-.org-td {
+.member-th,
+.member-td {
     border-bottom: 1px solid #ddd;
     border-right: 1px solid #ddd;
     padding: 8px;
     text-align: left;
 }
 
-.org-th {
+.member-th {
     background-color: maroon;
     color: white;
 }
 
-.org-tr:nth-child(even) {
+.member-tr:nth-child(even) {
     background-color: #f2f2f2;
 }
 
-.org-tr:hover {
+.member-tr:hover {
     background-color: #ddd;
 }
 
-/* college-messages */
 
-  .msg-list-container {
+
+/* org-messages */
+
+.msg-list-container {
     margin: 20px;
     background-color: #f2f2f2;
     padding: 20px;
