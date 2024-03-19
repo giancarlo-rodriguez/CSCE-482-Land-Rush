@@ -165,6 +165,58 @@
     justify-content: space-between;
 }
 
+.college-plots-grid {
+    border: 2px solid #ccc;
+    border-radius: 10px;
+    padding: 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(calc(30% - 20px), 1fr));
+    grid-gap: 20px;
+    align-items: center;
+    justify-content: center;
+    display: flex;
+    flex-direction: row;
+}
+
+.plot-block {
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    overflow: hidden;
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    cursor: pointer;
+}
+
+.plot-block:hover {
+    transform: translateY(-5px);
+    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.plot-block:hover img {
+    filter: none;
+}
+
+.plot-block-thumbnail {
+    width: 96px;
+    height: 96px;
+    border-radius: 8px;
+    margin-right: 10px;
+}
+
+.plot-block-name {
+    display: block;
+    padding: 10px;
+    text-align: center;
+    font-weight: bold;
+    color: #333;
+}
+
+.plot-block-details {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
 /* college-plots-tool */
 
 .popup-content {
@@ -194,7 +246,7 @@
     height: 0;
   }
 
-  /* college-orgs */
+/* college-orgs */
 
 .org-list-container {
     margin: 20px;
@@ -204,7 +256,7 @@
 }
 
 .org-search-bar {
-    width: 100%;
+    width: 41%;
     padding: 10px;
     margin-bottom: 10px;
     border-radius: 5px;
@@ -237,5 +289,51 @@
 }
 
 .org-tr:hover {
+    background-color: #ddd;
+}
+
+/* college-messages */
+
+  .msg-list-container {
+    margin: 20px;
+    background-color: #f2f2f2;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.msg-search-bar {
+    width: 41%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+}
+
+.msg-grid-container {
+    overflow-x: auto;
+}
+
+.msg-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.msg-th,
+.msg-td {
+    border-bottom: 1px solid #ddd;
+    border-right: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+.msg-th {
+    background-color: maroon;
+    color: white;
+}
+
+.msg-tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+.msg-tr:hover {
     background-color: #ddd;
 }
