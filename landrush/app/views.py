@@ -7,8 +7,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
-from .models import User, University, PendingCreateOrg, PendingJoinOrg
-from .permissions import IsStudent
+from .models import User, University, PendingCreateOrg, PendingJoinOrg, Role
+from .permissions import IsStudent, IsUniversity, IsOrgAdmin
 
 # Create your views here.
 def home(request):
@@ -58,8 +58,9 @@ class MakeUserUni(APIView):
         user = User.objects.get(id = request.user.id)
         user.is_university = True
         university_name = request.GET["university"]
-        university = University(name = university_name)
-        user.university = university
+        user_university = University(name = university_name)
+        user_university.save()
+        user.university = user_university
         user.save()
         return HttpResponse("Made user university.")
 
@@ -88,7 +89,7 @@ class CreateOrg(APIView):
         create_org.save()
         return HttpResponse("Organization create reques submitted")
 
-class JoinOrg(ApiView):
+class JoinOrg(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsStudent]
     def get(self,request):
@@ -98,7 +99,7 @@ class JoinOrg(ApiView):
         org_join = PendingJoinOrg(requester = join_requester, organization = org)
         org_join.save()
 
-class showJoinOrgPending(ApiView):
+class showJoinOrgPending(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsOrgAdmin]
     def get(self,request):
@@ -106,10 +107,23 @@ class showJoinOrgPending(ApiView):
         pending_requests = PendingCreateOrg.objects.get()
         for pending in pending_requests:
             print(pending)
-        return HttpResponse(pending_requests)
+        return Response(pending_requests)
 
 class CreateOrgResponse(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsUniversity]
     def get(self,reques):
-        
+        status = request.GET["status"]
+        if(status == "Accepted"):
+            requester_email = request.GET["requester"]
+            requester = User.objects.get(email = requester_email)
+            org_name = request.GET["organization"]
+            org = Organization.objects.get(name = org_name)
+            university = request.user.university
+            org = Organization(name = org_name, university = university)
+            new_role = Role(user = requester, organization = org)
+            new_role.save()
+            return HttpResponse("Org created")
+        else:
+            return HttpResponse("Org not created")
+
