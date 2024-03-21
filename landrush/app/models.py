@@ -54,7 +54,6 @@ class User(AbstractBaseUser):
     id = models.IntegerField(primary_key=True)
     email = models.EmailField(max_length=255, unique=True)
     name = models.CharField(max_length=255)
-    password = models.CharField(max_length=128)
     university = models.ForeignKey(University, on_delete=models.CASCADE, related_name='user', null=True, blank=True)
     is_university = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)  # for admin users
@@ -165,14 +164,24 @@ class Plot(models.Model):
         return self.university.name + '_' + str(self.section.id) + '_' + str(self.id)
 
 
-# class Request(models.Model):
-#     """
-#     Model for Request table
-#     """
+class PendingJoinOrg(models.Model):
+    requester = models.ForeignKey(User, related_name='requester', on_delete = models.CASCADE)
+    organization = models.ForeignKey(Organization, related_name = 'requested_org', on_delete = models.CASCADE)
 
+    class Meta:
+        unique_together = ["requester","organization"]
 
-# class Point(models.Model):
-#     """
-#     Model for Point table
-#     """
-#     id = models.IntegerField(primary_key=True)
+    def __str__(self):
+        return self.requester.email + ' wants to join ' + organization.name
+
+class PendingCreateOrg(models.Model):
+    requester = models.ForeignKey(User, related_name='requester', on_delete = models.CASCADE)
+    university = models.ForeignKey(University, related_name = 'requested_org', on_delete = models.CASCADE)
+    org_name = models.CharField(max_length=50)
+
+    class Meta:
+        unique_together = ["requester","organization"]
+
+    def __str__(self):
+        return self.requester.email + ' wants to create ' + organization.name
+
