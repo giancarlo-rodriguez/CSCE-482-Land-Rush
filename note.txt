@@ -3,6 +3,7 @@
 
 1. activate the virutal env
     command: source venv/bin/activate
+             Win10: venv/vin/activate
 
 2. install pip packages
     (complete this set everytime to make sure you have all packages)
