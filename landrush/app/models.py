@@ -165,6 +165,7 @@ class Plot(models.Model):
 
 
 class PendingJoinOrg(models.Model):
+    id = models.IntegerField(primary_key=True)
     requester = models.ForeignKey(User, related_name='join_requester', on_delete = models.CASCADE)
     organization = models.ForeignKey(Organization, related_name = 'requested_org', on_delete = models.CASCADE)
 
@@ -175,6 +176,7 @@ class PendingJoinOrg(models.Model):
         return self.requester + ' wants to join ' + self.organization
 
 class PendingCreateOrg(models.Model):
+    id = models.IntegerField(primary_key=True)
     requester = models.ForeignKey(User, related_name='create_requester', on_delete = models.CASCADE)
     university = models.ForeignKey(University, related_name = 'requested_org', on_delete = models.CASCADE)
     org_name = models.CharField(max_length=50)
@@ -183,5 +185,5 @@ class PendingCreateOrg(models.Model):
         unique_together = ["requester","org_name","university"]
 
     def __str__(self):
-        return self.requester + ' wants to create ' + self.org_name
+        return self.requester.email + ' wants to create ' + self.org_name
 

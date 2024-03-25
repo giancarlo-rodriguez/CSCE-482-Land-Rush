@@ -11,5 +11,6 @@ urlpatterns = [
     path('choose/uni',views.ChooseUniversity.as_view()),
     path('create/org/request',views.CreateOrg.as_view()),
     path('join/org',views.JoinOrg.as_view()),
-    path('create/org/response',views.CreateOrgResponse.as_view())
+    path('create/org/response',views.CreateOrgResponse.as_view()),
+    path('create/org/show',views.showCreatetOrgPending.as_view()),
 ]

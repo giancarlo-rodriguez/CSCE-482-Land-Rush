@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
-from .models import User, University, PendingCreateOrg, PendingJoinOrg, Role
+from .models import User, University, PendingCreateOrg, PendingJoinOrg, Role, Organization
 from .permissions import IsStudent, IsUniversity, IsOrgAdmin
 
 # Create your views here.
@@ -55,11 +55,11 @@ class MakeUserUni(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsStudent]
     def get(self,request):
-        user = User.objects.get(id = request.user.id)
-        user.is_university = True
         university_name = request.GET["university"]
         user_university = University(name = university_name)
         user_university.save()
+        user = User.objects.get(id = request.user.id)
+        user.is_university = True
         user.university = user_university
         user.save()
         return HttpResponse("Made user university.")
@@ -70,7 +70,7 @@ class ChooseUniversity(APIView):
     def get(self,request):
         university_name = request.GET["university"]
         selected_uni = University.objects.get(name = university_name)
-        cur_user = Users.objects.get(email = request.user.email)
+        cur_user = User.objects.get(email = request.user.email)
         cur_user.university = selected_uni
         cur_user.save()
         return HttpResponse("Chose University.")
@@ -80,14 +80,15 @@ class CreateOrg(APIView):
     permission_classes = [IsStudent]
     def get(self,request):
         create_requester = request.user
-        org_name = request.GET["organizaion"]
-        check_exists = Organization.objects.get(name = org_name)
-        if check_exists is not None:
+        org_name = request.GET["organization"]
+        try:
+            check_exists = Organization.objects.get(name = org_name)
             return HttpResponse("Organization already exists")
-        university = request.user.university
-        create_org = PendingCreateOrg(requester = create_requester, name = org_name, university = university)
-        create_org.save()
-        return HttpResponse("Organization create reques submitted")
+        except:
+            university = request.user.university
+            create_org = PendingCreateOrg(requester = create_requester, org_name = org_name, university = university)
+            create_org.save()
+            return HttpResponse("Organization create request submitted")
 
 class JoinOrg(APIView):
     authentication_classes = [TokenAuthentication]
@@ -99,19 +100,19 @@ class JoinOrg(APIView):
         org_join = PendingJoinOrg(requester = join_requester, organization = org)
         org_join.save()
 
-class showJoinOrgPending(APIView):
+class showCreatetOrgPending(APIView):
     authentication_classes = [TokenAuthentication]
-    permission_classes = [IsOrgAdmin]
+    #permission_classes = [IsOrgAdmin]
     def get(self,request):
-        org = Organization.objects.get()
-        pending_requests = PendingCreateOrg.objects.get()
+        org = Organization.objects.all()
+        pending_requests = PendingCreateOrg.objects.all()
         for pending in pending_requests:
             print(pending)
         return Response(pending_requests)
 
 class CreateOrgResponse(APIView):
     authentication_classes = [TokenAuthentication]
-    permission_classes = [IsUniversity]
+    #permission_classes = [IsUniversity]
     def get(self,reques):
         status = request.GET["status"]
         if(status == "Accepted"):
