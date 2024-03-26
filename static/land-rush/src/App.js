@@ -20,6 +20,8 @@ import HomeLanding from './pages/home-view/home-landing';
 import HomeAboutus from './pages/home-view/home-aboutus';
 import HomeRegister from './pages/home-view/home-register';
 import HomeSignin from './pages/home-view/home-signin';
+import SignUpStudent from './pages/home-view/SignUpStudent'
+import SignUpUniversity from './pages/home-view/SignUpUniversity'
 
 // org-view
 import OrgLanding from './pages/org-view/org-landing';
@@ -66,7 +68,8 @@ function NavBar() {
       <>
         <li><Link to="/home">Home</Link></li>
         <li><Link to="/home/aboutus">About Us</Link></li>
-        <li><Link to="/home/register">Register</Link></li>
+        <li><Link to="/home/RegisterStudent">Register Student</Link></li>
+        <li><Link to="/home/RegisterUniversity">Register Universtiy</Link></li>  
         <li><Link to="/home/signin">Sign In</Link></li>
       </>
     );
@@ -149,7 +152,8 @@ function RouteList() {
           <Route path="/" element={<HomeLanding />} />
           <Route path="/home" element={<HomeLanding />} />
           <Route path="/home/aboutus" element={<HomeAboutus />} />
-          <Route path="/home/register" element={<HomeRegister />} />
+          <Route path="/home/RegisterStudent" element={<SignUpStudent />} />
+          <Route path="/home/RegisterUniversity" element={<SignUpUniversity />} />
           <Route path="/home/signin" element={<HomeSignin />} />
 
           {/* Organization */}

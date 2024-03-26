@@ -1,0 +1,59 @@
+/* App.css */
+
+/* Styles for the whole app container */
+.app-container {
+    display: flex;
+  }
+  
+
+  .sidebar {
+    width: 200px;
+    height: 100%;
+    background-color: #f0f0f0;
+    padding: 20px;
+    transition: left 0.3s ease; /* Add transition for smooth animation */
+    position: fixed;
+    top: 0;
+    left: 0; /* Start with sidebar visible */
+  }
+  
+  .sidebar.closed {
+    left: -200px; /* Move sidebar out of view */
+  }
+  
+  .toggle-button {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    right: -30px;
+    width: 30px;
+    height: 30px;
+    border: none;
+    background-color: transparent;
+    cursor: pointer;
+  }
+  
+  .toggle-button span {
+    font-size: 20px;
+  }
+  
+  
+  .sidebar h2 {
+    margin-bottom: 10px;
+  }
+  
+  .sidebar ul {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .sidebar li {
+    cursor: pointer;
+  }
+  
+  /* Styles for the main section */
+  .main-section {
+    flex: 1;
+    padding: 20px;
+  }
+  
