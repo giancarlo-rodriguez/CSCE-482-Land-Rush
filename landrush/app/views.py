@@ -58,9 +58,10 @@ class MakeUserUni(APIView):
         university_name = request.GET["university"]
         user_university = University(name = university_name)
         user_university.save()
+        new_user_university = University.objects.get(name = university_name)
         user = User.objects.get(id = request.user.id)
         user.is_university = True
-        user.university = user_university
+        user.university = new_user_university
         user.save()
         return HttpResponse("Made user university.")
 
@@ -104,11 +105,10 @@ class showCreatetOrgPending(APIView):
     authentication_classes = [TokenAuthentication]
     #permission_classes = [IsOrgAdmin]
     def get(self,request):
-        org = Organization.objects.all()
-        pending_requests = PendingCreateOrg.objects.all()
-        for pending in pending_requests:
-            print(pending)
-        return Response(pending_requests)
+        if(request.user.is_university == False):
+            return HttpResponse("You are not a university")
+        pending_requests = PendingCreateOrg.objects.get(university = request.user.university)
+        return HttpResponse(pending_requests)
 
 class CreateOrgResponse(APIView):
     authentication_classes = [TokenAuthentication]
