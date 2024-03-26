@@ -113,17 +113,20 @@ class showCreatetOrgPending(APIView):
 class CreateOrgResponse(APIView):
     authentication_classes = [TokenAuthentication]
     #permission_classes = [IsUniversity]
-    def get(self,reques):
+    def get(self,request):
         status = request.GET["status"]
         if(status == "Accepted"):
             requester_email = request.GET["requester"]
             requester = User.objects.get(email = requester_email)
             org_name = request.GET["organization"]
-            org = Organization.objects.get(name = org_name)
             university = request.user.university
             org = Organization(name = org_name, university = university)
-            new_role = Role(user = requester, organization = org)
+            org.save()
+            new_org = Organization.objects.get(name = org_name)
+            new_role = Role(user = requester, organization = new_org, is_admin = True)
             new_role.save()
+            pending_create = PendingCreateOrg.objects.get(requester = requester, university = request.user.university, org_name = org_name)
+            pending_create.delete()
             return HttpResponse("Org created")
         else:
             return HttpResponse("Org not created")
