@@ -55,7 +55,6 @@ class User(AbstractBaseUser):
     id = models.IntegerField(primary_key=True)
     email = models.EmailField(max_length=255, unique=True)
     name = models.CharField(max_length=255)
-    password = models.CharField(max_length=128)
     university = models.ForeignKey(University, on_delete=models.CASCADE, related_name='user', null=True, blank=True)
     is_university = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)  # for admin users
@@ -118,7 +117,7 @@ class Role(models.Model):
         verbose_name_plural = "Roles"
 
     def __str__(self):
-        return self.name
+        return self.user.email + 'is admin of ' + self.organization.name + '?'
 
 
 class Event(models.Model):
@@ -128,7 +127,7 @@ class Event(models.Model):
     """
     id = models.IntegerField(primary_key=True)
     university = models.ForeignKey(University, related_name='event', on_delete=models.CASCADE)
-    event_time = models.DateTimeField(auto_now_add=True)
+    created = models.DateTimeField(auto_now_add=True)
     
     class Meta:
         db_table = "events"
@@ -161,6 +160,7 @@ class Plot(models.Model):
     """
     id = models.IntegerField(primary_key=True)
     section = models.ForeignKey(Section, related_name='plot', on_delete=models.CASCADE)
+    university = models.ForeignKey(University, related_name='plot', on_delete = models.CASCADE, default = None)
 
     class Meta:
         db_table = "plots"
@@ -170,65 +170,27 @@ class Plot(models.Model):
         return self.university.name + '_' + str(self.section.id) + '_' + str(self.id)
 
 
-class Reservation(models.Model):
-    """
-    Model for Reservation
-    Each row is an organization's plot reservation
-    """
+
+class PendingJoinOrg(models.Model):
     id = models.IntegerField(primary_key=True)
-    plot = models.ForeignKey(Plot, on_delete=models.CASCADE, related_name='reservation', null=True, blank=True)
-    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='reservation', null=True, blank=True)
-    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='reservation', null=True, blank=True)
+    requester = models.ForeignKey(User, related_name='join_requester', on_delete = models.CASCADE)
+    organization = models.ForeignKey(Organization, related_name = 'requested_org', on_delete = models.CASCADE)
 
+    class Meta:
+        unique_together = ["requester","organization"]
 
-class RequestOrgToUni(models.Model):
-    """
-    Model for RequestOrgToUni
-    Each row is a request from an organization(admin user) to a university
-    """
+    def __str__(self):
+        return self.requester.email + ' wants to join ' + self.organization.name
+
+class PendingCreateOrg(models.Model):
     id = models.IntegerField(primary_key=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
-    university = models.ForeignKey(University, on_delete=models.CASCADE, related_name='org_request', null=True, blank=True)
+    requester = models.ForeignKey(User, related_name='create_requester', on_delete = models.CASCADE)
+    university = models.ForeignKey(University, related_name = 'requested_org', on_delete = models.CASCADE)
+    org_name = models.CharField(max_length=50)
 
+    class Meta:
+        unique_together = ["requester","org_name","university"]
 
-class RequestUserToOrg(models.Model):
-    """
-    Model for RequestUserToOrg
-    Each row is a a user's request to join an organization
-    """
-    id = models.IntegerField(primary_key=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
-    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='user_request', null=True, blank=True)
+    def __str__(self):
+        return self.requester.email + ' wants to create ' + self.org_name
 
-
-class RequestPlot(models.Model):
-    """
-    Model for RequestPlot
-    Each row is an organization's request for a plot
-    """
-    id = models.IntegerField(primary_key=True)
-    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='user_request', null=True, blank=True) 
-    member_count = models.IntegerField()
-    request_time = models.DateTimeField(auto_now_add=True)
-
-
-class PointSection(models.Model):
-    """
-    Model for PointSection table
-    Each row is a vertex of a section within a university
-    """
-    id = models.IntegerField(primary_key=True)
-    latitude = models.IntegerField()
-    longitude = models.IntegerField()
-    section = models.ForeignKey(Section, on_delete=models.CASCADE, related_name='point', null=True, blank=True)
-
-
-class PointPlot(models.Model):
-    """
-    Model for PointPlot table
-    Each row is a vertex of a plot within a section
-    """
-    id = models.IntegerField(primary_key=True)
-    latitude = models.IntegerField()
-    longitude = models.IntegerField()
-    plot = models.ForeignKey(Plot, on_delete=models.CASCADE, related_name='point', null=True, blank=True)
