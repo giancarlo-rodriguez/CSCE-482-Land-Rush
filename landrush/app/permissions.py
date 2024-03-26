@@ -11,11 +11,11 @@ class IsStudent(permissions.BasePermission):
 
 class IsOrgAdmin(permissions.BasePermission):
     def has_permission(self,request,view):
-        org_id = request.GET["organization"]
-        org = Organization.objects.get(id=org_id)
+        org_name = request.GET["organization"]
+        org = Organization.objects.get(name=org_name)
         org_admins = Role.objects.get(organization = org, is_admin = True)
         for org_admin in org_admins:
-            if(org_admin.user == request.user):
+            if(org_admin.user.email == request.user.email):
                 return True
         return False
 

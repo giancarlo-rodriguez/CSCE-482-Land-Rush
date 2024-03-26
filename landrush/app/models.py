@@ -173,7 +173,7 @@ class PendingJoinOrg(models.Model):
         unique_together = ["requester","organization"]
 
     def __str__(self):
-        return self.requester + ' wants to join ' + self.organization
+        return self.requester.email + ' wants to join ' + self.organization.name
 
 class PendingCreateOrg(models.Model):
     id = models.IntegerField(primary_key=True)

@@ -97,9 +97,15 @@ class JoinOrg(APIView):
     def get(self,request):
         join_requester = request.user
         organization_name = request.GET["organization"]
-        org = Organization.objects.get(name = organization_name)
+        try:
+            org = Organization.objects.get(name = organization_name)
+        except:
+            return HttpResponse("Org does not exist")
+        if(join_requester.university != org.university):
+            return HttpResponse("You are not a member of this university")
         org_join = PendingJoinOrg(requester = join_requester, organization = org)
         org_join.save()
+        return HttpResponse("Join request Created")
 
 class showCreatetOrgPending(APIView):
     authentication_classes = [TokenAuthentication]
