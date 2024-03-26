@@ -127,7 +127,7 @@ class Event(models.Model):
     """
     id = models.IntegerField(primary_key=True)
     university = models.ForeignKey(University, related_name='event', on_delete=models.CASCADE)
-    event_time = models.DateTimeField(auto_now_add=True)
+    created = models.DateTimeField(auto_now_add=True)
     
     class Meta:
         db_table = "events"
@@ -160,6 +160,7 @@ class Plot(models.Model):
     """
     id = models.IntegerField(primary_key=True)
     section = models.ForeignKey(Section, related_name='plot', on_delete=models.CASCADE)
+    university = models.ForeignKey(University, related_name='plot', on_delete = models.CASCADE, default = None)
 
     class Meta:
         db_table = "plots"
