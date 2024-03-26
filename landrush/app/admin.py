@@ -6,6 +6,8 @@ from .models import Role
 from .models import Event
 from .models import Section
 from .models import Plot
+from .models import PendingCreateOrg
+from .models import PendingJoinOrg
 
 # Register your models here.
 admin.site.register(University)
@@ -15,3 +17,6 @@ admin.site.register(Role)
 admin.site.register(Event)
 admin.site.register(Section)
 admin.site.register(Plot)
+admin.site.register(PendingCreateOrg)
+admin.site.register(PendingJoinOrg)
+
