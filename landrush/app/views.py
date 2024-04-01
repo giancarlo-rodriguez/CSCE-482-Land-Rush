@@ -109,16 +109,14 @@ class JoinOrg(APIView):
 
 class showCreatetOrgPending(APIView):
     authentication_classes = [TokenAuthentication]
-    #permission_classes = [IsOrgAdmin]
+    permission_classes = [IsUniversity]
     def get(self,request):
-        if(request.user.is_university == False):
-            return HttpResponse("You are not a university")
         pending_requests = PendingCreateOrg.objects.get(university = request.user.university)
         return HttpResponse(pending_requests)
 
 class CreateOrgResponse(APIView):
     authentication_classes = [TokenAuthentication]
-    #permission_classes = [IsUniversity]
+    permission_classes = [IsUniversity]
     def get(self,request):
         status = request.GET["status"]
         if(status == "Accepted"):
@@ -136,4 +134,41 @@ class CreateOrgResponse(APIView):
             return HttpResponse("Org created")
         else:
             return HttpResponse("Org not created")
+
+
+##### Not Yet Tested #######
+class showJoinOrgPending(APIView):
+    authentication_classes = [TokenAuthentication]
+    #permission_classes = [IsOrgAdmin]
+    def get(self,request):
+        try:
+            cur_admin_orgs = Role.objects.get(user = request.user,is_admin=True)
+            orgs = Organization.objects.get(name = cur_admin_orgs.organization.name)
+            pending_join = PendingJoinOrg.objects.get(organization = orgs)
+            return HttpResponse(pending_join)
+        except Exception as error:
+            return HttpResponse(error)
+
+class CreateEvent(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsUniversity]
+    def get(self,request):
+        event_university = request.user.university
+        event_name = request.GET["event_name"]
+        new_event = Event(name = event_name, university = event_university)
+        new_event.save()
+        return HttpResponse("Event Created")
+
+class RegisterForEvent(APIView):
+    authentication_classes = [TokenAuthentication]
+    #permission_classes = [?is user admin of org]
+    def get(self, request):
+        organization_name = request.GET["organization"]
+        organization = Organization.objects.get(name=organization_name)
+        event = Event.objects.get(university = request.user.university, id = request.GET["event_id"])
+        register_for_event = OrgRegisteredEvent(organization = organization, event = event)
+        register_for_event.save()
+        return HttpResponse("Organization has registered for event")
+
+
 

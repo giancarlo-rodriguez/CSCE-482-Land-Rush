@@ -54,7 +54,7 @@ class User(AbstractBaseUser):
     id = models.IntegerField(primary_key=True)
     email = models.EmailField(max_length=255, unique=True)
     name = models.CharField(max_length=255)
-    university = models.ForeignKey(University, on_delete=models.CASCADE, related_name='user', null=True, blank=True)
+    university = models.ForeignKey(University, on_delete=models.SET_NULL, related_name='user', null=True, blank=True)
     is_university = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)  # for admin users
     is_superuser = models.BooleanField(default=False)  # for superuser
@@ -124,6 +124,7 @@ class Event(models.Model):
     id = models.IntegerField(primary_key=True)
     university = models.ForeignKey(University, related_name='event', on_delete=models.CASCADE)
     created = models.DateTimeField(auto_now_add=True)
+    name = models.CharField(max_length = 90, default=None)
     
     class Meta:
         db_table = "events"
@@ -186,4 +187,12 @@ class PendingCreateOrg(models.Model):
 
     def __str__(self):
         return self.requester.email + ' wants to create ' + self.org_name
+
+
+class OrgRegisteredEvent(models.Model):
+    id = models.IntegerField(primary_key = True)
+    organization = models.ForeignKey(Organization, related_name = 'registered_org', on_delete=models.CASCADE)
+    event = models.ForeignKey(Event, related_name= 'event', on_delete=models.CASCADE)
+    date_registered = models.DateTimeField(auto_now_add=True)
+
 
