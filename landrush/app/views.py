@@ -9,7 +9,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
 from .models import User, University, PendingCreateOrg, PendingJoinOrg, Role, Organization,Event, OrgRegisteredEvent
 from .permissions import IsStudent, IsUniversity, IsOrgAdmin
-
+import json
+from rest_framework.renderers import JSONRenderer
+from . import serializers
 # Create your views here.
 def home(request):
     return HttpResponse("Hello, world. You're at the landrush app home.")
@@ -189,6 +191,16 @@ class ShowEvent(APIView):
     authentication_classes = [TokenAuthentication]
     def get(self,request):
         events = Event.objects.get(university = request.user.university)
-        return HttpResponse(events)
+        print(events)
+        event_json = serializers.EventSerializer(events)
+        print(event_json)
+        return Response(event_json.data)
 
 
+
+
+#show profile info:
+class ShowProfile(APIView):
+    authentication_classes = [TokenAuthentication]
+    def get(self,request):
+        pass

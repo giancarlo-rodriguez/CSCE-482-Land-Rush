@@ -195,4 +195,7 @@ class OrgRegisteredEvent(models.Model):
     event = models.ForeignKey(Event, related_name= 'event', on_delete=models.CASCADE)
     date_registered = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return self.organization.name + ' registered for  ' + self.event.name
+
 
