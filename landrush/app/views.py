@@ -16,16 +16,30 @@ from . import serializers
 def home(request):
     return HttpResponse("Hello, world. You're at the landrush app home.")
 
-class Register(APIView):
+class StudentRegister(APIView):
     def get(self,request):
         req_email = request.GET["email"]
         req_password = request.GET["password"]
+        first_name = request.GET["first_name"]
+        last_name = request.GET["last_name"]
+        university_name = request.GET["university_name"]
+        university = University.objects.get(name = university_name)
         try:
             user = User.objects.get(email=req_email)
             return HttpResponse("User already exists")
         except:
             user = User.objects.create_user(req_email,req_password)
+            new_user = User.objects.get(email = req_email)
+            new_user.university = university
+            new_user.first_name = first_name
+            new_user.last_name = last_name
+            new_user.save()
             return HttpResponse("User created")
+
+class UniversityRegister(APIView):
+    def get(self,request):
+        pass
+
 
 class Login(ObtainAuthToken):
     def get(self,request,*args,**kwargs):
@@ -109,7 +123,7 @@ class JoinOrg(APIView):
         org_join.save()
         return HttpResponse("Join request Created")
 
-class showCreatetOrgPending(APIView):
+class showCreateOrgPending(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsUniversity]
     def get(self,request):
@@ -167,7 +181,7 @@ class RegisterForEvent(APIView):
     def get(self, request):
         organization_name = request.GET["organization"]
         organization = Organization.objects.get(name=organization_name)
-        event = Event.objects.get(university = request.user.university, id = request.GET["event_id"])
+        event = Event.objects.get(university = request.user.university, id = request.GET["event_name"])
         register_for_event = OrgRegisteredEvent(organization = organization, event = event)
         register_for_event.save()
         return HttpResponse("Organization has registered for event")
@@ -197,6 +211,7 @@ class ShowProfile(APIView):
         profile_serialized = serializers.UserSerializer(request.user)
         return Response(profile_serialized.data)
 
+#show all current events
 class ShowEvent(APIView):
     authentication_classes = [TokenAuthentication]
     def get(self,request):
