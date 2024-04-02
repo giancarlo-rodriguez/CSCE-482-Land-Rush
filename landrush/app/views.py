@@ -187,6 +187,16 @@ class JoinOrgResponse(APIView):
         else:
             return HttpResponse("Rejected")
 
+
+
+# *********show resource views******** #
+#show profile info:
+class ShowProfile(APIView):
+    authentication_classes = [TokenAuthentication]
+    def get(self,request):
+        profile_serialized = serializers.UserSerializer(request.user)
+        return Response(profile_serialized.data)
+
 class ShowEvent(APIView):
     authentication_classes = [TokenAuthentication]
     def get(self,request):
@@ -196,11 +206,15 @@ class ShowEvent(APIView):
         print(event_json)
         return Response(event_json.data)
 
-
-
-
-#show profile info:
-class ShowProfile(APIView):
+class ShowUserOrganizations(APIView):
     authentication_classes = [TokenAuthentication]
     def get(self,request):
-        pass
+        user_roles = Role.objects.filter(user = request.user)
+        orgs = []
+        for role in user_roles:
+            org_serialized = serializers.OrganizationSerializer(role.organization)
+            orgs.append(org_serialized.data)
+        return Response(orgs)
+        
+
+
