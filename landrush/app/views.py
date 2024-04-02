@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
-from .models import User, University, PendingCreateOrg, PendingJoinOrg, Role, Organization
+from .models import User, University, PendingCreateOrg, PendingJoinOrg, Role, Organization,Event, OrgRegisteredEvent
 from .permissions import IsStudent, IsUniversity, IsOrgAdmin
 
 # Create your views here.
@@ -170,5 +170,25 @@ class RegisterForEvent(APIView):
         register_for_event.save()
         return HttpResponse("Organization has registered for event")
 
+class JoinOrgResponse(APIView):
+    authentication_classes = [TokenAuthentication]
+    def get(self,request):
+        status = request.GET["status"]
+        if(status == "Accepted"):
+            organization = Organization.objects.get(name = request.GET["organization"])
+            requester = User.objects.get(email = request.GET["requester"])
+            new_member = Role(organization = organization, user = requester, is_admin = False)
+            new_member.save()
+            pending_join = PendingJoinOrg.objects.get(organization=organization, requester = requester)
+            pending_join.delete()
+            return HttpResponse("Join Org Request Accepted")
+        else:
+            return HttpResponse("Rejected")
+
+class ShowEvent(APIView):
+    authentication_classes = [TokenAuthentication]
+    def get(self,request):
+        events = Event.objects.get(university = request.user.university)
+        return HttpResponse(events)
 
 
