@@ -38,7 +38,22 @@ class StudentRegister(APIView):
 
 class UniversityRegister(APIView):
     def get(self,request):
-        pass
+        req_email = request.GET["email"]
+        req_password = request.GET["password"]
+        university_name = request.GET["university_name"]
+        try:
+            university = University.objects.get(name = university_name)
+            return HttpResponse("University already exists")
+        
+        except:
+            user = User.objects.create_user(req_email,req_password)
+            new_user = User.objects.get(email = req_email)
+            new_user.is_university = True
+            new_uni = University(name = university_name)
+            new_user.save()
+            
+
+        
 
 
 class Login(ObtainAuthToken):

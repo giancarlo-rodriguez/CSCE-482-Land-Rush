@@ -24,6 +24,7 @@ urlpatterns = [
     path('login',views.Login.as_view(), name='login'), #Done frontend
     path('logout',views.Logout.as_view()), #Done in frontend
     path('register/student',views.StudentRegister.as_view()), #Done in frontend
+    path('register/university',views.UniversityRegister.as_view()),
     path('print/user',views.RequestUser.as_view()), #Nott needed
     path('make/uni',views.MakeUserUni.as_view()), #Needs to go in University register
     path('choose/uni',views.ChooseUniversity.as_view()),#Needs go to Student Register 
