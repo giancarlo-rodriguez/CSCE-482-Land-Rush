@@ -3,6 +3,8 @@ from django.db import models
 from django.contrib.auth.models import AbstractBaseUser
 from django.contrib.auth.models import BaseUserManager
 
+from django.utils import timezone
+
 # Create your models here.
 class University(models.Model):
     """
@@ -119,26 +121,7 @@ class Role(models.Model):
 
     def __str__(self):
         return self.user.email + 'is admin of ' + self.organization.name + '?'
-
-
-class Event(models.Model):
-    """
-    Model for Event table
-    Each row is an event within a university
-    """
-    id = models.IntegerField(primary_key=True)
-    university = models.ForeignKey(University, related_name='event', on_delete=models.CASCADE)
-    created = models.DateTimeField(auto_now_add=True)
-    name = models.CharField(max_length = 90, default=None)
     
-    class Meta:
-        db_table = "events"
-        verbose_name_plural = "Events"
-
-    def __str__(self):
-        return self.university.name + '_' + str(self.id)
-
-
 class Section(models.Model):
     """
     Model for Section table
@@ -153,8 +136,7 @@ class Section(models.Model):
 
     def __str__(self):
         return self.university.name + '_' + str(self.id)
-
-
+    
 class Plot(models.Model):
     """
     Model for Plot table
@@ -170,6 +152,26 @@ class Plot(models.Model):
 
     def __str__(self):
         return self.university.name + '_' + str(self.section.id) + '_' + str(self.id)
+
+
+class Event(models.Model):
+    """
+    Model for Event table
+    Each row is an event within a university
+    """
+    id = models.IntegerField(primary_key=True)
+    university = models.ForeignKey(University, related_name='event', on_delete=models.CASCADE)
+    created = models.DateTimeField(auto_now_add=True)
+    name = models.CharField(max_length = 90, default=None)
+    plot = models.ForeignKey(Plot, related_name='events', on_delete=models.CASCADE)
+    timestamp = models.DateTimeField(default=timezone.now)
+    
+    class Meta:
+        db_table = "events"
+        verbose_name_plural = "Events"
+
+    def __str__(self):
+        return self.university.name + '_' + str(self.id)
 
 
 
