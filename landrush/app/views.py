@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.contrib.auth import authenticate
+from django.core.serializers import serialize
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
@@ -266,5 +267,9 @@ class ShowUserOrganizations(APIView):
             orgs.append(org_serialized.data)
         return Response(orgs)
         
-
-
+class ShowOrganization(APIView):
+    authentication_classes = [TokenAuthentication]
+    def get(self,request):
+        organization_name = request.GET["organization_name"]
+        org = Organization.Objects.get(name = organization_name)
+        pass

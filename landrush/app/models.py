@@ -101,7 +101,7 @@ class Organization(models.Model):
         verbose_name_plural = "Organizations"
 
     def __str__(self):
-        return self.university.name + '_' + self.name
+        return self.name
 
 
 class Role(models.Model):
@@ -120,22 +120,9 @@ class Role(models.Model):
         verbose_name_plural = "Roles"
 
     def __str__(self):
-        return self.user.email + 'is admin of ' + self.organization.name + '?'
+        return self.user.email + ' is admin of ' + self.organization.name
     
-class Section(models.Model):
-    """
-    Model for Section table
-    Each row is a section within a university
-    """
-    id = models.IntegerField(primary_key=True)
-    university = models.ForeignKey(University, related_name='section', on_delete=models.CASCADE)
-    
-    class Meta:
-        db_table = "sections"
-        verbose_name_plural = "Sections"
 
-    def __str__(self):
-        return self.university.name + '_' + str(self.id)
     
 class Plot(models.Model):
     """
@@ -143,7 +130,6 @@ class Plot(models.Model):
     Each row is a plot within a section
     """
     id = models.IntegerField(primary_key=True)
-    section = models.ForeignKey(Section, related_name='plot', on_delete=models.CASCADE)
     university = models.ForeignKey(University, related_name='plot', on_delete = models.CASCADE, default = None)
 
     class Meta:
@@ -163,7 +149,7 @@ class Event(models.Model):
     university = models.ForeignKey(University, related_name='event', on_delete=models.CASCADE)
     created = models.DateTimeField(auto_now_add=True)
     name = models.CharField(max_length = 90, default=None)
-    plot = models.ForeignKey(Plot, related_name='events', on_delete=models.CASCADE)
+    plot = models.ForeignKey(Plot, related_name='event_plot', on_delete=models.CASCADE)
     timestamp = models.DateTimeField(default=timezone.now)
     
     class Meta:
@@ -171,7 +157,7 @@ class Event(models.Model):
         verbose_name_plural = "Events"
 
     def __str__(self):
-        return self.university.name + '_' + str(self.id)
+        return "'" + self.name + "' at " + self.university.name 
 
 
 
