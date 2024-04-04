@@ -107,6 +107,9 @@ class ChooseUniversity(APIView):
         cur_user.save()
         return HttpResponse("Chose University.")
 
+"""
+Temporary Commented out.
+Not needed for MVP. Create org directly after request for MVP. 
 class CreateOrg(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsStudent]
@@ -121,6 +124,23 @@ class CreateOrg(APIView):
             create_org = PendingCreateOrg(requester = create_requester, org_name = org_name, university = university)
             create_org.save()
             return HttpResponse("Organization create request submitted")
+"""
+
+class CreateOrg(APIView):
+    authentication_classes = [TokenAuthentication]
+    def get(self,request):
+        org_name = request.GET["organization"]
+        try:
+            check_exists = Organization.objects.get(name = org_name)
+            return HttpResponse("Organization already exists")
+        except:
+            university = request.user.university
+            new_org = Organization(name = org_name, university = university)
+            new_org.save()
+            new_org = Organization.objects.get(name = org_name)
+            new_role = Role(user = request.user, organization = new_org, is_admin = True)
+            new_role.save()
+            return HttpResponse("Organization created!")
 
 class JoinOrg(APIView):
     authentication_classes = [TokenAuthentication]
