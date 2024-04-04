@@ -207,9 +207,12 @@ class CreateEvent(APIView):
     def get(self,request):
         event_university = request.user.university
         request_body = json.loads(reuqest.body)
-        event_name = request.GET["event_name"]
-
+        event_name = request_body["event_name"]
+        event_university_name = request_body["university_name"]
+        coordinates = request_body["coordinates"]
+        event_university = University.objects.get(name = event_university_name)
         new_event = Event(name = event_name, university = event_university)
+        print(coordinates)
         new_event.save()
         return HttpResponse("Event Created")
 
