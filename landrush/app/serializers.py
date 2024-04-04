@@ -52,15 +52,6 @@ class RoleSerializer(serializers.ModelSerializer):
         model = models.Role
         fields = ['organization','user','is_admin']
 
-class SectionSerializer(serializers.ModelSerializer):
-    university = serializers.SlugRelatedField(
-        read_only = True,
-        slug_field = 'name'
-    )
-
-    class Meta:
-        model = models.Section
-        fields = ['university']
 
 class PendingJoinOrgSerializer(serializers.ModelSerializer):
     requester = serializers.SlugRelatedField(

@@ -202,11 +202,13 @@ class showJoinOrgPending(APIView):
             return HttpResponse(error)
 
 class CreateEvent(APIView):
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsUniversity]
+    #authentication_classes = [TokenAuthentication]
+    #permission_classes = [IsUniversity]
     def get(self,request):
         event_university = request.user.university
+        request_body = json.loads(reuqest.body)
         event_name = request.GET["event_name"]
+
         new_event = Event(name = event_name, university = event_university)
         new_event.save()
         return HttpResponse("Event Created")
@@ -260,6 +262,9 @@ class ShowEvent(APIView):
 class ShowUserOrganizations(APIView):
     authentication_classes = [TokenAuthentication]
     def get(self,request):
+        body_dic = json.loads(request.body)
+        print(body_dic)
+        print(body_dic["Wyatt"])
         user_roles = Role.objects.filter(user = request.user)
         orgs = []
         for role in user_roles:
@@ -272,4 +277,4 @@ class ShowOrganization(APIView):
     def get(self,request):
         organization_name = request.GET["organization_name"]
         org = Organization.Objects.get(name = organization_name)
-        pass
+        return HttpResponse("Done")

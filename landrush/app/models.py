@@ -139,6 +139,13 @@ class Plot(models.Model):
     def __str__(self):
         return self.university.name + '_' + str(self.section.id) + '_' + str(self.id)
 
+class Coordinates(models.Model):
+    id = models.IntegerField(primary_key = True)
+    plot = models.ForeignKey(Plot, related_name = "event", on_delete=models.CASCADE)
+    latitude = models.CharField(max_length=250)
+    longitude = models.CharField(max_length=250)
+
+
 
 class Event(models.Model):
     """
