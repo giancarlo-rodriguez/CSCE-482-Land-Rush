@@ -58,9 +58,10 @@ class UniversityRegister(APIView):
 
 
 class Login(ObtainAuthToken):
-    def get(self,request,*args,**kwargs):
-        email = request.GET["email"]
-        password = request.GET["password"]
+    def post(self,request,*args,**kwargs):
+        print(request)
+        email = request.data.get("email")
+        password = request.data.get("password")
         user = authenticate(email=email,password = password)
         print(request.user)
         if user is not None:
@@ -206,7 +207,7 @@ class CreateEvent(APIView):
     #permission_classes = [IsUniversity]
     def get(self,request):
         event_university = request.user.university
-        request_body = json.loads(reuqest.body)
+        request_body = json.loads(request.body)
         event_name = request_body["event_name"]
         event_university_name = request_body["university_name"]
         coordinates = request_body["coordinates"]
@@ -256,9 +257,9 @@ class ShowProfile(APIView):
 class ShowEvent(APIView):
     authentication_classes = [TokenAuthentication]
     def get(self,request):
-        events = Event.objects.get(university = request.user.university)
+        events = Event.objects.filter(university = request.user.university)
         print(events)
-        event_json = serializers.EventSerializer(events)
+        event_json = serializers.EventSerializer(events, many=True)
         print(event_json)
         return Response(event_json.data)
 

@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from "react-router-dom";
+import axios from 'axios';
+import Cookies from 'js-cookie';
 
 
 const HomeSignIn = () => {
@@ -12,20 +14,17 @@ const HomeSignIn = () => {
     e.preventDefault();
     
     // Check if email and password match the expected values
-    if (email === 'admin@gmail.com' && password === 'admin') {
-      // Authentication successful
-      console.log('Login successful');
-      // Redirect to dashboard or perform any necessary action
-      navigate('/org');
+    axios.post("http://127.0.0.1:8000/login", {
+      email: email,
+      password: password,
 
-      // For now, let's just clear the form fields
-      setEmail('');
-      setPassword('');
-      setError('');
-    } else {
-      // Authentication failed
-      setError('Invalid email or password');
-    }
+    }).then((res) => {
+      Cookies.set('token', res.data.token, { expires: 7 });
+      console.log(res)
+    }).catch((err) =>{
+      console.log(err)
+    })
+    
   };
 
   const handleEmailChange = (e) => {
