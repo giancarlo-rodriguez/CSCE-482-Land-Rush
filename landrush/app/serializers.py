@@ -15,7 +15,7 @@ class EventSerializer(serializers.ModelSerializer):
     )
     class Meta:
         model = models.Event
-        fields = ['name','created','university']
+        fields = ['name','plot','created','university','timestamp']
 
 class UserSerializer(serializers.ModelSerializer):
     university = serializers.SlugRelatedField(

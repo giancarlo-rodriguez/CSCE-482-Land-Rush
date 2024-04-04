@@ -3,7 +3,6 @@ import './style.css';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
-/* Style 1 */
 const CollegeEvents = () => {
   const [events, setEvents] = useState([]);
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -30,7 +29,11 @@ const CollegeEvents = () => {
 
   
 
-  const handleViewClick = () => {
+  const handleViewClick = (event) => {
+    const eventDetailsWindow = window.open('', '_blank', 'width=600,height=400');
+    eventDetailsWindow.document.write(
+      `<div><h2>${event.name}</h2><p>Plot: ${event.timestamp}</p></div>`
+    );
   };
 
   const handleCreateEvent = () => {
@@ -44,20 +47,22 @@ const CollegeEvents = () => {
         event_name: eventName,
         plot_id: plotId
       });
-      console.log(response.data); // Log success message or handle response
-      setShowCreateForm(false); // Close the create form after successful submission
-      setEventName(''); // Clear the event name field
+      console.log(response.data);
+      setShowCreateForm(false);
+      setEventName('');
     } catch (error) {
       console.error('Error creating event:', error);
     }
   };
+  
 
-  return (
+  /* Style 1 */
+return (
     <div>
       <button onClick={handleCreateEvent}>Create New Event</button>
       <div className="college-events-list">
         {events.map((event) => (
-          <div key={event.id} className="event-bar">
+          <div key={event.id} className="event-bar" onClick={() => handleViewClick(event)}>
             <span className="event-bar-name">{event.name}</span>
           </div>
         ))}
@@ -92,6 +97,8 @@ const CollegeEvents = () => {
   );
 };
 
+export default CollegeEvents;
+
 
 
 
@@ -111,6 +118,4 @@ const CollegeEvents = () => {
   );
 };
 
-*/ 
-
-export default CollegeEvents;
+*/

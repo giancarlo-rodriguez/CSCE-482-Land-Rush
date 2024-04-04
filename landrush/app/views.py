@@ -253,7 +253,6 @@ class ShowProfile(APIView):
         profile_serialized = serializers.UserSerializer(request.user)
         return Response(profile_serialized.data)
 
-#show all current events
 class ShowEvent(APIView):
     authentication_classes = [TokenAuthentication]
     def get(self,request):

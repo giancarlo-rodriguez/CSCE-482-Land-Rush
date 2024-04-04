@@ -137,7 +137,7 @@ class Plot(models.Model):
         verbose_name_plural = "Plots"
 
     def __str__(self):
-        return self.university.name + '_' + str(self.section.id) + '_' + str(self.id)
+        return self.university.name + '_' + str(self.id)
 
 class Coordinates(models.Model):
     id = models.IntegerField(primary_key = True)
