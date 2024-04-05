@@ -145,6 +145,9 @@ class Coordinates(models.Model):
     latitude = models.CharField(max_length=250)
     longitude = models.CharField(max_length=250)
 
+    def __str__(self):
+        return "(" + self.latitude + " , " + self.longitude + ") for plot id " + str(self.plot.id)  
+
 
 
 class Event(models.Model):

@@ -8,11 +8,12 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
-from .models import User, University, PendingCreateOrg, PendingJoinOrg, Role, Organization,Event, OrgRegisteredEvent
+from .models import User, University, PendingCreateOrg, PendingJoinOrg, Role, Organization,Event, OrgRegisteredEvent, Coordinates, Plot
 from .permissions import IsStudent, IsUniversity, IsOrgAdmin
 import json
 from rest_framework.renderers import JSONRenderer
 from . import serializers
+import datetime
 # Create your views here.
 def home(request):
     return HttpResponse("Hello, world. You're at the landrush app home.")
@@ -203,17 +204,22 @@ class showJoinOrgPending(APIView):
             return HttpResponse(error)
 
 class CreateEvent(APIView):
-    #authentication_classes = [TokenAuthentication]
+    authentication_classes = [TokenAuthentication]
     #permission_classes = [IsUniversity]
-    def get(self,request):
+    def post(self,request):
+        print(request.data)
+        event_name = request.data.get("event_name")
+        coordinates = request.data.get("coordinates")
+        event_date_string = request.data.get("event_date")
+        event_date = datetime.datetime.strptime(event_date_string, "%Y-%m-%d")
         event_university = request.user.university
-        request_body = json.loads(request.body)
-        event_name = request_body["event_name"]
-        event_university_name = request_body["university_name"]
-        coordinates = request_body["coordinates"]
-        event_university = University.objects.get(name = event_university_name)
-        new_event = Event(name = event_name, university = event_university)
-        print(coordinates)
+        new_plot = Plot(university = event_university)
+        new_plot.save()
+        new_plot = Plot.objects.latest('id')
+        for coordinate in coordinates:
+            new_coordinate = Coordinates(plot = new_plot,latitude = coordinate[0], longitude = coordinate[1])
+            new_coordinate.save()
+        new_event = Event(name = event_name, university = event_university, plot = new_plot)
         new_event.save()
         return HttpResponse("Event Created")
 

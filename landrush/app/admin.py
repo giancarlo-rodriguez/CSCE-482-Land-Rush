@@ -8,6 +8,7 @@ from .models import Plot
 from .models import PendingCreateOrg
 from .models import PendingJoinOrg
 from .models import OrgRegisteredEvent
+from .models import Coordinates
 
 # Register your models here.
 admin.site.register(University)
@@ -19,4 +20,5 @@ admin.site.register(Plot)
 admin.site.register(PendingCreateOrg)
 admin.site.register(PendingJoinOrg)
 admin.site.register(OrgRegisteredEvent)
+admin.site.register(Coordinates)
 
