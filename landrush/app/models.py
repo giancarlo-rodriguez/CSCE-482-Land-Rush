@@ -130,14 +130,15 @@ class Plot(models.Model):
     Each row is a plot within a section
     """
     id = models.IntegerField(primary_key=True)
-    university = models.ForeignKey(University, related_name='plot', on_delete = models.CASCADE, default = None)
+    university = models.ForeignKey(University, related_name='plot', on_delete = models.CASCADE, default = None, null = True)
+    name = models.CharField(max_length = 250, default = "Aggie Plot", null=True)
 
     class Meta:
         db_table = "plots"
         verbose_name_plural = "Plots"
 
     def __str__(self):
-        return self.university.name + '_' + str(self.id)
+        return self.name + " at " + self.university.name
 
 class Coordinates(models.Model):
     id = models.IntegerField(primary_key = True)
@@ -146,7 +147,7 @@ class Coordinates(models.Model):
     longitude = models.CharField(max_length=250)
 
     def __str__(self):
-        return "(" + self.latitude + " , " + self.longitude + ") for plot id " + str(self.plot.id)  
+        return "(" + str(self.latitude) + " , " + str(self.longitude) + ") for plot id " + str(self.plot.id)  
 
 
 

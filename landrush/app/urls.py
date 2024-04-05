@@ -39,6 +39,9 @@ urlpatterns = [
     path('show/user/orgs',views.ShowUserOrganizations.as_view()), #Done in frontend
     path('show/event',views.ShowEvent.as_view()), #Done in frontend
     path('show/join/org/',views.showJoinOrgPending.as_view()), #Done in the frontend
+    path('create/plot',views.CreatePlot.as_view()),
+    path('show/plots',views.ShowPlots.as_view()),
+    path('show/coordinates', views.ShowCoordinates.as_view()),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 ]

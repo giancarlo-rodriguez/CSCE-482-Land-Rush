@@ -17,6 +17,26 @@ class EventSerializer(serializers.ModelSerializer):
         model = models.Event
         fields = ['name','plot','created','university','timestamp']
 
+class PlotSerializer(serializers.ModelSerializer):
+    university = serializers.SlugRelatedField(
+        read_only = True,
+        slug_field = 'name'
+    )
+
+    class Meta:
+        model = models.Plot
+        fields = ['id', 'name', 'university']
+
+class CoordinateSerializer(serializers.ModelSerializer):
+    plot = serializers.SlugRelatedField(
+        read_only = True,
+        slug_field = 'name'
+    )
+
+    class Meta:
+        model = models.Coordinates
+        fields = ['longitude', 'latitude', 'plot']
+
 class UserSerializer(serializers.ModelSerializer):
     university = serializers.SlugRelatedField(
         read_only = True,

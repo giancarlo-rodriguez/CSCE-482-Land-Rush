@@ -52,26 +52,7 @@ class UniversityRegister(APIView):
             new_user = User.objects.get(email = req_email)
             new_user.is_university = True
             new_uni = University(name = university_name)
-            new_user.save()
-            
-
-        
-
-
-class Login(ObtainAuthToken):
-    def post(self,request,*args,**kwargs):
-        print(request)
-        email = request.data.get("email")
-        password = request.data.get("password")
-        user = authenticate(email=email,password = password)
-        print(request.user)
-        if user is not None:
-            token, created = Token.objects.get_or_create(user=user)
-            return Response({
-                'token': token.key,
-            })
-        else:
-            return HttpResponse("Not authenticated")
+            new_user.save()  
 
 class Logout(APIView):
     authentication_classes = [TokenAuthentication]
@@ -203,26 +184,6 @@ class showJoinOrgPending(APIView):
         except Exception as error:
             return HttpResponse(error)
 
-class CreateEvent(APIView):
-    authentication_classes = [TokenAuthentication]
-    #permission_classes = [IsUniversity]
-    def post(self,request):
-        print(request.data)
-        event_name = request.data.get("event_name")
-        coordinates = request.data.get("coordinates")
-        event_date_string = request.data.get("event_date")
-        event_date = datetime.datetime.strptime(event_date_string, "%Y-%m-%d")
-        event_university = request.user.university
-        new_plot = Plot(university = event_university)
-        new_plot.save()
-        new_plot = Plot.objects.latest('id')
-        for coordinate in coordinates:
-            new_coordinate = Coordinates(plot = new_plot,latitude = coordinate[0], longitude = coordinate[1])
-            new_coordinate.save()
-        new_event = Event(name = event_name, university = event_university, plot = new_plot)
-        new_event.save()
-        return HttpResponse("Event Created")
-
 class RegisterForEvent(APIView):
     authentication_classes = [TokenAuthentication]
     #permission_classes = [?is user admin of org]
@@ -249,8 +210,6 @@ class JoinOrgResponse(APIView):
         else:
             return HttpResponse("Rejected")
 
-
-
 # *********show resource views******** #
 #show profile info:
 class ShowProfile(APIView):
@@ -258,15 +217,6 @@ class ShowProfile(APIView):
     def get(self,request):
         profile_serialized = serializers.UserSerializer(request.user)
         return Response(profile_serialized.data)
-
-class ShowEvent(APIView):
-    authentication_classes = [TokenAuthentication]
-    def get(self,request):
-        events = Event.objects.filter(university = request.user.university)
-        print(events)
-        event_json = serializers.EventSerializer(events, many=True)
-        print(event_json)
-        return Response(event_json.data)
 
 class ShowUserOrganizations(APIView):
     authentication_classes = [TokenAuthentication]
@@ -287,3 +237,73 @@ class ShowOrganization(APIView):
         organization_name = request.GET["organization_name"]
         org = Organization.Objects.get(name = organization_name)
         return HttpResponse("Done")
+
+
+### ********** Crticial Views ************* ###
+class Login(ObtainAuthToken):
+    def post(self,request,*args,**kwargs):
+        print(request)
+        email = request.data.get("email")
+        password = request.data.get("password")
+        user = authenticate(email=email,password = password)
+        print(request.user)
+        if user is not None:
+            token, created = Token.objects.get_or_create(user=user)
+            return Response({
+                'token': token.key,
+            })
+        else:
+            return HttpResponse("Not authenticated")
+
+class CreateEvent(APIView):
+    authentication_classes = [TokenAuthentication]
+    #permission_classes = [IsUniversity]
+    def post(self,request):
+        print(request.data)
+        event_name = request.data.get("event_name")
+        coordinates = request.data.get("coordinates")
+        event_date_string = request.data.get("event_date")
+        event_date = datetime.datetime.strptime(event_date_string, "%Y-%m-%d")
+        event_university = request.user.university
+        event_plot_id = request.data.get("plot_id")
+        event_plot = Plot.objects.get(id = event_plot_id)
+        new_event = Event(name = event_name, university = event_university, plot = event_plot)
+        new_event.save()
+        return HttpResponse("Event Created")
+
+class ShowEvent(APIView):
+    authentication_classes = [TokenAuthentication]
+    def get(self,request):
+        events = Event.objects.filter(university = request.user.university)
+        event_json = serializers.EventSerializer(events, many=True)
+        return Response(event_json.data)
+
+class CreatePlot(APIView):
+    authentication_classes = [TokenAuthentication]
+    def post(self,request):
+        plot_university = request.user.university
+        coordinates = request.data.get("coordinates")
+        plot_name = request.data.get("plot_name")
+        new_plot = Plot(university = plot_university, name = plot_name)
+        new_plot.save()
+        new_plot = Plot.objects.latest('id')
+        for coordinate in coordinates:
+            new_coordinate = Coordinates(plot = new_plot,latitude = coordinate[0], longitude = coordinate[1])
+            new_coordinate.save()
+        return HttpResponse("Plot created.") 
+
+class ShowPlots(APIView):
+    authentication_classes = [TokenAuthentication]
+    def get(self,request):
+        plots = Plot.objects.filter(university = request.user.university)
+        plots_json = serializers.PlotSerializer(plots, many = True)
+        return Response(plots_json.data)
+
+
+class ShowCoordinates(APIView):
+    authentication_classes = [TokenAuthentication]
+    def get(self,request):
+        plot = Plot.objects.get(id = request.GET["plot_id"])   
+        coordinates = Coordinates.objects.filter(plot = plot)
+        coordinates_json = serializers.CoordinateSerializer(coordinates, many = True)
+        return Response(coordinates_json.data)
