@@ -39,21 +39,28 @@ class StudentRegister(APIView):
             new_user.save()
             return HttpResponse("User created")
 
+
 class UniversityRegister(APIView):
-    def get(self,request):
-        req_email = request.GET["email"]
-        req_password = request.GET["password"]
-        university_name = request.GET["university_name"]
+    def post(self, request):
+        print(request.data.get("email"))
+        req_email = request.data.get("email")
+        req_password = request.data.get("password")
+        print(request.data.get("password"))
+        university_name = request.data.get("universityName")  # Adjust the key to match frontend
+        print(request.data.get("univeristyName"))
         try:
-            university = University.objects.get(name = university_name)
-            return HttpResponse("University already exists")
-        
-        except:
-            user = User.objects.create_user(req_email,req_password)
-            new_user = User.objects.get(email = req_email)
-            new_user.is_university = True
-            new_uni = University(name = university_name)
-            new_user.save()  
+            university = University.objects.get(name=university_name)
+            return Response("University already exists", status=status.HTTP_400_BAD_REQUEST)
+        except University.DoesNotExist:
+            try:
+                user = User.objects.create_user(req_email, req_email, req_password)  # Use email as username
+                user.is_university = True
+                user.save()
+                new_uni = University.objects.create(name=university_name)
+                return Response("University registered successfully", status=status.HTTP_201_CREATED)
+            except Exception as e:
+                return Response(str(e), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 class Logout(APIView):
     authentication_classes = [TokenAuthentication]
