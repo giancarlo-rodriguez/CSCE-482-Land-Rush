@@ -3,6 +3,7 @@ from django.http import HttpResponse
 from django.contrib.auth import authenticate
 from django.core.serializers import serialize
 from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -283,11 +284,17 @@ class CreatePlot(APIView):
     def post(self,request):
         plot_university = request.user.university
         coordinates = request.data.get("coordinates")
+
+        if not coordinates:
+            return Response("No coordinates provided.", status=status.HTTP_400_BAD_REQUEST)
+
         plot_name = request.data.get("plot_name")
         new_plot = Plot(university = plot_university, name = plot_name)
         new_plot.save()
         new_plot = Plot.objects.latest('id')
         for coordinate in coordinates:
+            if len(coordinate) < 2:
+                continue
             new_coordinate = Coordinates(plot = new_plot,latitude = coordinate[0], longitude = coordinate[1])
             new_coordinate.save()
         return HttpResponse("Plot created.") 

@@ -1,5 +1,7 @@
 asgiref==3.7.2
-backports.zoneinfo==0.2.1
+# backports.zoneinfo==0.2.1
+django-cors-headers
+django-rest-framework
 Django==4.2.10
 sqlparse==0.4.4
 typing-extensions==4.10.0

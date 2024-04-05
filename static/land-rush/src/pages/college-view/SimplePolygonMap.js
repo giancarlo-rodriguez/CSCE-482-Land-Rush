@@ -1,6 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import html2canvas from 'html2canvas';
+import axios from 'axios';
+import Cookies from 'js-cookie';
 
+const token = Cookies.get('token');
 const SimplePolygonMap = ({ apiKey, lat, lng, coordinates }) => {
 const mapRef = useRef(null);
 const [map, setMap] = useState(null);
@@ -178,7 +181,7 @@ const handleDeleteShape = () => {
   setHighlightedShapes([]);
 };
 
-const handleCompleteShape = () => {
+const handleCompleteShape = async () => {
   if ((drawModeActive || modifyModeActive) && polygon && polygon.getPath().getLength() > 2) {
     polygon.setOptions({ editable: false, draggable: false, strokeColor: "black", fillColor: "#284d00" });
     setDrawingMode(false);
@@ -187,6 +190,24 @@ const handleCompleteShape = () => {
     setCurrentCoordinatePoints(0);
     setDrawModeActive(false);
     setModifyModeActive(false);
+
+    try {
+      const response = await axios.post('http://127.0.0.1:8000/create/plot', {
+        coordinates: completedShapes.map(shape => {
+          return shape.getPath().getArray().map(coord => {
+            return [coord.lat(), coord.lng()];
+          });
+        }),
+        plot_name: 'Plot Name' // You may need to adjust this to get the plot name from user input
+      }, {
+        headers: {
+          Authorization: `Token ${token}` // Make sure to define token
+        }
+      });
+      console.log(response.data); // Log success message or handle response as needed
+    } catch (error) {
+      console.error('Error creating plot:', error);
+    }
   }
 };
 
