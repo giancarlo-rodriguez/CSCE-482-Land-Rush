@@ -294,9 +294,9 @@ class CreateEvent(APIView):
             updated_event.university = event_university
             updated_event.plot = event_plot
             updated_event.save()
-            return HttpReponse("Event Updated")
+            return HttpResponse("Event Updated")
         except:
-            return HttpReponse("Event update not successful")
+            return HttpResponse("Event update not successful")
 
 class ShowEvent(APIView):
     authentication_classes = [TokenAuthentication]
@@ -359,3 +359,5 @@ class ShowCoordinates(APIView):
         coordinates = Coordinates.objects.filter(plot = plot)
         coordinates_json = serializers.CoordinateSerializer(coordinates, many = True)
         return Response(coordinates_json.data)
+    
+
