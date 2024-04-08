@@ -168,7 +168,7 @@ class Event(models.Model):
         verbose_name_plural = "Events"
 
     def __str__(self):
-        return "'" + self.name + "' at " + self.university.name 
+        return "'" + self.name + "' at " + self.plot.name 
 
 
 
@@ -205,4 +205,12 @@ class OrgRegisteredEvent(models.Model):
     def __str__(self):
         return self.organization.name + ' registered for  ' + self.event.name
 
+class StudentRegisteredEvent(models.Model):
+    id = models.IntegerField(primary_key = True)
+    organization = models.ForeignKey(Organization, related_name = 'registered_member_org', on_delete=models.CASCADE)
+    member = models.ForeignKey(User, related_name= 'registered_member', on_delete=models.CASCADE)
+    event = models.ForeignKey(Event, related_name= 'registered_member_event', on_delete=models.CASCADE)
+    date_time_registered = models.DateTimeField(auto_now_add=True)
+
+    
 

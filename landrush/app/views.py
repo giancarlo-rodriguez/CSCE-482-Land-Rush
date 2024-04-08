@@ -356,3 +356,5 @@ class ShowCoordinates(APIView):
         coordinates = Coordinates.objects.filter(plot = plot)
         coordinates_json = serializers.CoordinateSerializer(coordinates, many = True)
         return Response(coordinates_json.data)
+    
+
