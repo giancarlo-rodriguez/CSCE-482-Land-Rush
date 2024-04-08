@@ -276,13 +276,11 @@ class Login(ObtainAuthToken):
 
 class CreateEvent(APIView):
     authentication_classes = [TokenAuthentication]
-    #permission_classes = [IsUniversity]
     def post(self,request):
         print(request.data)
         event_name = request.data.get("event_name")
-        coordinates = request.data.get("coordinates")
-        event_date_string = request.data.get("event_date")
-        event_date = datetime.datetime.strptime(event_date_string, "%Y-%m-%d")
+        #event_date_string = request.data.get("event_date")
+        #event_date = datetime.datetime.strptime(event_date_string, "%Y-%m-%d")
         event_university = request.user.university
         event_plot_id = request.data.get("plot_id")
         event_plot = Plot.objects.get(id = event_plot_id)
@@ -308,6 +306,20 @@ class CreateEvent(APIView):
             return HttpResponse("Event Updated")
         except:
             return HttpResponse("Event update not successful")
+        
+class DeleteEvent(APIView):
+    authentication_classes = [TokenAuthentication]
+
+    def delete(self, request):
+        try:
+            event_id = request.query_params.get("event_id")  # Use query_params to get the event_id
+            event = Event.objects.get(id=event_id)
+            event.delete()
+            return Response("Event Deleted", status=status.HTTP_200_OK)  # Use HTTP_200_OK for successful deletion
+        except Event.DoesNotExist:
+            return Response("Event not found", status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
 
 class ShowEvent(APIView):
     authentication_classes = [TokenAuthentication]
@@ -329,11 +341,10 @@ class CreatePlot(APIView):
         new_plot = Plot(university = plot_university, name = plot_name)
         new_plot.save()
         new_plot = Plot.objects.latest('id')
-        for coordinate in coordinates:
-            if len(coordinate) < 2:
-                continue
-            new_coordinate = Coordinates(plot = new_plot,latitude = coordinate[0], longitude = coordinate[1])
-            new_coordinate.save()
+        for coordinate_pair in coordinates:
+            for coordinate in coordinate_pair:
+                new_coordinate = Coordinates(plot = new_plot,latitude = coordinate[0], longitude = coordinate[1])
+                new_coordinate.save()
         return HttpResponse("Plot created.") 
     
     def put(self,request):
@@ -353,14 +364,32 @@ class CreatePlot(APIView):
                 new_coordinate.save()
             return HttpResponse("Plot Updated") 
         except:
-            return HttpReponse("Plot update NOT successful")
+            return HttpResponse("Plot update NOT successful")
 
 class ShowPlots(APIView):
     authentication_classes = [TokenAuthentication]
-    def get(self,request):
-        plots = Plot.objects.filter(university = request.user.university)
-        plots_json = serializers.PlotSerializer(plots, many = True)
-        return Response(plots_json.data)
+    # def get(self,request):
+    #     plots = Plot.objects.filter(university = request.user.university)
+    #     plots_json = serializers.PlotSerializer(plots, many = True)
+    #     return Response(plots_json.data)
+    def get(self, request):
+        # Check if a specific plot ID is provided in the query parameters
+        plot_id = request.query_params.get('plot_id')
+        
+        # If plot_id is provided, return details of that specific plot
+        if plot_id:
+            plot = Plot.objects.filter(id=plot_id, university=request.user.university).first()
+            if plot:
+                plot_json = serializers.PlotSerializer(plot)
+                return Response(plot_json.data)
+            else:
+                return Response({'message': 'Plot not found'}, status=404)
+
+        # If plot_id is not provided, return all plots for the user's university
+        else:
+            plots = Plot.objects.filter(university=request.user.university)
+            plots_json = serializers.PlotSerializer(plots, many=True)
+            return Response(plots_json.data)
 
 
 class ShowCoordinates(APIView):
