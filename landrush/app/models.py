@@ -213,4 +213,6 @@ class StudentRegisteredEvent(models.Model):
     date_time_registered = models.DateTimeField(auto_now_add=True)
 
     
+    def __str__(self):
+        return self.member.name + " attending " + self.event.name + " through " + self.organization.name
 

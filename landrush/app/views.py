@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
-from .models import User, University, PendingCreateOrg, PendingJoinOrg, Role, Organization,Event, OrgRegisteredEvent, Coordinates, Plot
+from .models import User, University, PendingCreateOrg, PendingJoinOrg, Role, Organization,Event, OrgRegisteredEvent, Coordinates, Plot, StudentRegisteredEvent
 from .permissions import IsStudent, IsUniversity, IsOrgAdmin
 import json
 from rest_framework.renderers import JSONRenderer
@@ -279,12 +279,12 @@ class CreateEvent(APIView):
     def post(self,request):
         print(request.data)
         event_name = request.data.get("event_name")
-        #event_date_string = request.data.get("event_date")
-        #event_date = datetime.datetime.strptime(event_date_string, "%Y-%m-%d")
+        event_date_string = request.data.get("event_date")
+        event_date = datetime.datetime.strptime(event_date_string, "%Y-%m-%d")
         event_university = request.user.university
         event_plot_id = request.data.get("plot_id")
         event_plot = Plot.objects.get(id = event_plot_id)
-        new_event = Event(name = event_name, university = event_university, plot = event_plot)
+        new_event = Event(name = event_name, university = event_university, plot = event_plot, timestamp = event_date)
         new_event.save()
         return HttpResponse("Event Created")
     
@@ -299,7 +299,7 @@ class CreateEvent(APIView):
             event_plot = Plot.objects.get(id = event_plot_id)
             updated_event = Event.objects.get(id = event_id)
             updated_event.name = event_name
-            updated_event.date = event_date
+            updated_event.timestamp = event_date
             updated_event.university = event_university
             updated_event.plot = event_plot
             updated_event.save()
