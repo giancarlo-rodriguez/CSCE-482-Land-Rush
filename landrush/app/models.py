@@ -56,9 +56,9 @@ class User(AbstractBaseUser):
     """
     id = models.IntegerField(primary_key=True)
     email = models.EmailField(max_length=255, unique=True)
-    first_name = models.CharField(max_length=255)
-    last_name = models.CharField(max_length=255)
-    university = models.ForeignKey(University, on_delete=models.SET_NULL, related_name='user', null=True, blank=True)
+    name = models.CharField(max_length=255)
+    password = models.CharField(max_length=255)
+    university = models.ForeignKey(University, on_delete=models.SET_NULL, related_name='user', null=True, blank=True)#not sure 
     is_university = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)  # for admin users
     is_superuser = models.BooleanField(default=False)  # for superuser
