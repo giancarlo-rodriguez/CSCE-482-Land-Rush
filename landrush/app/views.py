@@ -400,4 +400,17 @@ class ShowCoordinates(APIView):
         coordinates_json = serializers.CoordinateSerializer(coordinates, many = True)
         return Response(coordinates_json.data)
     
+class StudentRegisterEvent(APIView):
+    authentication_classes = [TokenAuthentication]
+    def post(self,request):
+        event_id = request.data.get("event_id")
+        organization_id = request.data.get("organization_id")
+        org = Organization.objects.get(id = organization_id)
+        member = request.user
+        event = Event.objects.get(id = event_id)
+        new_student_event = StudentRegisteredEvent(event = event, member = member, organization = org)
+        new_student_event.save()
+        return HttpResponse("Registered for event")
+
+
 
