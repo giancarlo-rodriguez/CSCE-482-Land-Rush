@@ -15,21 +15,17 @@
     display: flex;
     align-items: center;
     width: calc(90%);
-    margin-bottom: 10px;
+    margin-bottom: 20px; /* Increased margin */
     border: 1px solid #ccc;
     border-radius: 10px;
-    padding: 10px;
+    padding: 15px; /* Increased padding */
     transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-}
-
-.event-bar:hover {
-    transform: translateY(-5px);
-    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.3);
 }
 
 .event-bar-name {
     font-weight: bold;
     color: #333;
+    margin-right: 20px; /* Increased margin between name and other details */
 }
 
 .event-bar-details {
@@ -37,6 +33,17 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    width: 100%; /* Ensure details take remaining space */
+}
+
+.event-bar-plot,
+.event-bar-timestamp {
+    margin-left: 20px; /* Increased margin between plot and timestamp */
+}
+
+.event-bar:hover {
+    transform: translateY(-5px);
+    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.3);
 }
 
 .event-bar-create-new {

@@ -34,6 +34,7 @@ urlpatterns = [
     path('create/org/show',views.showCreateOrgPending.as_view()), #Needs to be done in frontend
     path('join/org/response',views.JoinOrgResponse.as_view()), #Needs to be done in frontend
     path('create/event',views.CreateEvent.as_view()), #Needs to be done in frontend
+    path('delete/event',views.DeleteEvent.as_view()),
     path('event/org/register',views.RegisterForEvent.as_view()), #Needs to be done in frontend
     path('show/profile',views.ShowProfile.as_view()), #Done in frontend
     path('show/user/orgs',views.ShowUserOrganizations.as_view()), #Done in frontend
