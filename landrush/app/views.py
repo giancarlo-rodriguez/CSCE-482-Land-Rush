@@ -278,6 +278,25 @@ class CreateEvent(APIView):
         new_event = Event(name = event_name, university = event_university, plot = event_plot)
         new_event.save()
         return HttpResponse("Event Created")
+    
+    def put(self,request):
+        try:
+            event_id = request.data.get("event_id")
+            event_name = request.data.get("event_name")
+            event_date_string = request.data.get("event_date")
+            event_date = datetime.datetime.strptime(event_date_string, "%Y-%m-%d")
+            event_university = request.user.university
+            event_plot_id = request.data.get("plot_id")
+            event_plot = Plot.objects.get(id = event_plot_id)
+            updated_event = Event.objects.get(id = event_id)
+            updated_event.name = event_name
+            updated_event.date = event_date
+            updated_event.university = event_university
+            updated_event.plot = event_plot
+            updated_event.save()
+            return HttpReponse("Event Updated")
+        except:
+            return HttpReponse("Event update not successful")
 
 class ShowEvent(APIView):
     authentication_classes = [TokenAuthentication]
@@ -305,6 +324,25 @@ class CreatePlot(APIView):
             new_coordinate = Coordinates(plot = new_plot,latitude = coordinate[0], longitude = coordinate[1])
             new_coordinate.save()
         return HttpResponse("Plot created.") 
+    
+    def put(self,request):
+        try:
+            plot_id = request.data.get("plot_id")
+            plot_university = request.user.university
+            coordinates = request.data.get("coordinates")
+            plot_name = request.data.get("plot_name")
+            updated_plot = Plot.objects.get(id = plot_id)
+            updated_plot.university = plot_university
+            updated_plot.name = plot_name
+            updated_plot.save()
+            updated_plot = Plot.objects.get(id = plot_id)
+            delete_coordinate = Coordinates.objects.filter(plot = updated_plot).delete()
+            for coordinate in coordinates:
+                new_coordinate = Coordinates(plot = updated_plot,latitude = coordinate[0], longitude = coordinate[1])
+                new_coordinate.save()
+            return HttpResponse("Plot Updated") 
+        except:
+            return HttpReponse("Plot update NOT successful")
 
 class ShowPlots(APIView):
     authentication_classes = [TokenAuthentication]
