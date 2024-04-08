@@ -27,23 +27,44 @@
     box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.3);
 }
 
-.event-bar:hover img {
-    filter: none;
-}
-
-.event-bar-thumbnail {
-    width: 96px;
-    height: 96px;
-    border-radius: 8px;
-    margin-right: 10px;
-}
-
 .event-bar-name {
     font-weight: bold;
     color: #333;
 }
 
 .event-bar-details {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.event-bar-create-new {
+    display: flex;
+    align-items: center;
+    width: calc(90%);
+    margin-bottom: 10px;
+    justify-content: center;
+    border: 2px dashed #007bff;
+    border-radius: 10px;
+    padding: 10px;
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    cursor: pointer;
+}
+
+.event-bar-create-new:hover {
+    transform: translateY(-5px);
+    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.event-bar-create-new-name {
+    display: block;
+    text-align: center;
+    font-weight: bold;
+    color: #007bff; /* Change text color */
+}
+
+.event-bar-create-new-details {
     flex-grow: 1;
     display: flex;
     align-items: center;
@@ -214,6 +235,49 @@
 }
 
 .plot-block-details {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.plot-block-create-new {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 2px dashed #007bff; /* Change border style and color */
+    border-radius: 10px;
+    overflow: hidden;
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    cursor: pointer;
+}
+
+.plot-block-create-new:hover {
+    transform: translateY(-5px);
+    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.plot-block-create-new:hover img {
+    filter: none;
+}
+
+.plot-block-create-new-thumbnail {
+    width: 96px;
+    height: 96px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+.plot-block-create-new-name {
+    display: block;
+    padding: 10px;
+    text-align: center;
+    font-weight: bold;
+    color: #007bff; /* Change text color */
+}
+
+.plot-block-create-new-details {
     flex-grow: 1;
     display: flex;
     align-items: center;

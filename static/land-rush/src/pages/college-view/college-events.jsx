@@ -1,13 +1,55 @@
 import React, { useState, useEffect } from 'react';
-import './style.css';
+import ReactDOM from 'react-dom';
 import axios from 'axios';
 import Cookies from 'js-cookie';
+import './style.css';
+
+const EventDetailsPopup = ({ event, onSubmit }) => {
+  const [eventName, setEventName] = useState(event ? event.name : '');
+  const [plotId, setPlotId] = useState(event ? event.plot.id : '');
+  const [timestamp, setTimestamp] = useState(event ? event.timestamp : '');
+
+
+  const handleSubmit = () => {
+    onSubmit({ event_name: eventName, plot_id: plotId, timestamp: timestamp });
+  };
+
+  return (
+    <div className="popup-content">
+      <h1>Event Details</h1>
+      <div>
+        <h2>{event ? event.name : 'New Event'}</h2>
+        <p>Plot: {event ? event.plot : ''}</p>
+        <p>Start Time: {event ? event.timestamp : ''}</p>
+        <input
+          type="text"
+          value={eventName}
+          onChange={(e) => setEventName(e.target.value)}
+          placeholder="Event Name"
+        />
+        <input
+          type="text"
+          value={plotId}
+          onChange={(e) => setPlotId(e.target.value)}
+          placeholder="Plot ID"
+        />
+        <label htmlFor="timestamp">Timestamp:</label>
+        <input
+          type="datetime-local"
+          id="timestamp"
+          value={timestamp}
+          onChange={(e) => setTimestamp(e.target.value)}
+        />
+        <button onClick={handleSubmit}>Submit</button>
+      </div>
+    </div>
+  );
+};
 
 const CollegeEvents = () => {
   const [events, setEvents] = useState([]);
-  const [showCreateForm, setShowCreateForm] = useState(false);
-  const [eventName, setEventName] = useState('');
-  const [plotId, setPlotId] = useState('');
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [popupWindow, setPopupWindow] = useState(null);
 
   useEffect(() => {
     const token = Cookies.get('token');
@@ -18,7 +60,6 @@ const CollegeEvents = () => {
         }
       })
       .then(response => {
-
         setEvents(response.data);
       })
       .catch(error => {
@@ -27,95 +68,62 @@ const CollegeEvents = () => {
     }
   }, []);
 
-  
-
-  const handleViewClick = (event) => {
-    const eventDetailsWindow = window.open('', '_blank', 'width=600,height=400');
-    eventDetailsWindow.document.write(
-      `<div><h2>${event.name}</h2><p>Plot: ${event.timestamp}</p></div>`
-    );
+  const handleEventClick = (event) => {
+    setSelectedEvent(event);
+    const newPopupWindow = window.open('', '_blank', 'width=600,height=400');
+    setPopupWindow(newPopupWindow);
   };
 
-  const handleCreateEvent = () => {
-    setShowCreateForm(true);
+  const handleCreateNewEvent = () => {
+    setSelectedEvent(null); // Deselect any previously selected event
+    const newPopupWindow = window.open('', '_blank', 'width=600,height=400');
+    setPopupWindow(newPopupWindow);
   };
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    try {
-      const response = await axios.post('http://127.0.0.1:8000/create/event', {
-        event_name: eventName,
-        plot_id: plotId
+  const handleFormSubmit = (formData) => {
+    const token = Cookies.get('token');
+    if (token) {
+      axios.post('http://127.0.0.1:8000/create/event', {
+        event_name: formData.event_name,
+        plot_id: formData.plot_id
+      }, {
+        headers: {
+          Authorization: `Token ${token}`
+        }
+      })
+      .then(response => {
+        console.log('Event created successfully:', response.data);
+        // Optionally, you can update the events list or perform any other action upon successful creation
+      })
+      .catch(error => {
+        console.error('Error creating event:', error);
       });
-      console.log(response.data);
-      setShowCreateForm(false);
-      setEventName('');
-    } catch (error) {
-      console.error('Error creating event:', error);
     }
   };
-  
 
-  /* Style 1 */
-return (
+  useEffect(() => {
+    if (popupWindow) {
+      ReactDOM.render(
+        <EventDetailsPopup event={selectedEvent} onSubmit={handleFormSubmit} />,
+        popupWindow.document.body
+      );
+    }
+  }, [popupWindow, selectedEvent]);
+
+  return (
     <div>
-      <button onClick={handleCreateEvent}>Create New Event</button>
       <div className="college-events-list">
+        <div className="event-bar-create-new" onClick={handleCreateNewEvent}>
+          <span className="event-bar-create-new-name">Create New Event</span>
+        </div>
         {events.map((event) => (
-          <div key={event.id} className="event-bar" onClick={() => handleViewClick(event)}>
+          <div key={event.id} className="event-bar" onClick={() => handleEventClick(event)}>
             <span className="event-bar-name">{event.name}</span>
           </div>
         ))}
       </div>
-
-      {showCreateForm && (
-        <div className="create-event-form">
-          <form onSubmit={handleSubmit}>
-            <label>
-              Event Name:
-              <input
-                type="text"
-                value={eventName}
-                onChange={(e) => setEventName(e.target.value)}
-                required
-              />
-            </label>
-            <label>
-              Plot ID:
-              <input
-                type="text"
-                value={plotId}
-                onChange={(e) => setPlotId(e.target.value)}
-                required
-              />
-            </label>
-            <button type="submit">Submit</button>
-          </form>
-        </div>
-      )}
     </div>
   );
 };
 
 export default CollegeEvents;
-
-
-
-
-/* Style 2
-
-  return (
-    <div className="college-events-grid">
-      <div className="grid-container">
-        {events.map((event) => (
-          <div key={event.id} className="event-block" onClick={() => handleViewClick(event.imageUrl)}>
-            <img src={event.thumbnail} alt="Event Thumbnail" className="event-block-thumbnail" />
-            <span className="event-block-name">{event.name}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-*/

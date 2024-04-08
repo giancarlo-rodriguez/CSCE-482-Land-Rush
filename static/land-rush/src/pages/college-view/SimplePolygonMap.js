@@ -15,6 +15,7 @@ const [selectedShape, setSelectedShape] = useState(null);
 const [currentCoordinatePoints, setCurrentCoordinatePoints] = useState(0);
 const [modifyModeActive, setModifyModeActive] = useState(false);
 const [drawModeActive, setDrawModeActive] = useState(false);
+const [plotName, setPlotName] = useState('Plot Name');
 
 useEffect(() => {
   const initMap = () => {
@@ -191,20 +192,26 @@ const handleCompleteShape = async () => {
     setDrawModeActive(false);
     setModifyModeActive(false);
 
+    const updatedCompletedShapes = [...completedShapes, polygon];
+    setCompletedShapes(updatedCompletedShapes);
+
+    const coordinatesToSend = updatedCompletedShapes.map(shape => {
+      return shape.getPath().getArray().map(coord => {
+        return [coord.lat(), coord.lng()];
+      });
+    });
+    console.log("Coordinates to be sent:", coordinatesToSend);
+
     try {
       const response = await axios.post('http://127.0.0.1:8000/create/plot', {
-        coordinates: completedShapes.map(shape => {
-          return shape.getPath().getArray().map(coord => {
-            return [coord.lat(), coord.lng()];
-          });
-        }),
-        plot_name: 'Plot Name' // You may need to adjust this to get the plot name from user input
+        coordinates: coordinatesToSend,
+        plot_name: plotName || 'Plot Name'
       }, {
         headers: {
-          Authorization: `Token ${token}` // Make sure to define token
+          Authorization: `Token ${token}` 
         }
       });
-      console.log(response.data); // Log success message or handle response as needed
+      console.log(response.data);
     } catch (error) {
       console.error('Error creating plot:', error);
     }
@@ -268,6 +275,7 @@ return (
       <button onClick={handleCompleteShape} disabled={!drawModeActive && !modifyModeActive}>Complete Shape</button>
       <button onClick={handleCoordinateExport}>Download Coordinates</button>
       <button onClick={handleSaveImage}>Save Image</button>
+      <input type="text" value={plotName} onChange={(e) => setPlotName(e.target.value)} placeholder="Enter Plot Name" />
     </div>
   </div>
 );
