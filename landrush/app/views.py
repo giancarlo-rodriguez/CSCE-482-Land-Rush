@@ -21,25 +21,32 @@ import datetime
 def home(request):
     return HttpResponse("Hello, world. You're at the landrush app home.")
 
+
 class StudentRegister(APIView):
-    def get(self,request):
-        req_email = request.GET["email"]
-        req_password = request.GET["password"]
-        first_name = request.GET["first_name"]
-        last_name = request.GET["last_name"]
-        university_name = request.GET["university_name"]
-        university = University.objects.get(name = university_name)
+    def post(self, request):
         try:
-            user = User.objects.get(email=req_email)
-            return HttpResponse("User already exists")
-        except:
-            user = User.objects.create_user(req_email,req_password)
-            new_user = User.objects.get(email = req_email)
-            new_user.university = university
-            new_user.first_name = first_name
-            new_user.last_name = last_name
-            new_user.save()
-            return HttpResponse("User created")
+            req_name = request.data.get("fullName")
+            req_email = request.data.get("email")
+            req_password = request.data.get("password")
+            university_name = request.data.get("university")  # Adjust the key to match frontend
+
+            if not (req_email and req_password and university_name and req_name):
+                return Response("Email, password, and university name are required.", status=status.HTTP_400_BAD_REQUEST)
+
+            # Check if the university already exists
+            if User.objects.filter(email = req_email).exists():
+                return Response("Student already exists", status=status.HTTP_400_BAD_REQUEST)
+
+            # Create a new user
+            user = User(email=req_email, password=req_password, name=req_name,is_university=False)
+            user.save()
+
+            return Response("Student registered successfully", status=status.HTTP_201_CREATED)
+        
+        except Exception as e:
+            return Response(str(e), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+
 
 
 class UniversityRegister(APIView):
@@ -55,18 +62,14 @@ class UniversityRegister(APIView):
             # Check if the university already exists
             if University.objects.filter(name=university_name).exists():
                 return Response("University already exists", status=status.HTTP_400_BAD_REQUEST)
-            print("before user")
 
             # Create a new user with is_university set to True
             user = User(name=university_name, email=req_email, password=req_password,is_university=True)
             
             user.save()
             # Create a new university
-            print("before uni")
             uni = University(name=university_name)
-            print("after uni")
             uni.save()
-            print("uni saved")
             return Response("University registered successfully", status=status.HTTP_201_CREATED)
         
         except Exception as e:
@@ -100,15 +103,9 @@ class MakeUserUni(APIView):
         return HttpResponse("Made user university.")
 
 class ChooseUniversity(APIView):
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsStudent]
-    def get(self,request):
-        university_name = request.GET["university"]
-        selected_uni = University.objects.get(name = university_name)
-        cur_user = User.objects.get(email = request.user.email)
-        cur_user.university = selected_uni
-        cur_user.save()
-        return HttpResponse("Chose University.")
+    def get(self, request):
+        university_names = University.objects.values_list('name', flat=True)
+        return Response(university_names)
 
 """
 Temporary Commented out.
@@ -264,8 +261,11 @@ class Login(ObtainAuthToken):
         print(request)
         email = request.data.get("email")
         password = request.data.get("password")
-        user = authenticate(email=email,password = password)
-        print(request.user)
+        print(email)
+        print(password)
+        user = authenticate(email=email,password = password)#not authenticating for some reason
+
+        print(user)
         if user is not None:
             token, created = Token.objects.get_or_create(user=user)
             return Response({
