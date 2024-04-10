@@ -29,6 +29,7 @@ class StudentRegister(APIView):
             req_email = request.data.get("email")
             req_password = request.data.get("password")
             university_name = request.data.get("university")  # Adjust the key to match frontend
+            university = University.objects.get(name = university_name)
 
             if not (req_email and req_password and university_name and req_name):
                 return Response("Email, password, and university name are required.", status=status.HTTP_400_BAD_REQUEST)
@@ -38,8 +39,11 @@ class StudentRegister(APIView):
                 return Response("Student already exists", status=status.HTTP_400_BAD_REQUEST)
 
             # Create a new user
-            user = User(email=req_email, password=req_password, name=req_name,is_university=False)
-            user.save()
+            user = User.objects.create_user(req_email,req_password)
+            new_user = User.objects.get(email = req_email)
+            new_user.university = university
+            new_user.name = req_name
+            new_user.save()
 
             return Response("Student registered successfully", status=status.HTTP_201_CREATED)
         
@@ -62,14 +66,18 @@ class UniversityRegister(APIView):
             # Check if the university already exists
             if University.objects.filter(name=university_name).exists():
                 return Response("University already exists", status=status.HTTP_400_BAD_REQUEST)
-
-            # Create a new user with is_university set to True
-            user = User(name=university_name, email=req_email, password=req_password,is_university=True)
             
-            user.save()
             # Create a new university
-            uni = University(name=university_name)
+            uni = University(name = university_name)
             uni.save()
+            new_university = University.objects.get(name = university_name)
+            # Create a new user with is_university set to True
+            user = User.objects.create_user(req_email,req_password)
+            new_user = User.objects.get(email = req_email)
+            new_user.university = new_university
+            new_user.is_university = True
+            new_user.save()
+            
             return Response("University registered successfully", status=status.HTTP_201_CREATED)
         
         except Exception as e:

@@ -210,7 +210,7 @@ class StudentRegisteredEvent(models.Model):
     organization = models.ForeignKey(Organization, related_name = 'registered_member_org', on_delete=models.CASCADE)
     member = models.ForeignKey(User, related_name= 'registered_member', on_delete=models.CASCADE)
     event = models.ForeignKey(Event, related_name= 'registered_member_event', on_delete=models.CASCADE)
-    date_time_registered = models.DateTimeField(auto_now_add=True)
+    date_time_registered = models.DateTimeField(default=timezone.now)
 
     
     def __str__(self):
