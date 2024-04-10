@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
-
 const HomeSignIn = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -17,14 +16,22 @@ const HomeSignIn = () => {
     axios.post("http://127.0.0.1:8000/login", {
       email: email,
       password: password,
-
     }).then((res) => {
       Cookies.set('token', res.data.token, { expires: 7 });
-      console.log(res)
+
+      // Determine where to redirect based on user role
+      const userRole = res.data.user_role;
+      if (userRole === 'university') {
+        navigate('/college'); // Redirect to university dashboard
+      } else if (userRole === 'student') {
+        navigate('/student'); // Redirect to student dashboard
+      } else {
+        setError("Invalid user role"); // Handle unexpected user role
+      }
     }).catch((err) =>{
-      console.log(err)
-    })
-    
+      console.log(err);
+      setError("Invalid email or password"); // Handle authentication error
+    });
   };
 
   const handleEmailChange = (e) => {

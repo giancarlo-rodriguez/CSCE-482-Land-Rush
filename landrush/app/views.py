@@ -265,22 +265,32 @@ class ShowOrganization(APIView):
 
 ### ********** Crticial Views ************* ###
 class Login(ObtainAuthToken):
-    def post(self,request,*args,**kwargs):
-        print(request)
+    def post(self, request, *args, **kwargs):
         email = request.data.get("email")
         password = request.data.get("password")
-        print(email)
-        print(password)
-        user = authenticate(email=email,password = password)#not authenticating for some reason
+        user = authenticate(email=email, password=password)
 
-        print(user)
         if user is not None:
-            token, created = Token.objects.get_or_create(user=user)
-            return Response({
-                'token': token.key,
-            })
+            # Check if the user is a university
+            if user.is_university:
+                # Generate or retrieve token
+                token, created = Token.objects.get_or_create(user=user)
+
+                # Return token along with user role
+                return Response({
+                    'token': token.key,
+                    'user_role': 'university'
+                })
+            else:
+                # Return token along with user role as student
+                token, created = Token.objects.get_or_create(user=user)
+
+                return Response({
+                    'token': token.key,
+                    'user_role': 'student'
+                })
         else:
-            return HttpResponse("Not authenticated")
+            return HttpResponse("Invalid credentials.")
 
 class CreateEvent(APIView):
     authentication_classes = [TokenAuthentication]
