@@ -158,7 +158,7 @@ class Event(models.Model):
     """
     id = models.IntegerField(primary_key=True)
     university = models.ForeignKey(University, related_name='event', on_delete=models.CASCADE)
-    created = models.DateTimeField(auto_now_add=True)
+    created = models.DateTimeField(default=timezone.now)
     name = models.CharField(max_length = 90, default=None)
     plot = models.ForeignKey(Plot, related_name='event_plot', on_delete=models.CASCADE)
     timestamp = models.DateTimeField(default=timezone.now)

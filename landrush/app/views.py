@@ -420,5 +420,22 @@ class StudentRegisterEvent(APIView):
         new_student_event.save()
         return HttpResponse("Registered for event")
 
+class AverageRegistrationTime(APIView):
+    authentication_classes = [TokenAuthentication]
+    def get(self,request):
+        event_id = request.GET["event_id"]
+        event = Event.objects.get(id = event_id)
+        orgs_attending = {}
+        registered_students = StudentRegisteredEvent.objects.filter(event = event)
+        for registered_student in registered_students: 
+            org_id = registered_student.organization.id
+            time_registered = registered_student.date_time_registered
+            difference = time_registered - event.created
+            if(org_id in orgs_attending):
+                orgs_attending[org_id] = (orgs_attending[org_id][0] + 1, orgs_attending[org_id][1] + difference.total_seconds() / 60)
+            else:
+                orgs_attending[org_id] = (1,difference.total_seconds() / 60)
+        return Response(orgs_attending)
+
 
 
