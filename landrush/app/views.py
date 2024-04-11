@@ -90,31 +90,6 @@ class Logout(APIView):
         request.user.auth_token.delete()
         return HttpResponse("Token deleted")
 
-
-class RequestUser(APIView):
-    authentication_classes = [TokenAuthentication]
-    def get(self,request):
-        return HttpResponse(request.user)
-
-class MakeUserUni(APIView):
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsStudent]
-    def get(self,request):
-        university_name = request.GET["university"]
-        user_university = University(name = university_name)
-        user_university.save()
-        new_user_university = University.objects.get(name = university_name)
-        user = User.objects.get(id = request.user.id)
-        user.is_university = True
-        user.university = new_user_university
-        user.save()
-        return HttpResponse("Made user university.")
-
-class ChooseUniversity(APIView):
-    def get(self, request):
-        university_names = University.objects.values_list('name', flat=True)
-        return Response(university_names)
-
 """
 Temporary Commented out.
 Not needed for MVP. Create org directly after request for MVP. 
@@ -134,21 +109,8 @@ class CreateOrg(APIView):
             return HttpResponse("Organization create request submitted")
 """
 
-class CreateOrg(APIView):
-    authentication_classes = [TokenAuthentication]
-    def get(self,request):
-        org_name = request.GET["organization"]
-        try:
-            check_exists = Organization.objects.get(name = org_name)
-            return HttpResponse("Organization already exists")
-        except:
-            university = request.user.university
-            new_org = Organization(name = org_name, university = university)
-            new_org.save()
-            new_org = Organization.objects.get(name = org_name)
-            new_role = Role(user = request.user, organization = new_org, is_admin = True)
-            new_role.save()
-            return HttpResponse("Organization created!")
+
+""" This view creates a pending join org request. For now we will assume the request is accepted right away. 
 
 class JoinOrg(APIView):
     authentication_classes = [TokenAuthentication]
@@ -165,6 +127,8 @@ class JoinOrg(APIView):
         org_join = PendingJoinOrg(requester = join_requester, organization = org)
         org_join.save()
         return HttpResponse("Join request Created")
+"""
+
 
 class OrgPending(APIView):
     authentication_classes = [TokenAuthentication]
@@ -194,8 +158,6 @@ class CreateOrgResponse(APIView):
         else:
             return HttpResponse("Org not created")
 
-
-##### Not Yet Tested #######
 class showJoinOrgPending(APIView):
     authentication_classes = [TokenAuthentication]
     #permission_classes = [IsOrgAdmin]
@@ -233,6 +195,8 @@ class JoinOrgResponse(APIView):
             return HttpResponse("Join Org Request Accepted")
         else:
             return HttpResponse("Rejected")
+
+
 
 # *********show resource views******** #
 #show profile info:
@@ -291,6 +255,48 @@ class Login(ObtainAuthToken):
                 })
         else:
             return HttpResponse("Invalid credentials.")
+
+
+class CreateOrg(APIView):
+    authentication_classes = [TokenAuthentication]
+    def post(self,request):
+        org_name = request.data.get("organization")
+        try:
+            check_exists = Organization.objects.get(name = org_name)
+            return HttpResponse("Organization already exists")
+        except:
+            university = request.user.university
+            new_org = Organization(name = org_name, university = university)
+            new_org.save()
+            new_org = Organization.objects.get(name = org_name)
+            new_role = Role(user = request.user, organization = new_org, is_admin = True)
+            new_role.save()
+            return HttpResponse("Organization created!")
+
+class JoinOrg(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsStudent]
+    def post(self,request):
+        join_requester = request.user
+        organization_id = request.data.get("organization_id")
+
+        try:
+            org = Organization.objects.get(id = organization_id)
+        except:
+            return HttpResponse("Org does not exist")
+
+        if(join_requester.university != org.university):
+            return HttpResponse("You are not a member of this university")
+
+        try:
+            check_role = Role.objects.get(organization = org, user = request.user)
+            return HttpResponse("You are already a member")
+        except:
+            pass
+
+        new_member = Role(organization = org, user = join_requester, is_admin = False)
+        new_member.save()
+        return HttpResponse("Joined organization")
 
 class CreateEvent(APIView):
     authentication_classes = [TokenAuthentication]
@@ -424,6 +430,10 @@ class StudentRegisterEvent(APIView):
         event_id = request.data.get("event_id")
         organization_id = request.data.get("organization_id")
         org = Organization.objects.get(id = organization_id)
+        try:
+            check_membership = Role.objects.get(organization = org, user = request.user)
+        except:
+            return HttpResponse("You are not a member of this organization.")
         member = request.user
         event = Event.objects.get(id = event_id)
         new_student_event = StudentRegisteredEvent(event = event, member = member, organization = org)

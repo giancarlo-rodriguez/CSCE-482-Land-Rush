@@ -120,7 +120,10 @@ class Role(models.Model):
         verbose_name_plural = "Roles"
 
     def __str__(self):
-        return self.user.email + ' is admin of ' + self.organization.name
+        if(self.is_admin):
+            return self.user.email + ' is admin of ' + self.organization.name
+        else:
+            return self.user.email + ' is member of ' + self.organization.name
     
 
     
