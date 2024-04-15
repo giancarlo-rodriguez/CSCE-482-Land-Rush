@@ -18,6 +18,7 @@ const HomeSignIn = () => {
       password: password,
     }).then((res) => {
       Cookies.set('token', res.data.token, { expires: 7 });
+      console.log(res.data.token);
 
       // Determine where to redirect based on user role
       const userRole = res.data.user_role;
@@ -26,7 +27,7 @@ const HomeSignIn = () => {
       } else if (userRole === 'student') {
         navigate('/student'); // Redirect to student dashboard
       } else {
-        setError("Invalid user role"); // Handle unexpected user role
+        setError("Invalid user role: "+userRole); // Handle unexpected user role
       }
     }).catch((err) =>{
       console.log(err);
