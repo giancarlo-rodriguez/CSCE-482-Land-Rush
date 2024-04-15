@@ -187,8 +187,7 @@ class JoinOrg(APIView):
         return HttpResponse("You have been added to the organization as a regular member")
 
 
-"""
-used if we do org pending and accepting
+#used if we do org pending and accepting
 class OrgPending(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsUniversity]
