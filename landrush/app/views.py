@@ -359,9 +359,10 @@ class CreatePlot(APIView):
             updated_plot.save()
             updated_plot = Plot.objects.get(id = plot_id)
             delete_coordinate = Coordinates.objects.filter(plot = updated_plot).delete()
-            for coordinate in coordinates:
-                new_coordinate = Coordinates(plot = updated_plot,latitude = coordinate[0], longitude = coordinate[1])
-                new_coordinate.save()
+            for coordinate_pair in coordinates:
+                for coordinate in coordinate_pair:
+                    new_coordinate = Coordinates(plot = updated_plot,latitude = coordinate[0], longitude = coordinate[1])
+                    new_coordinate.save()
             return HttpResponse("Plot Updated") 
         except:
             return HttpResponse("Plot update NOT successful")

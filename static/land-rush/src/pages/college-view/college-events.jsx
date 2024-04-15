@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import ReactDOM from 'react-dom';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import './style.css';
@@ -22,7 +21,7 @@ const EventDetailsPopup = ({ event, onSubmit, onDelete, plots }) => {
   };
 
   return (
-    <div className="popup-content">
+    <div className="event-details-popup">
       <h1>Event Details</h1>
       <div>
         <h2>{event ? event.name : 'New Event'}</h2>
@@ -75,7 +74,6 @@ const formatTimestamp = (timestamp) => {
 const CollegeEvents = () => {
   const [events, setEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
-  const [popupWindow, setPopupWindow] = useState(null);
   const [plots, setPlots] = useState([]);
 
   useEffect(() => {
@@ -114,14 +112,10 @@ const CollegeEvents = () => {
 
   const handleEventClick = (event) => {
     setSelectedEvent(event);
-    const newPopupWindow = window.open('', '_blank', 'width=600,height=400');
-    setPopupWindow(newPopupWindow);
   };
 
   const handleCreateNewEvent = () => {
     setSelectedEvent(null); // Deselect any previously selected event
-    const newPopupWindow = window.open('', '_blank', 'width=600,height=400');
-    setPopupWindow(newPopupWindow);
   };
 
   const handleFormSubmit = (formData) => {
@@ -164,26 +158,16 @@ const CollegeEvents = () => {
         console.error('Error deleting event:', error);
       });
     }
-};
-
-
-  useEffect(() => {
-    if (popupWindow) {
-      ReactDOM.render(
-        <EventDetailsPopup event={selectedEvent} onSubmit={handleFormSubmit} onDelete={handleDeleteEvent} plots={plots} />,
-        popupWindow.document.body
-      );
-    }
-  }, [popupWindow, selectedEvent, plots]);
+  };
 
   return (
-    <div>
-      <div className="college-events-list">
+    <div className="college-events-container">
+      <div className="college-events-sidebar">
         <div className="event-bar-create-new" onClick={handleCreateNewEvent}>
           <span className="event-bar-create-new-name">Create New Event</span>
         </div>
         {events.map((event) => (
-          <div key={event.id} className="event-bar" onClick={() => handleEventClick(event)}>
+          <div key={event.id} className={`event-bar ${selectedEvent && selectedEvent.id === event.id ? 'selected' : ''}`} onClick={() => handleEventClick(event)}>
             <span className="event-bar-name">{event.name}</span>
             <div className="event-bar-details">
               <span className="event-bar-plot">
@@ -193,6 +177,11 @@ const CollegeEvents = () => {
             </div>
           </div>
         ))}
+      </div>
+      <div className="college-events-details">
+        {selectedEvent && (
+          <EventDetailsPopup event={selectedEvent} onSubmit={handleFormSubmit} onDelete={handleDeleteEvent} plots={plots} />
+        )}
       </div>
     </div>
   );

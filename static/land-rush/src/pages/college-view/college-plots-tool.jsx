@@ -12,14 +12,16 @@ function PlotSelect({ plotID }) {
 
   useEffect(() => {
     const token = Cookies.get('token');
-    if (token) {
+    if (token && plotID !== null && plotID !== 0) {
       axios.get('http://127.0.0.1:8000/show/coordinates', {
+        params: {
+          plot_id: plotID
+        },
         headers: {
           Authorization: `Token ${token}`
         }
       })
       .then(response => {
-
         setCoordinates(response.data);
         console.log('Coordinates:', response.data);
       })
@@ -37,7 +39,6 @@ function PlotSelect({ plotID }) {
     );
   };
 
-  //lets load in default coordinates for orgs, and unis and zoom
   const lat = 30.6187;
   const lng = -96.3365;
 
@@ -48,6 +49,7 @@ function PlotSelect({ plotID }) {
         lat={lat}
         lng={lng}
         coordinates={coordinates}
+        plotID={plotID}
         />
       </Wrapper>
     </div>
@@ -56,9 +58,8 @@ function PlotSelect({ plotID }) {
 
 function Tool({ plotID }) {
   return (
-    <div className="popup-content">
-      <h1>Plot Selection Tool</h1>
-      <div className="box">
+    <div className="popup-content" style={{ height: '100%', width: '100%', display: 'flex', flexDirection: 'column' }}>
+      <div className="box" style={{ height: '100%', width: '100%' }}>
         <PlotSelect plotID={plotID} />
       </div>
     </div>

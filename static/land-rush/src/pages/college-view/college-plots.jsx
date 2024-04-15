@@ -31,7 +31,9 @@ const CollegePlots = () => {
   };
 
   const handleCreateNewPlot = () => {
-    setSelectedPlot(0);
+    if (selectedPlot === null) {
+      setSelectedPlot(0);
+    }
   };
 
   const filteredPlots = plots.filter(plot =>
@@ -67,14 +69,18 @@ const CollegePlots = () => {
         </div>
       </div>
       <div className="college-plots-content">
-        {selectedPlot !== null ? (
-          <Tool plotID={selectedPlot} />
-        ) : (
-          <div className="placeholder">Select or create a plot</div>
-        )}
-      </div>
+      {selectedPlot !== null && selectedPlot === 0 && (
+        <Tool plotID={selectedPlot} />
+      )}
+      {selectedPlot === null && (
+        <div className="placeholder">Select or create a plot</div>
+      )}
+      {selectedPlot > 0 && (
+        <Tool plotID={selectedPlot} />
+      )}
     </div>
-  );
+  </div>
+);
 };
 
 export default CollegePlots;
