@@ -120,7 +120,10 @@ class Role(models.Model):
         verbose_name_plural = "Roles"
 
     def __str__(self):
-        return self.user.email + ' is admin of ' + self.organization.name
+        if(self.is_admin):
+            return self.user.email + ' is admin of ' + self.organization.name
+        else:
+            return self.user.email + ' is member of ' + self.organization.name
     
 
     
@@ -158,7 +161,7 @@ class Event(models.Model):
     """
     id = models.IntegerField(primary_key=True)
     university = models.ForeignKey(University, related_name='event', on_delete=models.CASCADE)
-    created = models.DateTimeField(auto_now_add=True)
+    created = models.DateTimeField(default=timezone.now)
     name = models.CharField(max_length = 90, default=None)
     plot = models.ForeignKey(Plot, related_name='event_plot', on_delete=models.CASCADE)
     timestamp = models.DateTimeField(default=timezone.now)
@@ -210,7 +213,9 @@ class StudentRegisteredEvent(models.Model):
     organization = models.ForeignKey(Organization, related_name = 'registered_member_org', on_delete=models.CASCADE)
     member = models.ForeignKey(User, related_name= 'registered_member', on_delete=models.CASCADE)
     event = models.ForeignKey(Event, related_name= 'registered_member_event', on_delete=models.CASCADE)
-    date_time_registered = models.DateTimeField(auto_now_add=True)
+    date_time_registered = models.DateTimeField(default=timezone.now)
 
     
+    def __str__(self):
+        return self.member.name + " attending " + self.event.name + " through " + self.organization.name
 

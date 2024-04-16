@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.contrib.auth import authenticate
 from django.core.serializers import serialize
 from rest_framework.authtoken.views import ObtainAuthToken
@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
-from .models import User, University, PendingCreateOrg, PendingJoinOrg, Role, Organization,Event, OrgRegisteredEvent, Coordinates, Plot
+from .models import User, University, PendingCreateOrg, PendingJoinOrg, Role, Organization,Event, OrgRegisteredEvent, Coordinates, Plot, StudentRegisteredEvent
 from .permissions import IsStudent, IsUniversity, IsOrgAdmin
 import json
 from rest_framework.renderers import JSONRenderer
@@ -21,25 +21,36 @@ import datetime
 def home(request):
     return HttpResponse("Hello, world. You're at the landrush app home.")
 
+
 class StudentRegister(APIView):
-    def get(self,request):
-        req_email = request.GET["email"]
-        req_password = request.GET["password"]
-        first_name = request.GET["first_name"]
-        last_name = request.GET["last_name"]
-        university_name = request.GET["university_name"]
-        university = University.objects.get(name = university_name)
+    def post(self, request):
         try:
-            user = User.objects.get(email=req_email)
-            return HttpResponse("User already exists")
-        except:
+            req_name = request.data.get("fullName")
+            req_email = request.data.get("email")
+            req_password = request.data.get("password")
+            university_name = request.data.get("university")  # Adjust the key to match frontend
+            university = University.objects.get(name = university_name)
+
+            if not (req_email and req_password and university_name and req_name):
+                return Response("Email, password, and university name are required.", status=status.HTTP_400_BAD_REQUEST)
+
+            # Check if the university already exists
+            if User.objects.filter(email = req_email).exists():
+                return Response("Student already exists", status=status.HTTP_400_BAD_REQUEST)
+
+            # Create a new user
             user = User.objects.create_user(req_email,req_password)
             new_user = User.objects.get(email = req_email)
             new_user.university = university
-            new_user.first_name = first_name
-            new_user.last_name = last_name
+            new_user.name = req_name
             new_user.save()
-            return HttpResponse("User created")
+
+            return Response("Student registered successfully", status=status.HTTP_201_CREATED)
+        
+        except Exception as e:
+            return Response(str(e), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+
 
 
 class UniversityRegister(APIView):
@@ -55,18 +66,18 @@ class UniversityRegister(APIView):
             # Check if the university already exists
             if University.objects.filter(name=university_name).exists():
                 return Response("University already exists", status=status.HTTP_400_BAD_REQUEST)
-            print("before user")
-
-            # Create a new user with is_university set to True
-            user = User(name=university_name, email=req_email, password=req_password,is_university=True)
             
-            user.save()
             # Create a new university
-            print("before uni")
-            uni = University(name=university_name)
-            print("after uni")
+            uni = University(name = university_name)
             uni.save()
-            print("uni saved")
+            new_university = University.objects.get(name = university_name)
+            # Create a new user with is_university set to True
+            user = User.objects.create_user(req_email,req_password)
+            new_user = User.objects.get(email = req_email)
+            new_user.university = new_university
+            new_user.is_university = True
+            new_user.save()
+            
             return Response("University registered successfully", status=status.HTTP_201_CREATED)
         
         except Exception as e:
@@ -78,37 +89,6 @@ class Logout(APIView):
     def get(self,request):
         request.user.auth_token.delete()
         return HttpResponse("Token deleted")
-
-
-class RequestUser(APIView):
-    authentication_classes = [TokenAuthentication]
-    def get(self,request):
-        return HttpResponse(request.user)
-
-class MakeUserUni(APIView):
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsStudent]
-    def get(self,request):
-        university_name = request.GET["university"]
-        user_university = University(name = university_name)
-        user_university.save()
-        new_user_university = University.objects.get(name = university_name)
-        user = User.objects.get(id = request.user.id)
-        user.is_university = True
-        user.university = new_user_university
-        user.save()
-        return HttpResponse("Made user university.")
-
-class ChooseUniversity(APIView):
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsStudent]
-    def get(self,request):
-        university_name = request.GET["university"]
-        selected_uni = University.objects.get(name = university_name)
-        cur_user = User.objects.get(email = request.user.email)
-        cur_user.university = selected_uni
-        cur_user.save()
-        return HttpResponse("Chose University.")
 
 """
 Temporary Commented out.
@@ -131,8 +111,8 @@ class CreateOrg(APIView):
 
 class CreateOrg(APIView):
     authentication_classes = [TokenAuthentication]
-    def get(self,request):
-        org_name = request.GET["organization"]
+    def post(self,request):
+        org_name = request.data.get("organization")
         try:
             check_exists = Organization.objects.get(name = org_name)
             return HttpResponse("Organization already exists")
@@ -144,23 +124,70 @@ class CreateOrg(APIView):
             new_role = Role(user = request.user, organization = new_org, is_admin = True)
             new_role.save()
             return HttpResponse("Organization created!")
-
+        
+class OrganizationList(APIView):
+    authentication_classes = [TokenAuthentication]
+    
+    def get(self, request):
+        university = request.user.university
+        organizations = Organization.objects.filter(university=university)
+        serializer = serializers.OrganizationSerializer(organizations, many=True, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+"""
+join org if we do org member request
 class JoinOrg(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsStudent]
-    def get(self,request):
-        join_requester = request.user
-        organization_name = request.GET["organization"]
-        try:
-            org = Organization.objects.get(name = organization_name)
-        except:
-            return HttpResponse("Org does not exist")
-        if(join_requester.university != org.university):
-            return HttpResponse("You are not a member of this university")
-        org_join = PendingJoinOrg(requester = join_requester, organization = org)
-        org_join.save()
-        return HttpResponse("Join request Created")
 
+    def post(self, request):
+        join_requester = request.user
+        organization_name = request.data.get("organization")
+        if not organization_name:
+            return HttpResponseBadRequest("Organization name not provided in the URL query parameters")
+        
+        try:
+            org = Organization.objects.get(name=organization_name)
+        except Organization.DoesNotExist:
+            return HttpResponse("Organization does not exist")
+
+        if join_requester.university != org.university:
+            return HttpResponse("You are not a member of this organization's university")
+        
+        org_join = PendingJoinOrg(requester=join_requester, organization=org)
+        org_join.save()
+        
+        return HttpResponse("Join request Created")
+"""
+class JoinOrg(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsStudent]
+
+    def post(self, request):
+        join_requester = request.user
+        organization_name = request.data.get("organization")
+        if not organization_name:
+            return HttpResponseBadRequest("Organization name not provided in the URL query parameters")
+
+        try:
+            org = Organization.objects.get(name=organization_name)
+        except Organization.DoesNotExist:
+            return HttpResponse("Organization does not exist")
+
+        if join_requester.university != org.university:
+            return HttpResponse("You are not a member of this organization's university")
+
+        # Check if the user is already a member of the organization
+        if Role.objects.filter(user=join_requester, organization=org).exists():
+            return HttpResponse("You are already a member of this organization")
+
+        # Create a regular role for the user in the organization
+        new_role = Role(user=join_requester, organization=org, is_admin=False)
+        new_role.save()
+
+        return HttpResponse("You have been added to the organization as a regular member")
+
+
+#used if we do org pending and accepting
 class OrgPending(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsUniversity]
@@ -189,19 +216,27 @@ class CreateOrgResponse(APIView):
         else:
             return HttpResponse("Org not created")
 
-
-##### Not Yet Tested #######
 class showJoinOrgPending(APIView):
     authentication_classes = [TokenAuthentication]
-    #permission_classes = [IsOrgAdmin]
-    def get(self,request):
+    permission_classes = [IsOrgAdmin]  # You can uncomment this once the permission is implemented
+
+    def get(self, request):
         try:
-            cur_admin_orgs = Role.objects.get(user = request.user,is_admin=True)
-            orgs = Organization.objects.get(name = cur_admin_orgs.organization.name)
-            pending_join = PendingJoinOrg.objects.get(organization = orgs)
-            return HttpResponse(pending_join)
+            # Assuming the user is an admin for multiple organizations
+            print("-------------------------here-1---------------------------")
+            admin_roles = Role.objects.filter(user=request.user, is_admin=True)
+            print("--------------------------------here0----------------------")
+            organizations = [role.organization for role in admin_roles]
+            print("-----------------------here--------------------------")
+            pending_join_requests = []
+            for org in organizations:
+                pending_join_requests.extend(PendingJoinOrg.objects.filter(organization=org))
+            print("--------------------here2----------------------")
+            serializer = serializers.PendingJoinOrgSerializer(pending_join_requests, many=True)
+            print("---------------------------------here3-----------------------------------")
+            return JsonResponse(serializer.data, status=200, safe=False)
         except Exception as error:
-            return HttpResponse(error)
+            return JsonResponse({"error": str(error)}, status=500)
 
 class RegisterForEvent(APIView):
     authentication_classes = [TokenAuthentication]
@@ -229,6 +264,8 @@ class JoinOrgResponse(APIView):
         else:
             return HttpResponse("Rejected")
 
+
+
 # *********show resource views******** #
 #show profile info:
 class ShowProfile(APIView):
@@ -237,18 +274,15 @@ class ShowProfile(APIView):
         profile_serialized = serializers.UserSerializer(request.user)
         return Response(profile_serialized.data)
 
-class ShowUserOrganizations(APIView):
+class UserOrganizations(APIView):
     authentication_classes = [TokenAuthentication]
-    def get(self,request):
-        body_dic = json.loads(request.body)
-        print(body_dic)
-        print(body_dic["Wyatt"])
-        user_roles = Role.objects.filter(user = request.user)
-        orgs = []
-        for role in user_roles:
-            org_serialized = serializers.OrganizationSerializer(role.organization)
-            orgs.append(org_serialized.data)
-        return Response(orgs)
+    
+    def get(self, request):
+        user = request.user
+        user_roles = Role.objects.filter(user=user)
+        user_organizations = [role.organization for role in user_roles]
+        serializer = serializers.OrganizationSerializer(user_organizations, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
         
 class ShowOrganization(APIView):
     authentication_classes = [TokenAuthentication]
@@ -260,31 +294,86 @@ class ShowOrganization(APIView):
 
 ### ********** Crticial Views ************* ###
 class Login(ObtainAuthToken):
-    def post(self,request,*args,**kwargs):
-        print(request)
+    def post(self, request, *args, **kwargs):
         email = request.data.get("email")
         password = request.data.get("password")
-        user = authenticate(email=email,password = password)
-        print(request.user)
+        user = authenticate(email=email, password=password)
+
         if user is not None:
-            token, created = Token.objects.get_or_create(user=user)
-            return Response({
-                'token': token.key,
-            })
+            # Check if the user is a university
+            if user.is_university:
+                # Generate or retrieve token
+                token, created = Token.objects.get_or_create(user=user)
+
+                # Return token along with user role
+                return Response({
+                    'token': token.key,
+                    'user_role': 'university'
+                })
+            else:
+                # Return token along with user role as student
+                token, created = Token.objects.get_or_create(user=user)
+
+                return Response({
+                    'token': token.key,
+                    'user_role': 'student'
+                })
         else:
-            return HttpResponse("Not authenticated")
+            return HttpResponse("Invalid credentials.")
+
+
+class CreateOrg(APIView):
+    authentication_classes = [TokenAuthentication]
+    def post(self,request):
+        org_name = request.data.get("organization")
+        try:
+            check_exists = Organization.objects.get(name = org_name)
+            return HttpResponse("Organization already exists")
+        except:
+            university = request.user.university
+            new_org = Organization(name = org_name, university = university)
+            new_org.save()
+            new_org = Organization.objects.get(name = org_name)
+            new_role = Role(user = request.user, organization = new_org, is_admin = True)
+            new_role.save()
+            return HttpResponse("Organization created!")
+
+class JoinOrg(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsStudent]
+    def post(self,request):
+        join_requester = request.user
+        organization_id = request.data.get("organization_id")
+
+        try:
+            org = Organization.objects.get(id = organization_id)
+        except:
+            return HttpResponse("Org does not exist")
+
+        if(join_requester.university != org.university):
+            return HttpResponse("You are not a member of this university")
+
+        try:
+            check_role = Role.objects.get(organization = org, user = request.user)
+            return HttpResponse("You are already a member")
+        except:
+            pass
+
+        new_member = Role(organization = org, user = join_requester, is_admin = False)
+        new_member.save()
+        return HttpResponse("Joined organization")
 
 class CreateEvent(APIView):
     authentication_classes = [TokenAuthentication]
     def post(self,request):
         print(request.data)
         event_name = request.data.get("event_name")
-        #event_date_string = request.data.get("event_date")
-        #event_date = datetime.datetime.strptime(event_date_string, "%Y-%m-%d")
+        event_date_string = request.data.get("event_date")
+        event_date = datetime.datetime.strptime(event_date_string, "%Y-%m-%d")
         event_university = request.user.university
         event_plot_id = request.data.get("plot_id")
         event_plot = Plot.objects.get(id = event_plot_id)
-        new_event = Event(name = event_name, university = event_university, plot = event_plot)
+        new_event = Event(name = event_name, university = event_university, plot = event_plot, timestamp = event_date)
         new_event.save()
         return HttpResponse("Event Created")
     
@@ -299,7 +388,7 @@ class CreateEvent(APIView):
             event_plot = Plot.objects.get(id = event_plot_id)
             updated_event = Event.objects.get(id = event_id)
             updated_event.name = event_name
-            updated_event.date = event_date
+            updated_event.timestamp = event_date
             updated_event.university = event_university
             updated_event.plot = event_plot
             updated_event.save()
@@ -401,4 +490,38 @@ class ShowCoordinates(APIView):
         coordinates_json = serializers.CoordinateSerializer(coordinates, many = True)
         return Response(coordinates_json.data)
     
+class StudentRegisterEvent(APIView):
+    authentication_classes = [TokenAuthentication]
+    def post(self,request):
+        event_id = request.data.get("event_id")
+        organization_id = request.data.get("organization_id")
+        org = Organization.objects.get(id = organization_id)
+        try:
+            check_membership = Role.objects.get(organization = org, user = request.user)
+        except:
+            return HttpResponse("You are not a member of this organization.")
+        member = request.user
+        event = Event.objects.get(id = event_id)
+        new_student_event = StudentRegisteredEvent(event = event, member = member, organization = org)
+        new_student_event.save()
+        return HttpResponse("Registered for event")
+
+class AverageRegistrationTime(APIView):
+    authentication_classes = [TokenAuthentication]
+    def get(self,request):
+        event_id = request.GET["event_id"]
+        event = Event.objects.get(id = event_id)
+        orgs_attending = {}
+        registered_students = StudentRegisteredEvent.objects.filter(event = event)
+        for registered_student in registered_students: 
+            org_id = registered_student.organization.id
+            time_registered = registered_student.date_time_registered
+            difference = time_registered - event.created
+            if(org_id in orgs_attending):
+                orgs_attending[org_id] = (orgs_attending[org_id][0] + 1, orgs_attending[org_id][1] + difference.total_seconds() / 60)
+            else:
+                orgs_attending[org_id] = (1,difference.total_seconds() / 60)
+        return Response(orgs_attending)
+
+
 

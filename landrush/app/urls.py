@@ -25,25 +25,25 @@ urlpatterns = [
     path('logout',views.Logout.as_view()), #Done in frontend
     path('register/student',views.StudentRegister.as_view()), #Done in frontend
     path('register/university',views.UniversityRegister.as_view()),
-    path('print/user',views.RequestUser.as_view()), #Nott needed
-    path('make/uni',views.MakeUserUni.as_view()), #Needs to go in University register
-    path('choose/uni',views.ChooseUniversity.as_view()),#Needs go to Student Register 
     path('create/org/request',views.CreateOrg.as_view()), #needs to be created in frontend
+    path('show/orgs',views.OrganizationList.as_view()),
     path('join/org/request',views.JoinOrg.as_view()), #Done in frontend
-    path('create/org/response',views.CreateOrgResponse.as_view()), #Needs to be done in frontend
+    #path('create/org/response',views.CreateOrgResponse.as_view()), #Needs to be done in frontend
    # path('create/org/show',views.showCreateOrgPending.as_view()), #Needs to be done in frontend
     path('join/org/response',views.JoinOrgResponse.as_view()), #Needs to be done in frontend
     path('create/event',views.CreateEvent.as_view()), #Needs to be done in frontend
     path('delete/event',views.DeleteEvent.as_view()),
     path('event/org/register',views.RegisterForEvent.as_view()), #Needs to be done in frontend
     path('show/profile',views.ShowProfile.as_view()), #Done in frontend
-    path('show/user/orgs',views.ShowUserOrganizations.as_view()), #Done in frontend
+    path('show/user/orgs',views.UserOrganizations.as_view()), #Done in frontend
     path('show/event',views.ShowEvent.as_view()), #Done in frontend
-    path('show/join/org/',views.showJoinOrgPending.as_view()), #Done in the frontend
+    path('show/join/org',views.ShowJoinOrgPending.as_view()), #Done in the frontend
     path('create/plot',views.CreatePlot.as_view()),
     path('show/plots',views.ShowPlots.as_view()),
     path('show/coordinates', views.ShowCoordinates.as_view()),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
     path('update/plot', views.CreatePlot.as_view()),
+    path('event/student/register',views.StudentRegisterEvent.as_view()),
+    path('show/registered/students',views.AverageRegistrationTime.as_view()),
 ]
