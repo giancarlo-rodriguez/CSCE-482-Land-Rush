@@ -1,11 +1,10 @@
-import React, { useEffect, useRef, useState } from 'react';
-import html2canvas from 'html2canvas';
 import axios from 'axios';
 import Cookies from 'js-cookie';
+import React, { useEffect, useRef, useState } from 'react';
 import './style.css';
 
 const token = Cookies.get('token');
-const SimplePolygonMap = ({ apiKey, lat, lng, coordinates, plotID }) => {
+const SimplePolygonMap = ({ apiKey, lat, lng, coordinates, plotID, plotOGName }) => {
   const mapRef = useRef(null);
   const [map, setMap] = useState(null);
   const [polygon, setPolygon] = useState(null);
@@ -16,7 +15,7 @@ const SimplePolygonMap = ({ apiKey, lat, lng, coordinates, plotID }) => {
   const [currentCoordinatePoints, setCurrentCoordinatePoints] = useState(0);
   const [modifyModeActive, setModifyModeActive] = useState(false);
   const [drawModeActive, setDrawModeActive] = useState(false);
-  const [plotName, setPlotName] = useState('');
+  const [plotName, setPlotName] = useState(plotOGName);
   const [feedbackMessage, setFeedbackMessage] = useState('');
   const [showFeedback, setShowFeedback] = useState(false);
   const [fetchedCoordinates, setFetchedCoordinates] = useState([]);
@@ -299,6 +298,7 @@ const SimplePolygonMap = ({ apiKey, lat, lng, coordinates, plotID }) => {
 return (
   <div style={{ height: '100%', width: '100%', display: 'flex', flexDirection: 'column' }}>
     <div style={{ height: '80%', width: '100%' }} ref={mapRef}></div>
+    <div style={{ marginTop: '10px', width: '100%', textAlign: 'center' }}>Editing Plot: {plotID === 0 ? "New Plot" : plotOGName}</div>
     <div style={{ marginTop: '10px', width: '100%', textAlign: 'center' }}>
       <button onClick={handleAddPoint} disabled={drawModeActive || modifyModeActive}>Add Points</button>
       <button onClick={handleModifyPlot} disabled={!selectedPlot}>Modify Shape</button>

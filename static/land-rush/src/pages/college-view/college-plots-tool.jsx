@@ -1,12 +1,12 @@
-import React, {useEffect, useState } from 'react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
+import React, { useEffect, useState } from 'react';
 
 // Map API
-import { Wrapper, Status } from "@googlemaps/react-wrapper";
+import { Status, Wrapper } from "@googlemaps/react-wrapper";
 import SimplePolygonMap from './SimplePolygonMap';
 
-function PlotSelect({ plotID }) {
+function PlotSelect({ plotID, plotOGName }) {
 
   const [coordinates, setCoordinates] = useState([]);
 
@@ -50,17 +50,18 @@ function PlotSelect({ plotID }) {
         lng={lng}
         coordinates={coordinates}
         plotID={plotID}
+        plotOGName={plotOGName}
         />
       </Wrapper>
     </div>
   );
   }
 
-function Tool({ plotID }) {
+function Tool({ plotID, plotOGName }) {
   return (
     <div className="popup-content" style={{ height: '100%', width: '100%', display: 'flex', flexDirection: 'column' }}>
       <div className="box" style={{ height: '100%', width: '100%' }}>
-        <PlotSelect plotID={plotID} />
+        <PlotSelect plotID={plotID} plotOGName={plotOGName}/>
       </div>
     </div>
   );

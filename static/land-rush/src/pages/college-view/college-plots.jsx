@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
+import React, { useEffect, useState } from 'react';
 import Tool from './college-plots-tool';
 import './style.css';
 
@@ -39,12 +39,15 @@ const CollegePlots = () => {
   const filteredPlots = plots.filter(plot =>
     plot.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+  
+  const selectedPlotObject = plots.find(plot => plot.id === selectedPlot);
+
 
   return (
     <div className="college-plots-container">
       <div className="college-plots-sidebar">
         <div
-          className={`plot-bar plot-bar-create-new ${selectedPlot === 0 ? 'clicked' : ''}`}
+          className={`plot-bar-create-new ${selectedPlot === 0 ? 'clicked' : ''}`}
           onClick={handleCreateNewPlot}
         >
           <span className="plot-bar-name">Create New Plot</span>
@@ -70,13 +73,13 @@ const CollegePlots = () => {
       </div>
       <div className="college-plots-content">
       {selectedPlot !== null && selectedPlot === 0 && (
-        <Tool plotID={selectedPlot} />
+        <Tool plotID={selectedPlot} plotOGName='New Plot'/>
       )}
       {selectedPlot === null && (
         <div className="placeholder">Select or create a plot</div>
       )}
       {selectedPlot > 0 && (
-        <Tool plotID={selectedPlot} />
+        <Tool plotID={selectedPlot} plotOGName={selectedPlotObject.name} />
       )}
     </div>
   </div>

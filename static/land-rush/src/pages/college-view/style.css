@@ -1,24 +1,5 @@
 /* college-events */
-
-/* style.css */
-
-.search-bar {
-    width: calc(90%);
-    padding: 10px;
-    margin-top: 10px;
-    border: 2px solid;
-    border-radius: 10px;
-    font-size: 16px;
-    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-  }
   
-  .search-bar:focus {
-    outline: none;
-    border-color: maroon;
-    box-shadow: 0px 0px 10px maroon;
-  }
-  
-  /* College events styles */
   .college-events-container {
     display: flex;
     width: 100%;
@@ -35,69 +16,103 @@
     padding: 20px;
   }
   
-  .event-bar-create-new {
+  .event-bar {
     display: flex;
     align-items: center;
-    width: 100%;
+    width: calc(90%);
     margin-bottom: 10px;
-    justify-content: center;
-    border: 2px dashed #007bff; /* Changed color */
+    border: 1px solid #ccc;
     border-radius: 10px;
     padding: 10px;
     transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+.event-bar:hover {
+    transform: translateY(-5px);
+    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.event-bar:hover img {
+    filter: none;
+}
+
+.event-bar-thumbnail {
+    width: 96px;
+    height: 96px;
+    border-radius: 8px;
+    margin-right: 10px;
+}
+
+.event-bar-name {
+    font-weight: bold;
+    color: #333;
+}
+
+.event-bar-details {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.event-bar.clicked {
+    transform: translateY(2px);
+    box-shadow: none;
+    border: 2px solid #333;
+    background-color: #f0f0f0;
+    outline: none;
+    border-color: maroon;
+    box-shadow: 0px 0px 1px maroon;
+}
+
+.event-bar-create-new {
+    display: flex;
+    align-items: center;
+    width: calc(90%);
+    margin-bottom: 10px;
+    justify-content: center;
+    border: 2px dashed maroon;
+    border-radius: 10px;
+    padding: 10px;
+    transition: transform 0.1s ease-in-out, box-shadow 0.1s ease-in-out;
     cursor: pointer;
-  }
-  
+}
+
   .event-bar-create-new:hover {
     transform: translateY(-5px);
     box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.3);
-  }
+}
   
   .event-bar-create-new-name {
     display: block;
     text-align: center;
     font-weight: bold;
-    color: #007bff; /* Change text color */
-  }
-  
-  .event-bar {
-    display: flex;
-    align-items: center;
-    width: 100%;
-    margin-bottom: 20px;
-    border: 1px solid #ccc;
+}
+
+.event-bar-create-new.clicked {
+    transform: translateY(2px);
+    box-shadow: none;
+    border: 2px solid #333;
+    background-color: #f0f0f0;
+    outline: none;
+    border-color: maroon;
+    box-shadow: 0px 0px 1px maroon;
+}
+
+.event-search-bar {
+    width: calc(90%);
+    padding: 10px;
+    margin-top: 10px;
+    border: 2px solid;
     border-radius: 10px;
-    padding: 15px;
+    font-size: 16px;
     transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-    cursor: pointer;
   }
   
-  .event-bar.selected {
-    background-color: #f0f0f0; /* Highlight selected event */
-  }
-  
-  .event-bar-name {
-    font-weight: bold;
-    color: #333;
-    margin-right: 20px;
-  }
-  
-  .event-bar-details {
-    flex-grow: 1;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-  }
-  
-  .event-bar-plot,
-  .event-bar-timestamp {
-    margin-left: 20px;
-  }
-  
-  .event-bar:hover {
-    transform: translateY(-5px);
-    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.3);
+  .event-search-bar:focus {
+    outline: none;
+    border-color: maroon;
+    box-shadow: 0px 0px 10px maroon;
   }
   
 
