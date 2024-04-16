@@ -89,6 +89,12 @@ class Logout(APIView):
     def get(self,request):
         request.user.auth_token.delete()
         return HttpResponse("Token deleted")
+    
+
+class ChooseUniversity(APIView):
+    def get(self, request):
+        university_names = University.objects.values_list('name', flat=True)
+        return Response(university_names)
 
 """
 Temporary Commented out.

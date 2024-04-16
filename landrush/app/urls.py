@@ -28,6 +28,7 @@ urlpatterns = [
     path('create/org/request',views.CreateOrg.as_view()), #needs to be created in frontend
     path('show/orgs',views.OrganizationList.as_view()),
     path('join/org/request',views.JoinOrg.as_view()), #Done in frontend
+    path('choose/uni',views.ChooseUniversity.as_view()),
     #path('create/org/response',views.CreateOrgResponse.as_view()), #Needs to be done in frontend
    # path('create/org/show',views.showCreateOrgPending.as_view()), #Needs to be done in frontend
     path('join/org/response',views.JoinOrgResponse.as_view()), #Needs to be done in frontend
@@ -37,7 +38,7 @@ urlpatterns = [
     path('show/profile',views.ShowProfile.as_view()), #Done in frontend
     path('show/user/orgs',views.UserOrganizations.as_view()), #Done in frontend
     path('show/event',views.ShowEvent.as_view()), #Done in frontend
-    path('show/join/org',views.ShowJoinOrgPending.as_view()), #Done in the frontend
+    path('show/join/org',views.showJoinOrgPending.as_view()), #Done in the frontend
     path('create/plot',views.CreatePlot.as_view()),
     path('show/plots',views.ShowPlots.as_view()),
     path('show/coordinates', views.ShowCoordinates.as_view()),
