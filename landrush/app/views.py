@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.contrib.auth import authenticate
 from django.core.serializers import serialize
 from rest_framework.authtoken.views import ObtainAuthToken
@@ -109,27 +109,85 @@ class CreateOrg(APIView):
             return HttpResponse("Organization create request submitted")
 """
 
-
-""" This view creates a pending join org request. For now we will assume the request is accepted right away. 
-
+class CreateOrg(APIView):
+    authentication_classes = [TokenAuthentication]
+    def post(self,request):
+        org_name = request.data.get("organization")
+        try:
+            check_exists = Organization.objects.get(name = org_name)
+            return HttpResponse("Organization already exists")
+        except:
+            university = request.user.university
+            new_org = Organization(name = org_name, university = university)
+            new_org.save()
+            new_org = Organization.objects.get(name = org_name)
+            new_role = Role(user = request.user, organization = new_org, is_admin = True)
+            new_role.save()
+            return HttpResponse("Organization created!")
+        
+class OrganizationList(APIView):
+    authentication_classes = [TokenAuthentication]
+    
+    def get(self, request):
+        university = request.user.university
+        organizations = Organization.objects.filter(university=university)
+        serializer = serializers.OrganizationSerializer(organizations, many=True, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+"""
+join org if we do org member request
 class JoinOrg(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsStudent]
-    def get(self,request):
+
+    def post(self, request):
         join_requester = request.user
-        organization_name = request.GET["organization"]
+        organization_name = request.data.get("organization")
+        if not organization_name:
+            return HttpResponseBadRequest("Organization name not provided in the URL query parameters")
+        
         try:
-            org = Organization.objects.get(name = organization_name)
-        except:
-            return HttpResponse("Org does not exist")
-        if(join_requester.university != org.university):
-            return HttpResponse("You are not a member of this university")
-        org_join = PendingJoinOrg(requester = join_requester, organization = org)
+            org = Organization.objects.get(name=organization_name)
+        except Organization.DoesNotExist:
+            return HttpResponse("Organization does not exist")
+
+        if join_requester.university != org.university:
+            return HttpResponse("You are not a member of this organization's university")
+        
+        org_join = PendingJoinOrg(requester=join_requester, organization=org)
         org_join.save()
+        
         return HttpResponse("Join request Created")
 """
+class JoinOrg(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsStudent]
+
+    def post(self, request):
+        join_requester = request.user
+        organization_name = request.data.get("organization")
+        if not organization_name:
+            return HttpResponseBadRequest("Organization name not provided in the URL query parameters")
+
+        try:
+            org = Organization.objects.get(name=organization_name)
+        except Organization.DoesNotExist:
+            return HttpResponse("Organization does not exist")
+
+        if join_requester.university != org.university:
+            return HttpResponse("You are not a member of this organization's university")
+
+        # Check if the user is already a member of the organization
+        if Role.objects.filter(user=join_requester, organization=org).exists():
+            return HttpResponse("You are already a member of this organization")
+
+        # Create a regular role for the user in the organization
+        new_role = Role(user=join_requester, organization=org, is_admin=False)
+        new_role.save()
+
+        return HttpResponse("You have been added to the organization as a regular member")
 
 
+#used if we do org pending and accepting
 class OrgPending(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsUniversity]
@@ -160,15 +218,25 @@ class CreateOrgResponse(APIView):
 
 class showJoinOrgPending(APIView):
     authentication_classes = [TokenAuthentication]
-    #permission_classes = [IsOrgAdmin]
-    def get(self,request):
+    permission_classes = [IsOrgAdmin]  # You can uncomment this once the permission is implemented
+
+    def get(self, request):
         try:
-            cur_admin_orgs = Role.objects.get(user = request.user,is_admin=True)
-            orgs = Organization.objects.get(name = cur_admin_orgs.organization.name)
-            pending_join = PendingJoinOrg.objects.get(organization = orgs)
-            return HttpResponse(pending_join)
+            # Assuming the user is an admin for multiple organizations
+            print("-------------------------here-1---------------------------")
+            admin_roles = Role.objects.filter(user=request.user, is_admin=True)
+            print("--------------------------------here0----------------------")
+            organizations = [role.organization for role in admin_roles]
+            print("-----------------------here--------------------------")
+            pending_join_requests = []
+            for org in organizations:
+                pending_join_requests.extend(PendingJoinOrg.objects.filter(organization=org))
+            print("--------------------here2----------------------")
+            serializer = serializers.PendingJoinOrgSerializer(pending_join_requests, many=True)
+            print("---------------------------------here3-----------------------------------")
+            return JsonResponse(serializer.data, status=200, safe=False)
         except Exception as error:
-            return HttpResponse(error)
+            return JsonResponse({"error": str(error)}, status=500)
 
 class RegisterForEvent(APIView):
     authentication_classes = [TokenAuthentication]
@@ -206,18 +274,15 @@ class ShowProfile(APIView):
         profile_serialized = serializers.UserSerializer(request.user)
         return Response(profile_serialized.data)
 
-class ShowUserOrganizations(APIView):
+class UserOrganizations(APIView):
     authentication_classes = [TokenAuthentication]
-    def get(self,request):
-        body_dic = json.loads(request.body)
-        print(body_dic)
-        print(body_dic["Wyatt"])
-        user_roles = Role.objects.filter(user = request.user)
-        orgs = []
-        for role in user_roles:
-            org_serialized = serializers.OrganizationSerializer(role.organization)
-            orgs.append(org_serialized.data)
-        return Response(orgs)
+    
+    def get(self, request):
+        user = request.user
+        user_roles = Role.objects.filter(user=user)
+        user_organizations = [role.organization for role in user_roles]
+        serializer = serializers.OrganizationSerializer(user_organizations, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
         
 class ShowOrganization(APIView):
     authentication_classes = [TokenAuthentication]
@@ -383,9 +448,10 @@ class CreatePlot(APIView):
             updated_plot.save()
             updated_plot = Plot.objects.get(id = plot_id)
             delete_coordinate = Coordinates.objects.filter(plot = updated_plot).delete()
-            for coordinate in coordinates:
-                new_coordinate = Coordinates(plot = updated_plot,latitude = coordinate[0], longitude = coordinate[1])
-                new_coordinate.save()
+            for coordinate_pair in coordinates:
+                for coordinate in coordinate_pair:
+                    new_coordinate = Coordinates(plot = updated_plot,latitude = coordinate[0], longitude = coordinate[1])
+                    new_coordinate.save()
             return HttpResponse("Plot Updated") 
         except:
             return HttpResponse("Plot update NOT successful")

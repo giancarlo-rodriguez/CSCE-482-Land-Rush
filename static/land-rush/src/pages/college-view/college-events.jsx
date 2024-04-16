@@ -1,84 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import ReactDOM from 'react-dom';
 import axios from 'axios';
 import Cookies from 'js-cookie';
+import React, { useEffect, useState } from 'react';
+import EventDetailsPopup from './college-events-popup';
 import './style.css';
-
-const EventDetailsPopup = ({ event, onSubmit, onDelete, plots }) => {
-  const [eventName, setEventName] = useState(event ? event.name : '');
-  const [plotId, setPlotId] = useState(event ? event.plot.id : '');
-  const [timestamp, setTimestamp] = useState(event ? event.timestamp : '');
-
-  const handlePlotChange = (e) => {
-    setPlotId(e.target.value);
-  };
-
-  const handleSubmit = () => {
-    onSubmit({ event_name: eventName, plot_id: plotId, timestamp: timestamp });
-  };
-
-  const handleDelete = () => {
-    onDelete(event.id);
-  };
-
-  return (
-    <div className="popup-content">
-      <h1>Event Details</h1>
-      <div>
-        <h2>{event ? event.name : 'New Event'}</h2>
-        <p>Plot: {event ? event.plot.name : ''}</p> {/* Display plot name */}
-        <p>Start Time: {event ? formatTimestamp(event.timestamp) : ''}</p> {/* Format timestamp */}
-        <input
-          type="text"
-          value={eventName}
-          onChange={(e) => setEventName(e.target.value)}
-          placeholder="Event Name"
-        />
-        <select value={plotId} onChange={handlePlotChange}>
-          <option value="">Select a Plot</option>
-          {plots.map((plot) => (
-            <option key={plot.id} value={plot.id}>
-              {plot.name}
-            </option>
-          ))}
-        </select>
-        <label htmlFor="timestamp">Timestamp:</label>
-        <input
-          type="datetime-local"
-          id="timestamp"
-          value={timestamp}
-          onChange={(e) => setTimestamp(e.target.value)}
-        />
-        <button onClick={handleSubmit}>Submit</button>
-        {event && (
-          <button onClick={handleDelete} style={{ color: 'red' }}>Delete</button>
-        )}
-      </div>
-    </div>
-  );
-};
-
-// Function to format timestamp
-const formatTimestamp = (timestamp) => {
-  const formattedDate = new Date(timestamp);
-  const formattedDateString = formattedDate.toLocaleString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: 'numeric',
-    minute: 'numeric',
-    hour12: true,
-  });
-  return formattedDateString;
-};
 
 const CollegeEvents = () => {
   const [events, setEvents] = useState([]);
-  const [selectedEvent, setSelectedEvent] = useState(null);
-  const [popupWindow, setPopupWindow] = useState(null);
+  const [selectedEvent, setSelectedEvent] = useState(null); // This state manages the selected event
   const [plots, setPlots] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
+    // Fetch plots when component mounts
     const token = Cookies.get('token');
     if (token) {
       axios.get('http://127.0.0.1:8000/show/plots', {
@@ -96,6 +29,7 @@ const CollegeEvents = () => {
   }, []);
 
   useEffect(() => {
+    // Fetch events when component mounts
     const token = Cookies.get('token');
     if (token) {
       axios.get('http://127.0.0.1:8000/show/event', {
@@ -104,6 +38,7 @@ const CollegeEvents = () => {
         }
       })
       .then(response => {
+        console.log('Events:', response.data);
         setEvents(response.data);
       })
       .catch(error => {
@@ -112,87 +47,64 @@ const CollegeEvents = () => {
     }
   }, []);
 
-  const handleEventClick = (event) => {
-    setSelectedEvent(event);
-    const newPopupWindow = window.open('', '_blank', 'width=600,height=400');
-    setPopupWindow(newPopupWindow);
+  // Function to handle event click
+  const handleEventClick = (eventID) => {
+    setSelectedEvent(eventID);
+    const selectedEventData = events.find(event => event.id === eventID);
+    console.log('Selected Event Info:', selectedEventData);
   };
-
+  
+  // Function to handle creating a new event
   const handleCreateNewEvent = () => {
-    setSelectedEvent(null); // Deselect any previously selected event
-    const newPopupWindow = window.open('', '_blank', 'width=600,height=400');
-    setPopupWindow(newPopupWindow);
-  };
-
-  const handleFormSubmit = (formData) => {
-    const token = Cookies.get('token');
-    if (token) {
-      axios.post('http://127.0.0.1:8000/create/event', {
-        event_name: formData.event_name,
-        plot_id: formData.plot_id
-      }, {
-        headers: {
-          Authorization: `Token ${token}`
-        }
-      })
-      .then(response => {
-        console.log('Event created successfully:', response.data);
-        // Optionally, you can update the events list or perform any other action upon successful creation
-      })
-      .catch(error => {
-        console.error('Error creating event:', error);
-      });
+    if (selectedEvent === null) {
+      setSelectedEvent(0);
     }
   };
 
-  const handleDeleteEvent = (eventId) => {
-    const token = Cookies.get('token');
-    if (token) {
-      axios.delete('http://127.0.0.1:8000/delete/event', {
-        headers: {
-          Authorization: `Token ${token}`
-        },
-        data: {
-          event_id: eventId
-        }
-      })
-      .then(response => {
-        console.log('Event deleted successfully:', response.data);
-        // Optionally, you can update the events list or perform any other action upon successful deletion
-      })
-      .catch(error => {
-        console.error('Error deleting event:', error);
-      });
-    }
-};
-
-
-  useEffect(() => {
-    if (popupWindow) {
-      ReactDOM.render(
-        <EventDetailsPopup event={selectedEvent} onSubmit={handleFormSubmit} onDelete={handleDeleteEvent} plots={plots} />,
-        popupWindow.document.body
-      );
-    }
-  }, [popupWindow, selectedEvent, plots]);
+  // Filter events based on search query
+  const filteredEvents = events.filter((event) =>
+    event.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
-    <div>
-      <div className="college-events-list">
-        <div className="event-bar-create-new" onClick={handleCreateNewEvent}>
-          <span className="event-bar-create-new-name">Create New Event</span>
+    <div className="college-events-container">
+      <div className="college-events-sidebar">
+        {/* Create new event bar */}
+        <div
+            className={`event-bar-create-new ${selectedEvent === 0 ? 'clicked' : ''}`}
+            onClick={handleCreateNewEvent}
+          >
+          <span className="event-bar-name">Create New Event</span>
         </div>
-        {events.map((event) => (
-          <div key={event.id} className="event-bar" onClick={() => handleEventClick(event)}>
-            <span className="event-bar-name">{event.name}</span>
-            <div className="event-bar-details">
-              <span className="event-bar-plot">
-                {plots.find(plot => plot.id === event.plot)?.name || 'Unknown Plot'}
-              </span>
-              <span className="event-bar-timestamp">{formatTimestamp(event.timestamp)}</span>
+        {/* Search bar */}
+        <input
+          type="text"
+          placeholder="Search events..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="event-search-bar"
+        />
+        {/* Event list */}
+        <div className="event-list">
+          {filteredEvents.map((event) => (
+            <div
+              key={event.id} 
+              className={`event-bar ${selectedEvent === event.id ? 'clicked' : ''}`} 
+              onClick={() => handleEventClick(event.id)}
+            >
+              <span className="event-bar-name">{event.name}</span>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
+      </div>
+      {/* Render EventDetailsPopup based on selectedEvent state */}
+      <div className="college-events-details">
+        {selectedEvent !== null && ( // Render EventDetailsPopup only if selectedEvent is not null
+          <EventDetailsPopup eventID={selectedEvent} plots={plots} eventData={filteredEvents.find(event => event.id === selectedEvent)} />
+        )}
+        {selectedEvent === null && (
+          <div className="placeholder">Select or create an event</div>
+        )}
       </div>
     </div>
   );

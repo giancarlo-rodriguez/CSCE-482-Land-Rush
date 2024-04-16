@@ -50,13 +50,32 @@ class UserSerializer(serializers.ModelSerializer):
 
 class OrganizationSerializer(serializers.ModelSerializer):
     university = serializers.SlugRelatedField(
-        read_only = True,
-        slug_field = 'name'
+        read_only=True,
+        slug_field='name'
     )
+    num_people = serializers.SerializerMethodField()
+    user_has_role = serializers.SerializerMethodField()
 
     class Meta:
         model = models.Organization
-        fields = ['id','university','name']
+
+        fields = ['id','university', 'name', 'num_people', 'user_has_role']
+
+    def get_num_people(self, obj):
+        return models.Role.objects.filter(organization=obj).count()
+    
+    def get_user_has_role(self, obj):
+        user = self.context['request'].user
+        role = models.Role.objects.filter(user=user, organization=obj).first()
+        if role:
+            if role.is_admin:
+                return "Admin"
+            else:
+                return "Regular member"
+        else:
+            return "Not a member"
+
+
 
 class RoleSerializer(serializers.ModelSerializer):
     organization = serializers.SlugRelatedField(

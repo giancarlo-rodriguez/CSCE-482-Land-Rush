@@ -36,6 +36,12 @@ import StudentEvents from './pages/student-view/student-events';
 import StudentOrgs from './pages/student-view/student-orgs';
 import StudentInfo from './pages/student-view/student-info';
 
+const getOrganizationIdFromPath = (path) => {
+  // Example path: "/org/123/info"
+  const parts = path.split('/'); // Split path by '/'
+  return parts[2]; // Organization ID is the third part of the path
+};
+
 function NavBar() {
   const location = useLocation();
 
@@ -74,17 +80,20 @@ function NavBar() {
       </>
     );
   } else if (location.pathname.startsWith('/org')) {
-    navLinks = (
-      <>
-        <li><Link to="/org">Organization</Link></li>
-        <li><Link to="/org/events">Upcoming Events</Link></li>
-        <li><Link to="/org/members">Current Members</Link></li>
-        <li><Link to="/org/info">Organization Information</Link></li>
-        <li><Link to="/org/messages">Messages</Link></li>
-        <li><Link to="/student">Return to Student View</Link></li>
-        {/* Modify as needed*/}
-      </>
-    );
+    // Assuming the organization ID is stored in a variable called 'orgId'
+  const orgId = getOrganizationIdFromPath(location.pathname);
+
+  navLinks = (
+    <>
+      <li><Link to={`/org/${orgId}`}>Organization</Link></li>
+      <li><Link to={`/org/${orgId}/events`}>Upcoming Events</Link></li>
+      <li><Link to={`/org/${orgId}/members`}>Current Members</Link></li>
+      <li><Link to={`/org/${orgId}/info`}>Organization Information</Link></li>
+      <li><Link to={`/org/${orgId}/messages`}>Messages</Link></li>
+      <li><Link to="/student">Return to Student View</Link></li>
+      {/* Modify as needed*/}
+    </>
+  );
   } else if (location.pathname.startsWith('/student')) {
     navLinks = (
       <>
@@ -157,11 +166,11 @@ function RouteList() {
           <Route path="/home/signin" element={<HomeSignin />} />
 
           {/* Organization */}
-          <Route path="/org" element={<OrgLanding />} />
-          <Route path="/org/events" element={<OrgEvents />} />
-          <Route path="/org/members" element={<OrgMembers />} />
-          <Route path="/org/info" element={<OrgInfo />} />
-          <Route path="/org/messages" element={<OrgMessages />} />
+          <Route path="/org/:orgId" element={<OrgLanding />} />
+          <Route path="/org/:orgId/events" element={<OrgEvents />} />
+          <Route path="/org/:orgId/members" element={<OrgMembers />} />
+          <Route path="/org/:orgId/info" element={<OrgInfo />} />
+          <Route path="/org/:orgId/messages" element={<OrgMessages />} />
 
           {/* Student */}
           <Route path="/student" element={<StudentLanding />} />
