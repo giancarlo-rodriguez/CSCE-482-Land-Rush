@@ -458,4 +458,4 @@ class AverageRegistrationTime(APIView):
         return Response(orgs_attending)
 
 
-
+# Create the view for running the algorithm

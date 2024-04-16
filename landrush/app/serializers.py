@@ -15,7 +15,7 @@ class EventSerializer(serializers.ModelSerializer):
     )
     class Meta:
         model = models.Event
-        fields = ['name','plot','created','university','timestamp']
+        fields = ['id','name','plot','created','university','timestamp']
 
 class PlotSerializer(serializers.ModelSerializer):
     university = serializers.SlugRelatedField(
@@ -56,7 +56,7 @@ class OrganizationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Organization
-        fields = ['university','name']
+        fields = ['id','university','name']
 
 class RoleSerializer(serializers.ModelSerializer):
     organization = serializers.SlugRelatedField(
@@ -70,7 +70,7 @@ class RoleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Role
-        fields = ['organization','user','is_admin']
+        fields = ['id','organization','user','is_admin']
 
 
 class PendingJoinOrgSerializer(serializers.ModelSerializer):
