@@ -14,7 +14,8 @@ from .permissions import IsStudent, IsUniversity, IsOrgAdmin
 import json
 from rest_framework.renderers import JSONRenderer
 from . import serializers
-import datetime
+from datetime import datetime
+
 
 # Add this at the top of your file to configure logging
 # Create your views here.
@@ -347,7 +348,7 @@ class CreateEvent(APIView):
         print(request.data)
         event_name = request.data.get("event_name")
         event_date_string = request.data.get("event_date")
-        event_date = datetime.datetime.strptime(event_date_string, "%Y-%m-%d")
+        event_date = datetime.fromisoformat(event_date_string)
         event_university = request.user.university
         event_plot_id = request.data.get("plot_id")
         event_plot = Plot.objects.get(id = event_plot_id)
