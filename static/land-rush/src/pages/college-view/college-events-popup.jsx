@@ -19,37 +19,19 @@ const EventDetailsPopup = ({ eventID, plots, eventData }) => {
   const handleSubmit = async () => {
     const token = Cookies.get('token');
     if (token) {
-      const requestData = {
-        event_name: eventName,
-        plot_id: plotID,
-        timestamp: timestamp
-      };
   
       try {
         if (isNewEvent) {
           await axios.post('http://127.0.0.1:8000/create/event', {
             event_name: eventName,
             plot_id: plotID,
-            timestamp: timestamp
+            event_date: timestamp
           }, {
             headers: {
               Authorization: `Token ${token}`
             }
           });
           console.log('Event created successfully');
-        } else {
-          requestData.event_id = eventID;
-          await axios.put(`http://127.0.0.1:8000/create/event`, {
-            event_id: eventID,
-            event_name: eventName,
-            event_plot_id: plotID,
-            event_date_string: timestamp
-          }, {
-            headers: {
-              Authorization: `Token ${token}`
-            }
-          });
-          console.log('Event updated successfully');
         }
       } catch (error) {
         console.error('Error:', isNewEvent ? 'creating event' : 'updating event', error);
