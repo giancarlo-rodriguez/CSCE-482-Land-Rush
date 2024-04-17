@@ -7,26 +7,7 @@ import './style.css';
 const CollegeEvents = () => {
   const [events, setEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null); // This state manages the selected event
-  const [plots, setPlots] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
-
-  useEffect(() => {
-    // Fetch plots when component mounts
-    const token = Cookies.get('token');
-    if (token) {
-      axios.get('http://127.0.0.1:8000/show/plots', {
-        headers: {
-          Authorization: `Token ${token}`
-        }
-      })
-      .then(response => {
-        setPlots(response.data);
-      })
-      .catch(error => {
-        console.error('Error fetching plots:', error);
-      });
-    }
-  }, []);
 
   useEffect(() => {
     // Fetch events when component mounts
@@ -99,8 +80,8 @@ const CollegeEvents = () => {
       </div>
       {/* Render EventDetailsPopup based on selectedEvent state */}
       <div className="college-events-details">
-        {selectedEvent !== null && ( // Render EventDetailsPopup only if selectedEvent is not null
-          <EventDetailsPopup eventID={selectedEvent} plots={plots} eventData={filteredEvents.find(event => event.id === selectedEvent)} />
+        {selectedEvent !== null && (
+          <EventDetailsPopup eventID={selectedEvent} eventData={filteredEvents.find(event => event.id === selectedEvent)} />
         )}
         {selectedEvent === null && (
           <div className="placeholder">Select or create an event</div>
