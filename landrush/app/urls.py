@@ -28,6 +28,7 @@ urlpatterns = [
     path('create/org/request',views.CreateOrg.as_view()), #needs to be created in frontend
     path('show/orgs',views.OrganizationList.as_view()),
     path('join/org',views.JoinOrg.as_view()), #Done in frontend
+    path('drop/org',views.DropOrg.as_view()),
     path('choose/uni',views.ChooseUniversity.as_view()),
     #path('create/org/response',views.CreateOrgResponse.as_view()), #Needs to be done in frontend
    # path('create/org/show',views.showCreateOrgPending.as_view()), #Needs to be done in frontend

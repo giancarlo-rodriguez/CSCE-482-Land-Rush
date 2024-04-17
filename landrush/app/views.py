@@ -189,7 +189,30 @@ class JoinOrg(APIView):
 
         return HttpResponse("You have been added to the organization as a regular member")
 
+class DropOrg(APIView):
+    authentication_classes = [TokenAuthentication]
 
+    def post(self, request):
+        drop_requester = request.user
+        organization_name = request.data.get("organization")
+        if not organization_name:
+            return HttpResponseBadRequest("Organization name not provided in the request body")
+
+        try:
+            org = Organization.objects.get(name=organization_name, university=drop_requester.university)
+        except Organization.DoesNotExist:
+            return Response("Organization does not exist at your university", status=status.HTTP_404_NOT_FOUND)
+
+        # Check if the user is a member of the organization
+        try:
+            role = Role.objects.get(user=drop_requester, organization=org)
+        except Role.DoesNotExist:
+            return Response("You are not a member of this organization", status=status.HTTP_400_BAD_REQUEST)
+
+        # Delete the role for the user in the organization
+        role.delete()
+
+        return Response("You have been removed from the organization", status=status.HTTP_200_OK)
 
 #used if we do org pending and accepting
 class OrgPending(APIView):
