@@ -69,10 +69,8 @@ const EventDetailsPopup = ({ eventID, eventData }) => {
             }
           });
           console.log('Event created successfully');
-<<<<<<< Updated upstream
-=======
         } else {
-          requestData.event_id = eventID;
+          //requestData.event_id = eventID;
           await axios.put(`http://127.0.0.1:8000/create/event`, {
             event_name: eventName,
             plot_id: plotID,
@@ -87,7 +85,6 @@ const EventDetailsPopup = ({ eventID, eventData }) => {
           console.log(plotID);
           console.log(timestamp);
           console.log('Event updated successfully');
->>>>>>> Stashed changes
         }
       } catch (error) {
         console.error('Error:', isNewEvent ? 'creating event' : 'updating event', error);
