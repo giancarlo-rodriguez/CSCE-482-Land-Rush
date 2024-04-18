@@ -365,6 +365,16 @@ class CreateOrg(APIView):
             new_role.save()
             return HttpResponse("Organization created!")
 
+class DeleteOrg(APIView):
+    authentication_classes - [TokenAuthentication]
+    def delete(self,request):
+        try:
+            org_id = request.data.get("org_id")
+            deleted_org = Organization.objects.get(id = org_id)
+            deleted_org.delete()
+        except:
+            return HttpResponse("Org Not deleted.")
+
 class CreateEvent(APIView):
     authentication_classes = [TokenAuthentication]
     def post(self,request):
@@ -457,6 +467,18 @@ class CreatePlot(APIView):
             return HttpResponse("Plot Updated") 
         except:
             return HttpResponse("Plot update NOT successful")
+    
+class DeletePlot(APIView):
+    authentication_classes = [TokenAuthentication]
+    def delete(self,request):
+        try:
+            plot_id = request.data.get("plot_id")
+            deleted_plot = Plot.objects.get(id = plot_id)
+            deleted_plot.delete()
+            return HttpResponse("Plot deleted")
+
+        except:
+            return HttpResponse("Plot NOT deleted.")
 
 class ShowPlots(APIView):
     authentication_classes = [TokenAuthentication]
