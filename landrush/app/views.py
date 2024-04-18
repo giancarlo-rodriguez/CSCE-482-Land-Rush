@@ -552,8 +552,12 @@ class OrgMemberCount(APIView):
     def get(self,request):
         org_id = request.data.get("org_id")
         org = Organization.objects.get(id = org_id)
-        org_members = Role.objects.filter(organization = org)
-        return HttpResponse(count(org_members))
+        org_members_query = Role.objects.filter(organization = org)
+        org_members = []
+        for member in org_members_query:
+            org_members.append(member)
+
+        return HttpResponse(len(org_members))
 
 
 # Create the view for running the algorithm
