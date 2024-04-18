@@ -39,7 +39,7 @@ urlpatterns = [
     path('show/profile',views.ShowProfile.as_view()), #Done in frontend
     path('show/user/orgs',views.UserOrganizations.as_view()), #Done in frontend
     path('show/event',views.ShowEvent.as_view()), #Done in frontend
-    path('show/join/org',views.showJoinOrgPending.as_view()), #Done in the frontend
+    path('show/join/org',views.ShowJoinOrgPending.as_view()), #Done in the frontend
     path('create/plot',views.CreatePlot.as_view()),
     path('show/plots',views.ShowPlots.as_view()),
     path('show/coordinates', views.ShowCoordinates.as_view()),
