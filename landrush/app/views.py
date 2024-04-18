@@ -366,7 +366,7 @@ class CreateOrg(APIView):
             return HttpResponse("Organization created!")
 
 class DeleteOrg(APIView):
-    authentication_classes - [TokenAuthentication]
+    authentication_classes = [TokenAuthentication]
     def delete(self,request):
         try:
             org_id = request.data.get("org_id")
@@ -546,6 +546,14 @@ class AverageRegistrationTime(APIView):
             else:
                 orgs_attending[org_id] = (1,difference.total_seconds() / 60)
         return Response(orgs_attending)
+
+class OrgMemberCount(APIView):
+    #authentication_classes = [TokenAuthentication]
+    def get(self,request):
+        org_id = request.data.get("org_id")
+        org = Organization.objects.get(id = org_id)
+        org_members = Role.objects.filter(organization = org)
+        return HttpResponse(count(org_members))
 
 
 # Create the view for running the algorithm
