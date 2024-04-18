@@ -28,8 +28,8 @@ class StudentRegister(APIView):
             req_name = request.data.get("fullName")
             req_email = request.data.get("email")
             req_password = request.data.get("password")
-            university_name = request.data.get("university")  # Adjust the key to match frontend
-            university = University.objects.get(name = university_name)
+            university_id = request.data.get("university_id")  # Adjust the key to match frontend
+            university = University.objects.get(id = university_id)
 
             if not (req_email and req_password and university_name and req_name):
                 return Response("Email, password, and university name are required.", status=status.HTTP_400_BAD_REQUEST)
