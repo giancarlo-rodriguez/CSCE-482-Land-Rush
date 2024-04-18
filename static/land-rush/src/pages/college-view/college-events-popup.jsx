@@ -35,6 +35,25 @@ const EventDetailsPopup = ({ eventID, eventData }) => {
     }
   }, []);
 
+  useEffect(() => {
+    // Axios interceptor for logging responses
+    const responseLogger = axios.interceptors.response.use(
+      (response) => {
+        console.log('Response:', response);
+        return response;
+      },
+      (error) => {
+        console.error('Error response:', error);
+        throw error;
+      }
+    );
+
+    return () => {
+      // Remove the interceptor when component unmounts
+      axios.interceptors.response.eject(responseLogger);
+    };
+  }, []);
+
   const handleSubmit = async () => {
     const token = Cookies.get('token');
     if (token) {
@@ -50,6 +69,25 @@ const EventDetailsPopup = ({ eventID, eventData }) => {
             }
           });
           console.log('Event created successfully');
+<<<<<<< Updated upstream
+=======
+        } else {
+          requestData.event_id = eventID;
+          await axios.put(`http://127.0.0.1:8000/create/event`, {
+            event_name: eventName,
+            plot_id: plotID,
+            event_date: timestamp
+          }, {
+            headers: {
+              Authorization: `Token ${token}`
+            }
+          });
+          console.log(eventID);
+          console.log(eventName);
+          console.log(plotID);
+          console.log(timestamp);
+          console.log('Event updated successfully');
+>>>>>>> Stashed changes
         }
       } catch (error) {
         console.error('Error:', isNewEvent ? 'creating event' : 'updating event', error);

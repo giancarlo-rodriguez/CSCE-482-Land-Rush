@@ -243,7 +243,7 @@ class CreateOrgResponse(APIView):
         else:
             return HttpResponse("Org not created")
 
-class showJoinOrgPending(APIView):
+class ShowJoinOrgPending(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsOrgAdmin]  # You can uncomment this once the permission is implemented
 
