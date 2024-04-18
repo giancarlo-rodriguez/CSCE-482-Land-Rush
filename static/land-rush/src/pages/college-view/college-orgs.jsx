@@ -1,23 +1,31 @@
-import React, { useState } from 'react';
+import axios from 'axios';
+import Cookies from 'js-cookie';
+import React, { useState, useEffect } from 'react';
 import './style.css';
 
-const orgs = [
-  { name: 'Chess Club', memberCount: 25, status: 'Active' },
-  { name: 'Drama Society', memberCount: 40, status: 'Active' },
-  { name: 'Debate Team', memberCount: 30, status: 'Inactive' },
-  { name: 'Music Band', memberCount: 15, status: 'Active' },
-  { name: 'Coding Club', memberCount: 50, status: 'Active' },
-  { name: 'Environmental Club', memberCount: 20, status: 'Active' },
-  { name: 'Sports Club', memberCount: 60, status: 'Active' },
-  { name: 'Photography Club', memberCount: 35, status: 'Inactive' },
-  { name: 'Volunteer Society', memberCount: 45, status: 'Active' },
-  { name: 'Art Club', memberCount: 10, status: 'Active' }
-];
-
 const OrganizationsList = () => {
-  const [organizations, setOrganizations] = useState(orgs);
+  const [organizations, setOrganizations] = useState([]);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' });
   const [searchTerm, setSearchTerm] = useState('');
+
+  useEffect(() => {
+    // Fetch events when component mounts
+    const token = Cookies.get('token');
+    if (token) {
+      axios.get('http://127.0.0.1:8000/show/orgs', {
+        headers: {
+          Authorization: `Token ${token}`
+        }
+      })
+      .then(response => {
+        console.log('Orgs:', response.data);
+        setOrganizations(response.data);
+      })
+      .catch(error => {
+        console.error('Error fetching events:', error);
+      });
+    }
+  }, []);
 
   const requestSort = (key) => {
     let direction = 'ascending';

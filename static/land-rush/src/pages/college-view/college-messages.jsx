@@ -1,55 +1,32 @@
-import React, { useState } from 'react';
+import axios from 'axios';
+import Cookies from 'js-cookie';
+import React, { useState, useEffect } from 'react';
 import './style.css';
 
-const messages = [
-  { title: 'Meeting Reminder', senderName: 'John Doe', timestamp: '2024-03-19 | 10:30:00' },
-  { title: 'Project Update', senderName: 'Alice Smith', timestamp: '2024-03-19 | 12:45:00' },
-  { title: 'Event Invitation', senderName: 'Emily Johnson', timestamp: '2024-03-18 | 15:20:00' },
-  { title: 'Weekly Newsletter', senderName: 'Michael Brown', timestamp: '2024-03-17 | 09:00:00' },
-  { title: 'Discussion Topic', senderName: 'Sarah Wilson', timestamp: '2024-03-16 | 11:10:00' },
-  { title: 'Feedback Request', senderName: 'David Clark', timestamp: '2024-03-15 | 14:30:00' },
-  { title: 'Announcement', senderName: 'Emma Lee', timestamp: '2024-03-14 | 16:25:00' },
-  { title: 'Task Assignment', senderName: 'Daniel Taylor', timestamp: '2024-03-13 | 13:55:00' },
-  { title: 'Upcoming Event Details', senderName: 'Olivia Martinez', timestamp: '2024-03-12 | 10:00:00' },
-  { title: 'Reminder', senderName: 'James Wilson', timestamp: '2024-03-11 | 08:20:00' },
-  { title: 'Meeting Reminder', senderName: 'John Doe', timestamp: '2024-03-19 | 10:30:00' },
-  { title: 'Project Update', senderName: 'Alice Smith', timestamp: '2024-03-19 | 12:45:00' },
-  { title: 'Event Invitation', senderName: 'Emily Johnson', timestamp: '2024-03-18 | 15:20:00' },
-  { title: 'Weekly Newsletter', senderName: 'Michael Brown', timestamp: '2024-03-17 | 09:00:00' },
-  { title: 'Discussion Topic', senderName: 'Sarah Wilson', timestamp: '2024-03-16 | 11:10:00' },
-  { title: 'Feedback Request', senderName: 'David Clark', timestamp: '2024-03-15 | 14:30:00' },
-  { title: 'Announcement', senderName: 'Emma Lee', timestamp: '2024-03-14 | 16:25:00' },
-  { title: 'Task Assignment', senderName: 'Daniel Taylor', timestamp: '2024-03-13 | 13:55:00' },
-  { title: 'Upcoming Event Details', senderName: 'Olivia Martinez', timestamp: '2024-03-12 | 10:00:00' },
-  { title: 'Reminder', senderName: 'James Wilson', timestamp: '2024-03-11 | 08:20:00' },
-  { title: 'Meeting Reminder', senderName: 'John Doe', timestamp: '2024-03-19 | 10:30:00' },
-  { title: 'Project Update', senderName: 'Alice Smith', timestamp: '2024-03-19 | 12:45:00' },
-  { title: 'Event Invitation', senderName: 'Emily Johnson', timestamp: '2024-03-18 | 15:20:00' },
-  { title: 'Weekly Newsletter', senderName: 'Michael Brown', timestamp: '2024-03-17 | 09:00:00' },
-  { title: 'Discussion Topic', senderName: 'Sarah Wilson', timestamp: '2024-03-16 | 11:10:00' },
-  { title: 'Feedback Request', senderName: 'David Clark', timestamp: '2024-03-15 | 14:30:00' },
-  { title: 'Announcement', senderName: 'Emma Lee', timestamp: '2024-03-14 | 16:25:00' },
-  { title: 'Task Assignment', senderName: 'Daniel Taylor', timestamp: '2024-03-13 | 13:55:00' },
-  { title: 'Upcoming Event Details', senderName: 'Olivia Martinez', timestamp: '2024-03-12 | 10:00:00' },
-  { title: 'Reminder', senderName: 'James Wilson', timestamp: '2024-03-11 | 08:20:00' },
-  { title: 'Meeting Reminder', senderName: 'John Doe', timestamp: '2024-03-19 | 10:30:00' },
-  { title: 'Project Update', senderName: 'Alice Smith', timestamp: '2024-03-19 | 12:45:00' },
-  { title: 'Event Invitation', senderName: 'Emily Johnson', timestamp: '2024-03-18 | 15:20:00' },
-  { title: 'Weekly Newsletter', senderName: 'Michael Brown', timestamp: '2024-03-17 | 09:00:00' },
-  { title: 'Discussion Topic', senderName: 'Sarah Wilson', timestamp: '2024-03-16 | 11:10:00' },
-  { title: 'Feedback Request', senderName: 'David Clark', timestamp: '2024-03-15 | 14:30:00' },
-  { title: 'Announcement', senderName: 'Emma Lee', timestamp: '2024-03-14 | 16:25:00' },
-  { title: 'Task Assignment', senderName: 'Daniel Taylor', timestamp: '2024-03-13 | 13:55:00' },
-  { title: 'Upcoming Event Details', senderName: 'Olivia Martinez', timestamp: '2024-03-12 | 10:00:00' },
-  { title: 'Reminder', senderName: 'James Wilson', timestamp: '2024-03-11 | 08:20:00' }
-];
-
 const MessagesList = () => {
-  const [messagesList, setMessagesList] = useState(messages);
+  const [messagesList, setMessagesList] = useState([]);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' });
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const messagesPerPage = 5;
+
+  useEffect(() => {
+    const token = Cookies.get('token');
+    if (token) {
+      axios.get('http://127.0.0.1:8000/create/org/request', {
+        headers: {
+          Authorization: `Token ${token}`
+        }
+      })
+      .then(response => {
+        console.log('Messages:', response.data);
+        setMessagesList(response.data);
+      })
+      .catch(error => {
+        console.error('Error fetching events:', error);
+      });
+    }
+  }, []);
 
   const requestSort = (key) => {
     let direction = 'ascending';
@@ -116,10 +93,10 @@ const MessagesList = () => {
           <thead>
             <tr>
               <th onClick={() => requestSort('title')} className={`msg-th ${getClassNamesFor('title')}`}>
-                Title
+                Organization Creation Request
               </th>
               <th onClick={() => requestSort('senderName')} className={`msg-th ${getClassNamesFor('senderName')}`}>
-                Sender Name
+                Sender
               </th>
               <th onClick={() => requestSort('timestamp')} className={`msg-th ${getClassNamesFor('timestamp')}`}>
                 Timestamp
