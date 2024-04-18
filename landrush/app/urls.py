@@ -48,4 +48,5 @@ urlpatterns = [
     path('update/plot', views.CreatePlot.as_view()),
     path('event/student/register',views.StudentRegisterEvent.as_view()),
     path('show/registered/students',views.AverageRegistrationTime.as_view()),
+    path('delete/plot',views.DeletePlot.as_view()),
 ]
