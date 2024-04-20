@@ -249,16 +249,6 @@ class ShowJoinOrgPending(APIView):
         except Exception as error:
             return JsonResponse({"error": str(error)}, status=500)
 
-class RegisterForEvent(APIView):
-    authentication_classes = [TokenAuthentication]
-    #permission_classes = [?is user admin of org]
-    def get(self, request):
-        organization_name = request.GET["organization"]
-        organization = Organization.objects.get(name=organization_name)
-        event = Event.objects.get(university = request.user.university, id = request.GET["event_name"])
-        register_for_event = OrgRegisteredEvent(organization = organization, event = event)
-        register_for_event.save()
-        return HttpResponse("Organization has registered for event")
 
 class JoinOrgResponse(APIView):
     authentication_classes = [TokenAuthentication]
@@ -497,6 +487,36 @@ class ShowCoordinates(APIView):
         coordinates = Coordinates.objects.filter(plot = plot)
         coordinates_json = serializers.CoordinateSerializer(coordinates, many = True)
         return Response(coordinates_json.data)
+
+class OrgRegisterEvent(APIView):
+    authentication_classes = [TokenAuthentication]
+    #permission_classes = [?is user admin of org]
+    def post(self, request):
+        try:
+            event_id = request.data.get("event_id")
+            organization_id = request.data.get("org_id")
+            organization = Organization.objects.get(id=organization_id)
+            event = Event.objects.get(university = request.user.university, id = event_id)
+            register_for_event = OrgRegisteredEvent(organization = organization, event = event)
+            register_for_event.save()
+            return HttpResponse("Organization has registered for event")
+        except:
+            return HttpResponse("Registration not successful")
+
+class OrgUnregisterEvent(APIView):
+    authentication_classes = [TokenAuthentication]
+    #permission_classes = [?is user admin of org]
+    def post(self, request):
+        try:
+            event_id = request.data.get("event_id")
+            organization_id = request.data.get("org_id")
+            organization = Organization.objects.get(id=organization_id)
+            event = Event.objects.get(university = request.user.university, id = event_id)
+            registration_obj = OrgRegisteredEvent.objects.get(organization = organization, event = event)
+            registration_obj.delete()
+            return HttpResponse("Organization has unregistered for event")
+        except:
+            return HttpResponse("Unregistration not successful")
     
 class StudentRegisterEvent(APIView):
     authentication_classes = [TokenAuthentication]
