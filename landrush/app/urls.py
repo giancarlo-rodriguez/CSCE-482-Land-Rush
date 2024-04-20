@@ -31,7 +31,7 @@ urlpatterns = [
     path('drop/org',views.DropOrg.as_view()),
     path('choose/uni',views.ChooseUniversity.as_view()),
     #path('create/org/response',views.CreateOrgResponse.as_view()), #Needs to be done in frontend
-   # path('create/org/show',views.showCreateOrgPending.as_view()), #Needs to be done in frontend
+    #path('create/org/show',views.showCreateOrgPending.as_view()), #Needs to be done in frontend
     path('join/org/response',views.JoinOrgResponse.as_view()), #Needs to be done in frontend
     path('create/event',views.CreateEvent.as_view()), #Needs to be done in frontend
     path('delete/event',views.DeleteEvent.as_view()),
@@ -51,4 +51,5 @@ urlpatterns = [
     path('delete/plot',views.DeletePlot.as_view()),
     path('org/count',views.OrgMemberCount.as_view()),
     path('delete/org',views.DeleteOrg.as_view()),
+    path('show/org/attending',views.MembersAttendingEvent.as_view()),
 ]

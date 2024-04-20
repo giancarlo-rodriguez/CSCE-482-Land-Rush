@@ -32,7 +32,7 @@ class StudentRegister(APIView):
             university_id = request.data.get("university_id")  # Adjust the key to match frontend
             university = University.objects.get(id = university_id)
 
-            if not (req_email and req_password and university_name and req_name):
+            if not (req_email and req_password and university_id and req_name):
                 return Response("Email, password, and university name are required.", status=status.HTTP_400_BAD_REQUEST)
 
             # Check if the university already exists
@@ -558,6 +558,28 @@ class OrgMemberCount(APIView):
             org_members.append(member)
 
         return HttpResponse(len(org_members))
+
+class MembersAttendingEvent(APIView):
+    authentication_classes = [TokenAuthentication]
+    def get(self,request):
+        #try:
+        org_id = request.data.get("org_id")
+        event_id = request.data.get("event_id")
+        print(org_id)
+        print(event_id)
+        org = Organization.objects.get(id = org_id)
+        event = Event.objects.get(id = event_id)
+        students_registered_objects = StudentRegisteredEvent.objects.filter(event = event, organization = org)
+        members_attending = []
+        for student_registered_object in students_registered_objects:
+            members_attending.append(student_registered_object.member)
+        members_serializer = serializers.UserSerializer(members_attending, many = True)
+        return JsonResponse(members_serializer.data, safe = False)
+        #except:
+       #     return HttpResponse("Oops. Can't get list of members attending.")
+
+
+
 
 
 # Create the view for running the algorithm
