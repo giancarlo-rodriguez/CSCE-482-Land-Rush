@@ -115,22 +115,6 @@ class CreateOrg(APIView):
             create_org.save()
             return HttpResponse("Organization create request submitted")
 """
-
-class CreateOrg(APIView):
-    authentication_classes = [TokenAuthentication]
-    def post(self,request):
-        org_name = request.data.get("organization")
-        try:
-            check_exists = Organization.objects.get(name = org_name)
-            return HttpResponse("Organization already exists")
-        except:
-            university = request.user.university
-            new_org = Organization(name = org_name, university = university)
-            new_org.save()
-            new_org = Organization.objects.get(name = org_name)
-            new_role = Role(user = request.user, organization = new_org, is_admin = True)
-            new_role.save()
-            return HttpResponse("Organization created!")
         
 class OrganizationList(APIView):
     authentication_classes = [TokenAuthentication]
@@ -526,9 +510,35 @@ class StudentRegisterEvent(APIView):
             return HttpResponse("You are not a member of this organization.")
         member = request.user
         event = Event.objects.get(id = event_id)
+        try:
+            check_other_registration = StudentRegisteredEvent.objects.get(event = event, member = member)
+            return HttpResponse("You have already registered for this event with another organization")
+        except:
+            pass
         new_student_event = StudentRegisteredEvent(event = event, member = member, organization = org)
         new_student_event.save()
         return HttpResponse("Registered for event")
+
+class StudentUnregisterEvent(APIView):
+    authentication_classes = [TokenAuthentication]
+    def post(self,request):
+        event_id = request.data.get("event_id")
+        organization_id = request.data.get("organization_id")
+        org = Organization.objects.get(id = organization_id)
+        try:
+            check_membership = Role.objects.get(organization = org, user = request.user)
+        except:
+            return HttpResponse("You are not a member of this organization.")
+        member = request.user
+        event = Event.objects.get(id = event_id)
+        try:
+            check_registration = StudentRegisteredEvent.objects.get(event = event, member = member, organization = org)
+            check_registration.delete()
+        except:
+            return HttpResponse("You are not registered for this event.")
+
+        return HttpResponse("Unregistered for event")
+
 
 class AverageRegistrationTime(APIView):
     authentication_classes = [TokenAuthentication]
