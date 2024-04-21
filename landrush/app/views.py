@@ -15,7 +15,7 @@ import json
 from rest_framework.renderers import JSONRenderer
 from . import serializers
 from datetime import datetime
-from ...algo import algorithm
+from algo import algorithm
 
 # Add this at the top of your file to configure logging
 # Create your views here.
