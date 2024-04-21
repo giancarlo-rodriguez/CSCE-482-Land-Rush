@@ -216,43 +216,43 @@ def splitSection(grid, organizations):
 
 polygon = createPolygon(section_coords)
 
+def algorithm():
+    if not polygon.is_valid:
+        print("The polygon is not valid.")
+    else:
+        grid, valid = createGrid(polygon)
+        allocated = splitSection(grid, orgs)
 
-if not polygon.is_valid:
-    print("The polygon is not valid.")
-else:
-    grid, valid = createGrid(polygon)
-    allocated = splitSection(grid, orgs)
+        # Plotting
+        fig, ax = plt.subplots()
+        x, y = polygon.exterior.xy
+        ax.plot(x, y, color='blue', alpha=0.5)
 
-    # Plotting
-    fig, ax = plt.subplots()
-    x, y = polygon.exterior.xy
-    ax.plot(x, y, color='blue', alpha=0.5)
+        org_colors = {}
+        for i, org in enumerate(orgs):
+            org_colors[org.name] = colors[i]
 
-    org_colors = {}
-    for i, org in enumerate(orgs):
-        org_colors[org.name] = colors[i]
+        for col_idx, col in enumerate(grid):
+            for row_idx, cell in enumerate(col):
+                # print("  ",cell)
+                point = (row_idx, col_idx)
+                x, y = cell
+                rect = plt.Rectangle((x - CELL_SIZE / 2, y - CELL_SIZE / 2), CELL_SIZE, CELL_SIZE, linewidth=0, edgecolor='black', facecolor='none')
+                ax.add_patch(rect)
+                if point == (38,51):
+                    ax.add_patch(plt.Rectangle((x - CELL_SIZE / 2, y - CELL_SIZE / 2), CELL_SIZE, CELL_SIZE, linewidth=0, edgecolor='none', facecolor="Black"))
+                if point in allocated:
+                    org_name = allocated[point]
+                    # org_colors[]
+                    # if org_name not in org_colors:
+                    #     org_colors[org_name] = np.random.rand(3,)  # Generate a random color for the organization
+                    color = org_colors[org_name]
+                    ax.add_patch(plt.Rectangle((x - CELL_SIZE / 2, y - CELL_SIZE / 2), CELL_SIZE, CELL_SIZE, linewidth=0, edgecolor='none', facecolor=color))
 
-    for col_idx, col in enumerate(grid):
-        for row_idx, cell in enumerate(col):
-            # print("  ",cell)
-            point = (row_idx, col_idx)
-            x, y = cell
-            rect = plt.Rectangle((x - CELL_SIZE / 2, y - CELL_SIZE / 2), CELL_SIZE, CELL_SIZE, linewidth=0, edgecolor='black', facecolor='none')
-            ax.add_patch(rect)
-            if point == (38,51):
-                ax.add_patch(plt.Rectangle((x - CELL_SIZE / 2, y - CELL_SIZE / 2), CELL_SIZE, CELL_SIZE, linewidth=0, edgecolor='none', facecolor="Black"))
-            if point in allocated:
-                org_name = allocated[point]
-                # org_colors[]
-                # if org_name not in org_colors:
-                #     org_colors[org_name] = np.random.rand(3,)  # Generate a random color for the organization
-                color = org_colors[org_name]
-                ax.add_patch(plt.Rectangle((x - CELL_SIZE / 2, y - CELL_SIZE / 2), CELL_SIZE, CELL_SIZE, linewidth=0, edgecolor='none', facecolor=color))
-
-    # Show plot
-    plt.gca().set_aspect('equal', adjustable='box')
-    plt.xlabel('Longitude')
-    plt.ylabel('Latitude')
-    plt.title('Section with Allocated Plots')
-    # plt.grid(True)
-    plt.show()
+        # Show plot
+        plt.gca().set_aspect('equal', adjustable='box')
+        plt.xlabel('Longitude')
+        plt.ylabel('Latitude')
+        plt.title('Section with Allocated Plots')
+        # plt.grid(True)
+        plt.show()

@@ -15,11 +15,12 @@ import json
 from rest_framework.renderers import JSONRenderer
 from . import serializers
 from datetime import datetime
-
+from ...algo import algorithm
 
 # Add this at the top of your file to configure logging
 # Create your views here.
 def home(request):
+    algorithm()
     return HttpResponse("Hello, world. You're at the landrush app home.")
 
 
@@ -51,7 +52,6 @@ class StudentRegister(APIView):
         except Exception as e:
             return Response(str(e), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
-
 
 
 class UniversityRegister(APIView):

@@ -2,10 +2,48 @@ from django.db import models
 
 from django.contrib.auth.models import AbstractBaseUser
 from django.contrib.auth.models import BaseUserManager
-
+from ...algo import algorithm
 from django.utils import timezone
+import io
+from django.core.files.base import ContentFile
 
 # Create your models here.
+from django.db import models
+from django.utils import timezone
+
+class EventPlot(models.Model):
+    """
+    Model for EventPlot table
+    Each row represents a plot associated with an event
+    """
+    event = models.ForeignKey('Event', related_name='plots', on_delete=models.CASCADE)
+    image = models.ImageField(upload_to='event_plots')
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        db_table = "event_plots"
+        verbose_name_plural = "Event Plots"
+
+    def __str__(self):
+        return f"Plot for Event {self.event_id}"
+
+    @classmethod
+    def create_from_matplotlib(cls, event, figure):
+        """
+        Create an EventPlot object from a Matplotlib figure and save it to the database.
+        """
+        buffer = io.BytesIO()
+        figure.savefig(buffer, format='png')
+        buffer.seek(0)
+        plot_image = ContentFile(buffer.getvalue())
+        buffer.close()
+
+        event_plot = cls(event=event)
+        event_plot.image.save(f'event_plot_{event.id}_{cls.objects.count() + 1}.png', plot_image, save=False)
+        event_plot.save()
+        return event_plot
+
+
 class University(models.Model):
     """
     Model for University table
@@ -172,7 +210,6 @@ class Event(models.Model):
 
     def __str__(self):
         return "'" + self.name + "' at " + self.plot.name 
-
 
 
 class PendingJoinOrg(models.Model):
