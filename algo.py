@@ -1,225 +1,258 @@
 import math
 import numpy as np
 import matplotlib.pyplot as plt
-from shapely.geometry import Polygon, Point
+from shapely.geometry import Polygon
+from shapely.geometry import Point
+from shapely.prepared import prep
 from queue import Queue
+from collections import deque
 
-class Organization:
-    def __init__(self, name, square_footage):
-        self.name = name
-        self.square_footage = square_footage
+# COORDS (LAT, LONG)
+# DICT (ORG ID: (member count, total time))
 
-def create_polygon(shape_coords):
-    # Create a Shapely polygon from the shape coordinates
-    return Polygon(shape_coords)
+# CONSTANTS
+EARTH_RADIUS_IN_METERS = 6367460.0
+METERS_PER_DEGREE = 2.0 * math.pi * EARTH_RADIUS_IN_METERS / 360.0
+RADIANS_PER_DEGREE = math.pi / 180.0
+FEET_PER_METER = 3.2808399
+SQFT_PER_PERSON = 7
+CELL_WIDTH = math.sqrt(7)
+CELL_AREA = CELL_WIDTH * CELL_WIDTH
+CELL_SIZE = 7.817467317819993e-06
+SQFT_TO_SHAPE_AREA = 114418286841.2996
+FT_TO_SHAPE_DIST = math.sqrt(SQFT_TO_SHAPE_AREA)
 
-# def create_grid(polygon, cell_size):
-#     minx, miny, maxx, maxy = polygon.bounds
-#     lat_range = maxy - miny
-#     lon_range = maxx - minx
-
-#     num_lat_cells = math.ceil(lat_range / cell_size)
-#     num_lon_cells = math.ceil(lon_range / cell_size)
-
-#     grid = []
-#     for i in range(num_lat_cells):
-#         lat = miny + i * cell_size
-#         row = []
-#         for j in range(num_lon_cells):
-#             lon = minx + j * cell_size
-#             point = (lon + cell_size / 2, lat + cell_size / 2)  # Center of the grid cell
-#             if polygon.contains(Point(point)):  # Check if the grid point is inside the polygon
-#                 row.append(point)
-#         if row:
-#             grid.append(row)
-
-#     return grid
-def create_grid(polygon, cell_size_feet, ref_lat, ref_lon):
-    # Convert feet to meters (1 foot = 0.3048 meters)
-    cell_size_meters = cell_size_feet * 0.3048
-
-    minx, miny, maxx, maxy = polygon.bounds
-    lat_range = maxy - miny
-    lon_range = maxx - minx
-
-    # Convert reference point to meters
-    ref_x, ref_y = convert_to_xy(ref_lat, ref_lon, ref_lat, ref_lon)
-
-    num_lat_cells = math.ceil(lat_range / cell_size_meters)
-    num_lon_cells = math.ceil(lon_range / cell_size_meters)
-
-    grid = []
-    for i in range(num_lat_cells):
-        lat = miny + i * cell_size_meters
-        row = []
-        for j in range(num_lon_cells):
-            lon = minx + j * cell_size_meters
-            x, y = convert_to_xy(lat, lon, ref_lat, ref_lon)
-            point = (ref_x + x + cell_size_meters / 2, ref_y + y + cell_size_meters / 2)  # Center of the grid cell
-            if polygon.contains(Point(lon, lat)):  # Check if the grid point is inside the polygon
-                row.append(point)
-        if row:
-            grid.append(row)
-
-    return grid
-
-def allocate_space(grid, organizations):
-    allocated = {}
-    for org in organizations:
-        name = org.name
-        square_footage = org.square_footage
-        num_squares_allocated = 0
-        # Calculate the number of grid squares needed for the organization
-        num_squares_needed = math.ceil(square_footage / (cell_size_meters))
-        for row_index, row in enumerate(grid):
-            for col_index, cell in enumerate(row):
-                if (row_index, col_index) not in allocated:
-                    # Check if space requirement can be fulfilled starting from this cell
-                    num_squares_allocated, allocated = allocate_space_for_org(grid, row_index, col_index, num_squares_needed, name, allocated, num_squares_allocated)
-                    if num_squares_needed == num_squares_allocated:
-                        break
-            else:
-                continue
-            break
-    return allocated
-
-def allocate_space_for_org(grid, start_row_index, start_col_index, num_squares_needed, name, allocated, num_squares_allocated):
-    
-    for i in range(start_row_index, -1, -1):  # Start from the current row and move up
-        for j in range(start_col_index, -1, -1):  # Start from the current column and move left
-            left_neighbor = (i, j - 1)
-            left_org = allocated.get(left_neighbor)
-            # Check if the right neighbor belongs to a different organization
-            right_neighbor = (i, j + 1)
-            right_org = allocated.get(right_neighbor)
-            
-            if (i, j) not in allocated:
-                if num_squares_allocated > 0 and left_org != None and left_org != name and (j == len(grid[i])-1):
-                    continue
-                allocated[(i, j)] = name
-                num_squares_allocated += 1
-
-                if num_squares_allocated == num_squares_needed:
-                    return num_squares_allocated, allocated
-                if i + 1 >= len(grid):
-                        continue
-                if num_squares_allocated < num_squares_needed and (j == len(grid[i])-1 or (right_org != None and left_org != None and right_org != name and left_org != name)):
-                    start_col_index = len(grid[i+1])-1
-                    
-                    for j in range(start_col_index, -1, -1):  # Start from the end of the row and move left
-                        
-                        if (i + 1, j) not in allocated:
-                            allocated[(i + 1, j)] = name
-                            num_squares_allocated += 1
-                            if num_squares_allocated == num_squares_needed:
-                                return num_squares_allocated, allocated
-    return num_squares_allocated, allocated
-
-
-import math
-
-def haversine(lat1, lon1, lat2, lon2):
-    R = 6371000  # Radius of the Earth in meters
-
-    # Convert latitude and longitude from degrees to radians
-    lat1_rad = math.radians(lat1)
-    lon1_rad = math.radians(lon1)
-    lat2_rad = math.radians(lat2)
-    lon2_rad = math.radians(lon2)
-
-    # Haversine formula
-    dlat = lat2_rad - lat1_rad
-    dlon = lon2_rad - lon1_rad
-    a = math.sin(dlat/2)**2 + math.cos(lat1_rad) * math.cos(lat2_rad) * math.sin(dlon/2)**2
-    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
-    distance = R * c
-
-    return distance
-
-def convert_to_xy(lat, lon, ref_lat, ref_lon):
-    # Convert latitude and longitude differences to meters
-    lat_diff_meters = haversine(ref_lat, ref_lon, lat, ref_lon)
-    lon_diff_meters = haversine(ref_lat, ref_lon, ref_lat, lon)
-
-    # Adjust signs based on direction
-    if lat < ref_lat:
-        lat_diff_meters *= -1
-    if lon < ref_lon:
-        lon_diff_meters *= -1
-
-    return lat_diff_meters, lon_diff_meters
-
-
-shape_coordinates = [
-    (30.612643346426243, -96.34365561917583),
-    (30.6126064122004, -96.34308162644665),
-    (30.612754149019423, -96.34270075276653),
-    (30.613631331740105, -96.34145620778362),
-    (30.614637773704093, -96.34231987908642),
-    (30.61346512930847, -96.34403112843792),
-    (30.613225058625773, -96.34414914563457),
-    (30.61284417603297, -96.34426716283123)
+colors = [
+    [0.7, 0.0, 0.0], # Red
+    [0.0, 0.0, 0.8], # Blue
+    [0.8, 0.8, 0.0], # Yellow
+    [0.0, 0.6, 0.0], # Green
+    [0.5, 0.0, 0.5], # Purple
+    [0.5, 0.5, 0.5], # Gray
+    [0.9, 0.5, 0.0], # Orange
+    [0.0, 0.3, 0.0], # Forest
+    [0.9, 0.7, 0.8], # Pink
+    [0.3, 0.2, 0.1], # Brown
+    [0.0, 0.7, 0.7], # Cyan
 ]
 
-# Convert shape coordinates to a Shapely polygon
+# LONGITUDE, LATITUDE
+# SECTION 1
+# section_coords = [
+#     (-96.345868662483245, 30.607906710335737),
+#     (-96.34530003421388, 30.607274178848026),
+#     (-96.34579356063634, 30.606925592211482),
+#     (-96.34600813734177, 30.606874804649784),
+# ]
+# section_coords = [
+#     (30.607906710335737, -96.345868662483245),
+#     (30.607274178848026, -96.34530003421388),
+#     (30.606925592211482, -96.34579356063634),
+#     (30.606874804649784, -96.34600813734177),
+# ]
 
-polygon = create_polygon(shape_coordinates)
+# SECTION 2
+section_coords = [
+    (-96.34607133776048, 30.608116259627238),
+    (-96.3459345450978, 30.607973132735594),
+    (-96.34601769357906, 30.607333676136324),
+    (-96.3460874310149, 30.60734060168168),
+    (-96.3460311046244, 30.60739369751292),
+    (-96.34647635133008, 30.60790387771211),
+]
+# section_coords = [
+#     (30.608116259627238, -96.34607133776048),
+#     (30.607973132735594, -96.34593454509788),
+#     (30.607333676136324, -96.34601769357906),
+#     (30.60734060168168, -96.3460874310149),
+#     (30.60739369751292, -96.3460311046244),
+#     (30.60790387771211, -96.34647635133008),
+# ]
+
+class Organization:
+    def __init__(self, name, average_req_time, member_count):
+        self.name = name
+        self.req_time = average_req_time
+        self.member_count = member_count
+        self.sqft = 0
+
+# orgs = [
+#     Organization("A", 1, 69),
+#     Organization("B", 2, 47),
+#     Organization("C", 3, 25),
+#     Organization("D", 4, 17),
+#     Organization("E", 5, 10),
+#     Organization("F", 6, 10),
+# ]
+orgs = [
+    Organization("A", 1, 15),
+    Organization("B", 2, 15),
+    Organization("C", 3, 10),
+    Organization("D", 4, 10),
+    Organization("E", 5, 10),
+    Organization("F", 6, 10),
+    Organization("G", 7, 10),
+    Organization("H", 8, 5),
+    Organization("I", 9, 5),
+    Organization("J", 10, 5),
+    Organization("K", 11, 5),
+]
+
+def calcSectionArea(coords):
+    """
+        Calculate the area of a section in square feet
+        Args:   coords - coordinates of section vertices [(lat, long)]
+    """
+    a = 0.0
+    for i in range(len(coords)):
+        j = (i+1) % len(coords)
+        xi = coords[i][0] * METERS_PER_DEGREE * math.cos(coords[i][1] * RADIANS_PER_DEGREE)
+        yi = coords[i][1] * METERS_PER_DEGREE
+        xj = coords[j][0] * METERS_PER_DEGREE * math.cos(coords[j][1] * RADIANS_PER_DEGREE)
+        yj = coords[j][1] * METERS_PER_DEGREE
+        a += ((xi * yj) - (xj * yi))
+
+    section_area = abs(a / 2.0) * FEET_PER_METER * FEET_PER_METER
+    return section_area
 
 
-if polygon.is_valid:
-    # Define the size of the grid cells in feet
-    cell_size_feet = 7
+def calcSqftPerOrg(section_area, organizations):
+    """
+        Calculate the square footage needed for each organization in an event
+        Args:   section_area - Area of the section in sqft
+                organizations - List of Organization objects
+    """
+    total_attendance = sum(org.member_count for org in organizations)
+    total_area = total_attendance * SQFT_PER_PERSON
+    section_occupancy = section_area / SQFT_PER_PERSON
 
-    # Convert feet to meters (1 foot = 0.3048 meters)
-    cell_size_meters = cell_size_feet * 0.3048
+    if total_attendance < section_occupancy:
+        for org in organizations:
+            org.sqft = (org.member_count * SQFT_PER_PERSON) * (section_area / total_area)
 
-    # Generate grid
-    avg_lat = sum(lat for lat, lon in shape_coordinates) / len(shape_coordinates)
-    avg_lon = sum(lon for lat, lon in shape_coordinates) / len(shape_coordinates)
-    grid = create_grid(polygon, cell_size_feet, avg_lat, avg_lon)
 
-    # Define organizations with their square footage requirements
-    organizations = [Organization("Org1", 7 * 0.3048), Organization("Org23", 14 * 0.3048), Organization("Org2", 20* 0.3048),  Organization("Org6", 21 * 0.3048), Organization("Org4", 35 * 0.3048)]
 
-    # Allocate space for organizations
-    allocated = allocate_space(grid, organizations)
+section_area = calcSectionArea(section_coords)
+calcSqftPerOrg(section_area, orgs)
 
-    # Plotting
+
+def createPolygon(section_coords):
+    return Polygon(section_coords)
+
+
+def createGrid(polygon):
+    """
+        Create the grid to be used in paritioning section
+        Args:   polygon - The section in shapely
+    """
+    # calculate the number of cells needed
+    minx, miny, maxx, maxy = polygon.bounds
+    lon_range = maxx - minx
+    lat_range = maxy - miny
+    num_x_cells = math.ceil(lon_range / CELL_SIZE)
+    num_y_cells = math.ceil(lat_range / CELL_SIZE)
+
+    valid = {}
+    grid = []
+    valid_cell = 0
+    for y in range(num_y_cells):
+        lat = miny + (y * CELL_SIZE)
+        row = []
+        for x in range(num_x_cells):
+            lon = minx + (x * CELL_SIZE)
+            point = (lon + CELL_SIZE / 2, lat + CELL_SIZE / 2)  # Center of the grid cell
+            row.append(point)
+            if polygon.contains(Point(point)):  # Check if the grid point is inside the polygon
+                valid[(x, y)] = True
+                valid_cell += 1
+            else:
+                valid[(x, y)] = False
+        if row:
+            grid.append(row)
+    return grid, valid
+
+
+def bfs(start, name, grid, visited, allocated, cells_needed):
+    q = deque([(start[0], start[1])])
+    cells = 0
+    while q:
+        x, y = q.popleft()
+        for nx, ny in [(x, y - 1), (x + 1, y - 1), (x + 1, y), (x + 1, y + 1), (x, y + 1), (x - 1, y + 1), (x - 1, y), (x - 1, y - 1)]:
+            if 0 <= nx < len(grid[0]) and 0 <= ny < len(grid):
+                coord = nx, ny
+                if valid[coord] and coord not in visited:
+                    cells += 1
+                    visited[coord] = True
+                    allocated[coord] = name
+                    if cells == cells_needed:
+                        return
+                    q.append(coord)
+
+
+def splitSection(grid, organizations):
+    """
+        Allocate the space in the grid to each organization
+        Args:   grid - Grid containing the section shape
+                organizations - List of orgs to be allocated
+    """
+    allocated = {}
+    visited = {}
+    for org in organizations:
+        name = org.name
+        breaker = False
+        cells_allocated = 0
+        cells_needed = math.ceil(org.sqft / CELL_AREA)
+        for col_idx, col in enumerate(grid):
+            for row_idx, row in enumerate(col):
+                point = (row_idx, col_idx)
+                if valid[point] and (point not in visited):
+                    breaker = True
+                    bfs(point, name, grid, visited, allocated, cells_needed)
+                    break
+            if breaker:
+                break
+    return allocated
+
+
+polygon = createPolygon(section_coords)
+
+
+if not polygon.is_valid:
+    print("The polygon is not valid.")
+else:
+    grid, valid = createGrid(polygon)
+    allocated = splitSection(grid, orgs)
 
     # Plotting
     fig, ax = plt.subplots()
-
-    # Plot the polygon
     x, y = polygon.exterior.xy
     ax.plot(x, y, color='blue', alpha=0.5)
 
-    # Dictionary to store colors for each organization
     org_colors = {}
+    for i, org in enumerate(orgs):
+        org_colors[org.name] = colors[i]
 
-    # Plot the grid
-    for row_index, row in enumerate(grid):
-        for col_index, cell in enumerate(row):
+    for col_idx, col in enumerate(grid):
+        for row_idx, cell in enumerate(col):
+            # print("  ",cell)
+            point = (row_idx, col_idx)
             x, y = cell
-            rect = plt.Rectangle((x - cell_size_meters / 2, y - cell_size_meters / 2), cell_size_meters, cell_size_meters, linewidth=0.5, edgecolor='black', facecolor='none')
+            rect = plt.Rectangle((x - CELL_SIZE / 2, y - CELL_SIZE / 2), CELL_SIZE, CELL_SIZE, linewidth=0, edgecolor='black', facecolor='none')
             ax.add_patch(rect)
-            if (row_index, col_index) in allocated:
-                org_name = allocated[(row_index, col_index)]
-                if org_name not in org_colors:
-                    org_colors[org_name] = np.random.rand(3,)  # Generate a random color for the organization
+            if point == (38,51):
+                ax.add_patch(plt.Rectangle((x - CELL_SIZE / 2, y - CELL_SIZE / 2), CELL_SIZE, CELL_SIZE, linewidth=0, edgecolor='none', facecolor="Black"))
+            if point in allocated:
+                org_name = allocated[point]
+                # org_colors[]
+                # if org_name not in org_colors:
+                #     org_colors[org_name] = np.random.rand(3,)  # Generate a random color for the organization
                 color = org_colors[org_name]
-                ax.add_patch(plt.Rectangle((x - cell_size_meters / 2, y - cell_size_meters / 2), cell_size_meters, cell_size_meters, linewidth=0, edgecolor='none', facecolor=color))
-                ax.text(x - cell_size_meters / 4, y, f"{row_index},{col_index}", fontsize=8, ha='center', va='center')
-
-    # Set axis limits
-    ax.set_xlim(polygon.bounds[0] - 10, polygon.bounds[2] + 10)
-    ax.set_ylim(polygon.bounds[1] - 10, polygon.bounds[3] + 10)
+                ax.add_patch(plt.Rectangle((x - CELL_SIZE / 2, y - CELL_SIZE / 2), CELL_SIZE, CELL_SIZE, linewidth=0, edgecolor='none', facecolor=color))
 
     # Show plot
     plt.gca().set_aspect('equal', adjustable='box')
     plt.xlabel('Longitude')
     plt.ylabel('Latitude')
-    plt.title('Shape with Grid and Allocated Organizations')
-    plt.grid(True)
+    plt.title('Section with Allocated Plots')
+    # plt.grid(True)
     plt.show()
-else:
-    print("The polygon is not valid.")
