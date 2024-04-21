@@ -2,7 +2,6 @@ from django.db import models
 
 from django.contrib.auth.models import AbstractBaseUser
 from django.contrib.auth.models import BaseUserManager
-from ...algo import algorithm
 from django.utils import timezone
 import io
 from django.core.files.base import ContentFile
