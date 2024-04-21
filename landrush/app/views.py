@@ -23,6 +23,33 @@ def home(request):
     algorithm()
     return HttpResponse("Hello, world. You're at the landrush app home.")
 
+class FillPlot(APIView):
+    def get(self, request):
+        try:
+            #1. get event ID from request
+            event_id = request.data.get('event_id')
+            #2. find the plot for that event ID
+            event = Event.objects.get(id=event_id)
+            #3. get lat/long points for that plot
+            plot = event.plot
+            plot_coordinates_from_db = Coordinates.objects.filter(plot=plot)
+            plot_coordinates = []
+            #4. convert lat/long list with strings to doubles/floats
+            for p in plot_coordinates_from_db:
+                plot_coordinates.append((float(p.longitude), float(p.latitude)))
+            
+            #5. get all orgs with user count that will be attending that event
+            # registered_students = StudentRegisteredEvent.objects.filter(event=event)
+            # print(registered_students)
+            #6. run 'algorithm(lat/long list, orgs with users) // this returns an image.png
+            algorithm(plot_coordinates)
+            #7. save image in database
+            #8. return 201 if success
+            return Response("Image saved successfully", status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response(str(e), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+        
 
 class StudentRegister(APIView):
     def post(self, request):

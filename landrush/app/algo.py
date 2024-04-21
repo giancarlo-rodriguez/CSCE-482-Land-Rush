@@ -52,7 +52,7 @@ colors = [
 # ]
 
 # SECTION 2
-section_coords = [
+section_coords1 = [
     (-96.34607133776048, 30.608116259627238),
     (-96.3459345450978, 30.607973132735594),
     (-96.34601769357906, 30.607333676136324),
@@ -132,8 +132,7 @@ def calcSqftPerOrg(section_area, organizations):
 
 
 
-section_area = calcSectionArea(section_coords)
-calcSqftPerOrg(section_area, orgs)
+
 
 
 def createPolygon(section_coords):
@@ -172,87 +171,88 @@ def createGrid(polygon):
     return grid, valid
 
 
-def bfs(start, name, grid, visited, allocated, cells_needed):
-    q = deque([(start[0], start[1])])
-    cells = 0
-    while q:
-        x, y = q.popleft()
-        for nx, ny in [(x, y - 1), (x + 1, y - 1), (x + 1, y), (x + 1, y + 1), (x, y + 1), (x - 1, y + 1), (x - 1, y), (x - 1, y - 1)]:
-            if 0 <= nx < len(grid[0]) and 0 <= ny < len(grid):
-                coord = nx, ny
-                if valid[coord] and coord not in visited:
-                    cells += 1
-                    visited[coord] = True
-                    allocated[coord] = name
-                    if cells == cells_needed:
-                        return
-                    q.append(coord)
 
 
-def splitSection(grid, organizations):
-    """
-        Allocate the space in the grid to each organization
-        Args:   grid - Grid containing the section shape
-                organizations - List of orgs to be allocated
-    """
-    allocated = {}
-    visited = {}
-    for org in organizations:
-        name = org.name
-        breaker = False
-        cells_allocated = 0
-        cells_needed = math.ceil(org.sqft / CELL_AREA)
-        for col_idx, col in enumerate(grid):
-            for row_idx, row in enumerate(col):
-                point = (row_idx, col_idx)
-                if valid[point] and (point not in visited):
-                    breaker = True
-                    bfs(point, name, grid, visited, allocated, cells_needed)
+
+
+
+
+def algorithm(section_coords):
+    polygon = createPolygon(section_coords)
+    grid, valid = createGrid(polygon)
+    def bfs(start, name, grid, visited, allocated, cells_needed):
+        q = deque([(start[0], start[1])])
+        cells = 0
+        while q:
+            x, y = q.popleft()
+            for nx, ny in [(x, y - 1), (x + 1, y - 1), (x + 1, y), (x + 1, y + 1), (x, y + 1), (x - 1, y + 1), (x - 1, y), (x - 1, y - 1)]:
+                if 0 <= nx < len(grid[0]) and 0 <= ny < len(grid):
+                    coord = nx, ny
+                    if valid[coord] and coord not in visited:
+                        cells += 1
+                        visited[coord] = True
+                        allocated[coord] = name
+                        if cells == cells_needed:
+                            return
+                        q.append(coord)
+    section_area = calcSectionArea(section_coords)
+    calcSqftPerOrg(section_area, orgs)
+
+    def splitSection(grid, organizations):
+        """
+            Allocate the space in the grid to each organization
+            Args:   grid - Grid containing the section shape
+                    organizations - List of orgs to be allocated
+        """
+        allocated = {}
+        visited = {}
+        for org in organizations:
+            name = org.name
+            breaker = False
+            cells_allocated = 0
+            cells_needed = math.ceil(org.sqft / CELL_AREA)
+            for col_idx, col in enumerate(grid):
+                for row_idx, row in enumerate(col):
+                    point = (row_idx, col_idx)
+                    if valid[point] and (point not in visited):
+                        breaker = True
+                        bfs(point, name, grid, visited, allocated, cells_needed)
+                        break
+                if breaker:
                     break
-            if breaker:
-                break
-    return allocated
+        return allocated
+    allocated = splitSection(grid, orgs)
+    
+    # Plotting
+    fig, ax = plt.subplots()
+    x, y = polygon.exterior.xy
+    ax.plot(x, y, color='blue', alpha=0.5)
 
+    org_colors = {}
+    for i, org in enumerate(orgs):
+        org_colors[org.name] = colors[i]
 
-polygon = createPolygon(section_coords)
+    for col_idx, col in enumerate(grid):
+        for row_idx, cell in enumerate(col):
+            # print("  ",cell)
+            point = (row_idx, col_idx)
+            x, y = cell
+            rect = plt.Rectangle((x - CELL_SIZE / 2, y - CELL_SIZE / 2), CELL_SIZE, CELL_SIZE, linewidth=0, edgecolor='black', facecolor='none')
+            ax.add_patch(rect)
+            if point == (38,51):
+                ax.add_patch(plt.Rectangle((x - CELL_SIZE / 2, y - CELL_SIZE / 2), CELL_SIZE, CELL_SIZE, linewidth=0, edgecolor='none', facecolor="Black"))
+            if point in allocated:
+                org_name = allocated[point]
+                # org_colors[]
+                # if org_name not in org_colors:
+                #     org_colors[org_name] = np.random.rand(3,)  # Generate a random color for the organization
+                color = org_colors[org_name]
+                ax.add_patch(plt.Rectangle((x - CELL_SIZE / 2, y - CELL_SIZE / 2), CELL_SIZE, CELL_SIZE, linewidth=0, edgecolor='none', facecolor=color))
 
-def algorithm():
-    if not polygon.is_valid:
-        print("The polygon is not valid.")
-    else:
-        grid, valid = createGrid(polygon)
-        allocated = splitSection(grid, orgs)
-
-        # Plotting
-        fig, ax = plt.subplots()
-        x, y = polygon.exterior.xy
-        ax.plot(x, y, color='blue', alpha=0.5)
-
-        org_colors = {}
-        for i, org in enumerate(orgs):
-            org_colors[org.name] = colors[i]
-
-        for col_idx, col in enumerate(grid):
-            for row_idx, cell in enumerate(col):
-                # print("  ",cell)
-                point = (row_idx, col_idx)
-                x, y = cell
-                rect = plt.Rectangle((x - CELL_SIZE / 2, y - CELL_SIZE / 2), CELL_SIZE, CELL_SIZE, linewidth=0, edgecolor='black', facecolor='none')
-                ax.add_patch(rect)
-                if point == (38,51):
-                    ax.add_patch(plt.Rectangle((x - CELL_SIZE / 2, y - CELL_SIZE / 2), CELL_SIZE, CELL_SIZE, linewidth=0, edgecolor='none', facecolor="Black"))
-                if point in allocated:
-                    org_name = allocated[point]
-                    # org_colors[]
-                    # if org_name not in org_colors:
-                    #     org_colors[org_name] = np.random.rand(3,)  # Generate a random color for the organization
-                    color = org_colors[org_name]
-                    ax.add_patch(plt.Rectangle((x - CELL_SIZE / 2, y - CELL_SIZE / 2), CELL_SIZE, CELL_SIZE, linewidth=0, edgecolor='none', facecolor=color))
-
-        # Show plot
-        plt.gca().set_aspect('equal', adjustable='box')
-        plt.xlabel('Longitude')
-        plt.ylabel('Latitude')
-        plt.title('Section with Allocated Plots')
-        # plt.grid(True)
-        plt.show()
+    # Show plot
+    plt.gca().set_aspect('equal', adjustable='box')
+    plt.xlabel('Longitude')
+    plt.ylabel('Latitude')
+    plt.title('Section with Allocated Plots')
+    # plt.grid(True)
+    plt.show()
