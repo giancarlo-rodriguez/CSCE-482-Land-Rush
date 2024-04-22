@@ -225,3 +225,18 @@ class StudentRegisteredEvent(models.Model):
     def __str__(self):
         return self.member.name + " attending " + self.event.name + " through " + self.organization.name
 
+class FilledPlot(models.Model):
+    """
+    Model for FilledPlot table
+    Each row represents a filled plot within an event
+    """
+    id = models.IntegerField(primary_key=True)
+    event = models.ForeignKey(Event, related_name='filled_plots', on_delete=models.CASCADE)
+    image = models.ImageField(upload_to='filled_plots/')
+
+    class Meta:
+        db_table = "filled_plots"
+        verbose_name_plural = "Filled Plots"
+
+    def __str__(self):
+        return f"Filled Plot for {self.event.name}"

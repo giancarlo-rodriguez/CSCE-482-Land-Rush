@@ -54,5 +54,6 @@ urlpatterns = [
     path('org/count',views.OrgMemberCount.as_view()),
     path('delete/org',views.DeleteOrg.as_view()),
     path('show/org/attending',views.MembersAttendingEvent.as_view()),
-    path('fill-plot/', views.FillPlot.as_view()),
+    path('fill-plot', views.FillPlot.as_view()),
+    path('get-filled-plot', views.GetFilledPlot.as_view()),
 ]

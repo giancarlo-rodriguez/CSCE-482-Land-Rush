@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.core.files.base import ContentFile
 from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.contrib.auth import authenticate
 from django.core.serializers import serialize
@@ -9,7 +10,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
-from .models import User, University, PendingCreateOrg, PendingJoinOrg, Role, Organization,Event, OrgRegisteredEvent, Coordinates, Plot, StudentRegisteredEvent
+from .models import User, University, PendingCreateOrg, PendingJoinOrg, Role, Organization,Event, OrgRegisteredEvent, Coordinates, Plot, StudentRegisteredEvent, FilledPlot
 from .permissions import IsStudent, IsUniversity, IsOrgAdmin
 import json
 from rest_framework.renderers import JSONRenderer
@@ -42,14 +43,43 @@ class FillPlot(APIView):
             # registered_students = StudentRegisteredEvent.objects.filter(event=event)
             # print(registered_students)
             #6. run 'algorithm(lat/long list, orgs with users) // this returns an image.png
-            algorithm(plot_coordinates)
+            image_data = algorithm(plot_coordinates)
             #7. save image in database
+            FilledPlot.objects.all().delete()
+            filled_plot = FilledPlot(event=event)
+            filled_plot.image.save('filled_plot.png', ContentFile(image_data), save=True)
             #8. return 201 if success
             return Response("Image saved successfully", status=status.HTTP_201_CREATED)
         except Exception as e:
             return Response(str(e), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
-        
+class GetFilledPlot(APIView):
+    def get(self, request):
+        try:
+            # Get event ID from request body
+           
+            event_id = request.data.get('event_id')
+            # Find the filled plot entry for the given event ID
+            
+            filled_plot = FilledPlot.objects.filter(event_id=event_id).first()
+
+            # Initialize a list to store image data for each filled plot
+            image_data_list = []
+
+            # Loop through each filled plot instance
+            with filled_plot.image.open() as image_file:
+                image_data = image_file.read()
+                image_data_list.append(image_data)
+            # Return the image data in the response
+            response = HttpResponse(image_data, content_type='image/png')
+            
+            response['Content-Disposition'] = 'attachment; filename="filled_plot.png"'
+            return response
+        except FilledPlot.DoesNotExist:
+            return Response("Filled plot not found for the given event ID", status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response(str(e), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 class StudentRegister(APIView):
     def post(self, request):

@@ -6,7 +6,7 @@ from shapely.geometry import Point
 from shapely.prepared import prep
 from queue import Queue
 from collections import deque
-
+import io
 # COORDS (LAT, LONG)
 # DICT (ORG ID: (member count, total time))
 
@@ -250,9 +250,13 @@ def algorithm(section_coords):
                 ax.add_patch(plt.Rectangle((x - CELL_SIZE / 2, y - CELL_SIZE / 2), CELL_SIZE, CELL_SIZE, linewidth=0, edgecolor='none', facecolor=color))
 
     # Show plot
-    plt.gca().set_aspect('equal', adjustable='box')
-    plt.xlabel('Longitude')
-    plt.ylabel('Latitude')
-    plt.title('Section with Allocated Plots')
-    # plt.grid(True)
-    plt.show()
+    buffer = io.BytesIO()
+    plt.savefig(buffer, format='png')
+    buffer.seek(0)
+
+    # Read the image data from the buffer
+    image_data = buffer.read()
+
+    plt.close(fig)  # Close the figure to free up resources
+
+    return image_data
