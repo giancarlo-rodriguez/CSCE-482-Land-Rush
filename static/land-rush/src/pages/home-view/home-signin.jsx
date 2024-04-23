@@ -18,7 +18,7 @@ const HomeSignIn = () => {
       password: password,
     }).then((res) => {
       Cookies.set('token', res.data.token, { expires: 7 });
-      console.log(res.data.token);
+      console.log("token : ",res.data.token);
 
       // Determine where to redirect based on user role
       const userRole = res.data.user_role;

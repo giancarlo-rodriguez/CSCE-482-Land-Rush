@@ -371,14 +371,14 @@ class Login(ObtainAuthToken):
     def post(self, request, *args, **kwargs):
         email = request.data.get("email")
         password = request.data.get("password")
-        user = authenticate(email=email, password=password)
-
+        user = User.objects.get(email=email, password=password)
+        print("pre user")
         if user is not None:
             # Check if the user is a university
             if user.is_university:
                 # Generate or retrieve token
                 token, created = Token.objects.get_or_create(user=user)
-
+                print("token uni", token)
                 # Return token along with user role
                 return Response({
                     'token': token.key,
@@ -387,12 +387,13 @@ class Login(ObtainAuthToken):
             else:
                 # Return token along with user role as student
                 token, created = Token.objects.get_or_create(user=user)
-
+                print("token studnet", token)
                 return Response({
                     'token': token.key,
                     'user_role': 'student'
                 })
         else:
+            print("invalid credentials")
             return HttpResponse("Invalid credentials.")
 
 
