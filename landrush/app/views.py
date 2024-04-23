@@ -32,7 +32,7 @@ class FillPlot(APIView):
             #2. find the plot for that event ID
             exists = FilledPlot.objects.filter(event_id=event_id).exists()
             if exists:
-                return Response("A filled plot already exists for this event", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                return Response("A filled plot already exists for this event", status=status.HTTP_400_BAD_REQUEST)
             event = Event.objects.get(id=event_id)
             #3. get lat/long points for that plot
             plot = event.plot
@@ -472,6 +472,10 @@ class DeleteEvent(APIView):
 class ShowEvent(APIView):
     authentication_classes = [TokenAuthentication]
     def get(self,request):
+        print(request.user)
+        print()
+        print()
+        print()
         events = Event.objects.filter(university = request.user.university)
         event_json = serializers.EventSerializer(events, many=True)
         return Response(event_json.data)
@@ -559,6 +563,7 @@ class ShowCoordinates(APIView):
         plot = Plot.objects.get(id = request.GET["plot_id"])   
         coordinates = Coordinates.objects.filter(plot = plot)
         coordinates_json = serializers.CoordinateSerializer(coordinates, many = True)
+        print(coordinates_json.data)
         return Response(coordinates_json.data)
 
 class OrgRegisterEvent(APIView):

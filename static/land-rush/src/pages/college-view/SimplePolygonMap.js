@@ -89,13 +89,45 @@ const SimplePolygonMap = ({ apiKey, lat, lng, coordinates, plotID, plotOGName })
         }
       })
       .then(response => {
-        setFetchedCoordinates(response.data);
+        const tempCoords = response.data.map(coord => ({
+          lat: parseFloat(coord.latitude),
+          lng: parseFloat(coord.longitude)
+        }));
+        console.log(tempCoords)
+        setFetchedCoordinates(tempCoords);
       })
       .catch(error => {
         console.error('Error fetching coordinates:', error);
       });
     }
   }, [fetchedCoordinates, lat, lng, plotID, token]);
+  // useEffect(() => {
+  //   if (fetchedCoordinates.length === 0 && lat && lng) {
+  //     axios.get('http://127.0.0.1:8000/show/coordinates', {
+  //       params: {
+  //         plot_id: plotID
+  //       },
+  //       headers: {
+  //         Authorization: `Token ${token}`
+  //       }
+  //     })
+  //     .then(response => {
+  //       let temp_coords = []
+  //       for(let i = 0; i < response.data.length; i++)
+  //       {
+  //         temp_coords.push({
+  //           lat: parseFloat(response.data[i].latitude),
+  //           lng: parseFloat(response.data[i].longitude)
+  //         })
+  //       }
+  //       console.log("HELLO",temp_coords)
+  //       setFetchedCoordinates(temp_coords);
+  //     })
+  //     .catch(error => {
+  //       console.error('Error fetching coordinates:', error);
+  //     });
+  //   }
+  // }, [fetchedCoordinates, lat, lng, plotID, token]);
 
   useEffect(() => {
     if (map && coordinates.length > 0) {

@@ -66,19 +66,33 @@
 // };
 
 // export default OrgEvents;
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './style.css';
 import image1 from "./image.png";
 const OrgEvents = () => {
-  const [events, setEvents] = useState([
-    {
-      id: 1,
-      name: "Event 1",
-      thumbnail: image1,
-      imageUrl: "https://imgs.search.brave.com/5KP1g4TaDjdb0wASmntfMGKX-ZxIeU08zfj_hkYxfn0/rs:fit:500:0:0/g:ce/aHR0cHM6Ly9pbWFn/ZXMudW5zcGxhc2gu/Y29tL3Bob3RvLTE1/NzI1OTAyODUwMzAt/MGFlNmE0NzE1Njcx/P3E9ODAmdz0xMDAw/JmF1dG89Zm9ybWF0/JmZpdD1jcm9wJml4/bGliPXJiLTQuMC4z/Jml4aWQ9TTN3eE1q/QTNmREI4TUh4elpX/RnlZMmg4TVRCOGZH/TjFkR1VsTWpCallY/UjhaVzU4TUh4OE1I/eDhmREE9.jpeg"
-    },
-    // Other events...
-  ]);
+  const [events, setEvents] = useState([]);
+
+  useEffect(() => {
+    // Fetch events from the backend
+    fetchEvents();
+  }, []);
+
+  const fetchEvents = async () => {
+    try {
+      // Make GET request to fetch events
+      const response = await fetch('http://127.0.0.1:8000/show/event');
+      if (!response.ok) {
+        throw new Error('Failed to fetch events');
+      }
+      const eventData = await response.json();
+      console.log(eventData)
+      // Set the fetched events in state
+      console.log("hello")
+      setEvents(eventData);
+    } catch (error) {
+      console.error('Error fetching events:', error);
+    }
+  };
 
   const handleViewClick = (event_id) => {
     fetch('http://127.0.0.1:8000/get-filled-plot', {
