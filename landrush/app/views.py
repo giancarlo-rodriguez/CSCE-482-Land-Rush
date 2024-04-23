@@ -193,13 +193,9 @@ class OrganizationList(APIView):
     authentication_classes = [TokenAuthentication]
     
     def get(self, request):
-        print("-----------------here1-------------")
         university = request.user.university
-        print("-----------------here1-------------")
         organizations = Organization.objects.filter(university=university)
-        print("-----------------here2-------------")
         serializer = serializers.OrganizationSerializer(organizations, many=True, context={'request': request})
-        print("-----------------here3-------------")
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 """

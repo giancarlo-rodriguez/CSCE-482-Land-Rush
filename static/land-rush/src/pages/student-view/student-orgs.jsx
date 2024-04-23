@@ -11,6 +11,10 @@ const MembersList = () => {
   const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
+    fetchOrganizations();
+  }, []);
+
+  const fetchOrganizations = () => {
     const token = Cookies.get('token');
     if (token) {
       axios.get('http://127.0.0.1:8000/show/orgs', {
@@ -19,13 +23,27 @@ const MembersList = () => {
         }
       })
       .then(response => {
-        setOrganizations(response.data);
+        // Sort organizations based on membership status
+        const sortedOrganizations = response.data.slice().sort((a, b) => {
+          if (a.user_has_role === 'Admin') {
+            return -1; // a comes before b
+          } else if (b.user_has_role === 'Admin') {
+            return 1; // b comes before a
+          } else if (a.user_has_role === 'Regular member') {
+            return -1; // a comes before b
+          } else if (b.user_has_role === 'Regular member') {
+            return 1; // b comes before a
+          } else {
+            return 0; // no change in order
+          }
+        });
+        setOrganizations(sortedOrganizations);
       })
       .catch(error => {
         console.error('Error fetching organizations:', error);
       });
     }
-  }, []);
+  };
 
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
@@ -37,9 +55,23 @@ const MembersList = () => {
     } else if (userHasRole === 'Regular member') {
       window.location.href = `/org/${organizationId}/events`;
     } else {
-      console.log('Request to join organization:', organizationName);
+      axios.post('http://127.0.0.1:8000/join/org', {
+        organization: organizationName
+      }, {
+        headers: {
+          Authorization: `Token ${Cookies.get('token')}`
+        }
+      })
+      .then(() => {
+        // After joining, fetch the updated organization list
+        fetchOrganizations();
+      })
+      .catch(error => {
+        console.error('Error joining organization:', error);
+      });
     }
   };
+
   const handleCreateOrganization = () => {
     axios.post('http://127.0.0.1:8000/create/org/request', { organization: newOrgName }, {
       headers: {
@@ -49,38 +81,13 @@ const MembersList = () => {
     .then(() => {
       setNewOrgName('');
       setShowModal(false);
-      // Refetch the updated organization list from the server
-      axios.get('http://127.0.0.1:8000/show/orgs', {
-        headers: {
-          Authorization: `Token ${Cookies.get('token')}`
-        }
-      })
-      .then(response => {
-        setOrganizations(response.data);
-      })
-      .catch(error => {
-        console.error('Error fetching organizations:', error);
-      });
+      // After creating, fetch the updated organization list
+      fetchOrganizations();
     })
     .catch(error => {
       console.error('Error creating organization:', error);
     });
   };
-  
-    const sortedOrganizations = organizations.sort((a, b) => {
-      if (a.user_has_role === 'Admin') {
-        return -1; // a comes before b
-      } else if (b.user_has_role === 'Admin') {
-        return 1; // b comes before a
-      } else if (a.user_has_role === 'Regular member') {
-        return -1; // a comes before b
-      } else if (b.user_has_role === 'Regular member') {
-        return 1; // b comes before a
-      } else {
-        return 0; // no change in order
-      }
-    });
-  
 
   return (
     <div className="member-list-container">
