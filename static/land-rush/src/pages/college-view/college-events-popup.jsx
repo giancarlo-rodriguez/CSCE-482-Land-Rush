@@ -8,6 +8,8 @@ const EventDetailsPopup = ({ eventID, eventData }) => {
   const [plotID, setPlotID] = useState('');
   const [timestamp, setTimestamp] = useState('');
   const [plots, setPlots] = useState([]);
+  const [feedbackMessage, setFeedbackMessage] = useState('');
+  const [showFeedback, setShowFeedback] = useState(false);
 
 
   useEffect(() => {
@@ -36,7 +38,6 @@ const EventDetailsPopup = ({ eventID, eventData }) => {
   }, []);
 
   useEffect(() => {
-    // Axios interceptor for logging responses
     const responseLogger = axios.interceptors.response.use(
       (response) => {
         console.log('Response:', response);
@@ -49,7 +50,6 @@ const EventDetailsPopup = ({ eventID, eventData }) => {
     );
 
     return () => {
-      // Remove the interceptor when component unmounts
       axios.interceptors.response.eject(responseLogger);
     };
   }, []);
@@ -69,8 +69,9 @@ const EventDetailsPopup = ({ eventID, eventData }) => {
             }
           });
           console.log('Event created successfully');
+          handleFeedback("Event Created Successfully");
+
         } else {
-          //requestData.event_id = eventID;
           await axios.put(`http://127.0.0.1:8000/create/event`, {
             event_name: eventName,
             plot_id: plotID,
@@ -85,6 +86,7 @@ const EventDetailsPopup = ({ eventID, eventData }) => {
           console.log(plotID);
           console.log(timestamp);
           console.log('Event updated successfully');
+          handleFeedback("Event Updated Successfully");
         }
       } catch (error) {
         console.error('Error:', isNewEvent ? 'creating event' : 'updating event', error);
@@ -104,11 +106,18 @@ const EventDetailsPopup = ({ eventID, eventData }) => {
             params: { event_id: eventID }
           });
           console.log('Event deleted successfully');
+          handleFeedback("Event Deleted Successfully");
         } catch (error) {
           console.error('Error deleting event:', error);
         }
       }
     }
+  };
+
+  const handleFeedback = (message) => {
+    setFeedbackMessage(message);
+    setShowFeedback(true);
+    setTimeout(() => setShowFeedback(false), 3000);
   };
 
   return (

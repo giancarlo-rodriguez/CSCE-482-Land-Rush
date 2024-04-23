@@ -1,7 +1,7 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import React, { useEffect, useState } from 'react';
-import Tool from './college-plots-tool'; // Importing the Tool component
+import Tool from './college-plots-tool';
 import './style.css';
 
 const CollegePlots = () => {
@@ -10,7 +10,7 @@ const CollegePlots = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [toolComponents, setToolComponents] = useState({});
 
-  useEffect(() => {
+  const fetchPlots = () => {
     const token = Cookies.get('token');
     if (token) {
       axios.get('http://127.0.0.1:8000/show/plots', {
@@ -25,6 +25,12 @@ const CollegePlots = () => {
         console.error('Error fetching plots:', error);
       });
     }
+  };
+
+  useEffect(() => {
+    fetchPlots();
+    const interval = setInterval(fetchPlots, 1000);
+    return () => clearInterval(interval);
   }, []);
 
   const handlePlotClick = (plotID) => {

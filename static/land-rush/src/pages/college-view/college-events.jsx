@@ -6,43 +6,47 @@ import './style.css';
 
 const CollegeEvents = () => {
   const [events, setEvents] = useState([]);
-  const [selectedEvent, setSelectedEvent] = useState(null); // This state manages the selected event
+  const [selectedEvent, setSelectedEvent] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    // Fetch events when component mounts
-    const token = Cookies.get('token');
-    if (token) {
-      axios.get('http://127.0.0.1:8000/show/event', {
-        headers: {
-          Authorization: `Token ${token}`
-        }
-      })
-      .then(response => {
-        console.log('Events:', response.data);
-        setEvents(response.data);
-      })
-      .catch(error => {
-        console.error('Error fetching events:', error);
-      });
-    }
+    const fetchEvents = () => {
+      const token = Cookies.get('token');
+      if (token) {
+        axios.get('http://127.0.0.1:8000/show/event', {
+          headers: {
+            Authorization: `Token ${token}`
+          }
+        })
+        .then(response => {
+          console.log('Events:', response.data);
+          setEvents(response.data);
+        })
+        .catch(error => {
+          console.error('Error fetching events:', error);
+        });
+      }
+    };
+
+    fetchEvents();
+
+    const interval = setInterval(fetchEvents, 1000);
+
+    return () => clearInterval(interval);
   }, []);
 
-  // Function to handle event click
   const handleEventClick = (eventID) => {
     setSelectedEvent(eventID);
     const selectedEventData = events.find(event => event.id === eventID);
     console.log('Selected Event Info:', selectedEventData);
   };
   
-  // Function to handle creating a new event
   const handleCreateNewEvent = () => {
     if (selectedEvent === null) {
       setSelectedEvent(0);
     }
   };
 
-  // Filter events based on search query
   const filteredEvents = events.filter((event) =>
     event.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -50,14 +54,12 @@ const CollegeEvents = () => {
   return (
     <div className="college-events-container">
       <div className="college-events-sidebar">
-        {/* Create new event bar */}
         <div
             className={`event-bar-create-new ${selectedEvent === 0 ? 'clicked' : ''}`}
             onClick={handleCreateNewEvent}
           >
           <span className="event-bar-name">Create New Event</span>
         </div>
-        {/* Search bar */}
         <input
           type="text"
           placeholder="Search events..."
@@ -65,7 +67,6 @@ const CollegeEvents = () => {
           onChange={(e) => setSearchQuery(e.target.value)}
           className="event-search-bar"
         />
-        {/* Event list */}
         <div className="event-list">
           {filteredEvents.map((event) => (
             <div
@@ -78,7 +79,6 @@ const CollegeEvents = () => {
           ))}
         </div>
       </div>
-      {/* Render EventDetailsPopup based on selectedEvent state */}
       <div className="college-events-details">
         {selectedEvent !== null && (
           <EventDetailsPopup eventID={selectedEvent} eventData={filteredEvents.find(event => event.id === selectedEvent)} />
