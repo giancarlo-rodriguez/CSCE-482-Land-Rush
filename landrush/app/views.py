@@ -30,6 +30,9 @@ class FillPlot(APIView):
             #1. get event ID from request
             event_id = request.data.get('event_id')
             #2. find the plot for that event ID
+            exists = FilledPlot.objects.filter(event_id=event_id).exists()
+            if exists:
+                return Response("A filled plot already exists for this event", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             event = Event.objects.get(id=event_id)
             #3. get lat/long points for that plot
             plot = event.plot
@@ -84,7 +87,6 @@ class GetAllFilledPlots(APIView):
     def get(self, request):
         try:
             # Get all filled plot instances from the database
-            FilledPlot.objects.all().delete()
             filled_plots = FilledPlot.objects.all()
 
             # Serialize the filled plot instances into JSON
@@ -126,8 +128,6 @@ class StudentRegister(APIView):
         except Exception as e:
             return Response(str(e), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
-
-
 class UniversityRegister(APIView):
     def post(self, request):
         try:
