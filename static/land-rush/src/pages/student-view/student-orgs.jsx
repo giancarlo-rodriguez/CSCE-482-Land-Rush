@@ -53,7 +53,20 @@ const MembersList = () => {
     if (userHasRole === 'Admin') {
       window.location.href = `/org/${organizationId}`;
     } else if (userHasRole === 'Regular member') {
-      window.location.href = `/org/${organizationId}/events`;
+      axios.post('http://127.0.0.1:8000/drop/org', {
+        organization: organizationName
+      }, {
+        headers: {
+          Authorization: `Token ${Cookies.get('token')}`
+        }
+      })
+      .then(() => {
+        // After dropping, fetch the updated organization list
+        fetchOrganizations();
+      })
+      .catch(error => {
+        console.error('Error dropping organization:', error);
+      });
     } else {
       axios.post('http://127.0.0.1:8000/join/org', {
         organization: organizationName
@@ -138,8 +151,8 @@ const MembersList = () => {
                 <td>
                   <button onClick={() => handleJoinRequest(organization.name, organization.id, organization.user_has_role)}>
                     {organization.user_has_role === 'Admin' ? 'Go to Organization' :
-                      organization.user_has_role === 'Regular member' ? 'View Events' :
-                        'Request to Join'}
+                      organization.user_has_role === 'Regular member' ? 'Drop' :
+                        'Join'}
                   </button>
                 </td>
               </tr>
