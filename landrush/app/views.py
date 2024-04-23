@@ -193,9 +193,14 @@ class OrganizationList(APIView):
     authentication_classes = [TokenAuthentication]
     
     def get(self, request):
+        print("-----------------here1-------------")
         university = request.user.university
+        print("-----------------here1-------------")
         organizations = Organization.objects.filter(university=university)
+        print("-----------------here2-------------")
         serializer = serializers.OrganizationSerializer(organizations, many=True, context={'request': request})
+        print("-----------------here3-------------")
+
         return Response(serializer.data, status=status.HTTP_200_OK)
 """
 join org if we do org member request
@@ -370,8 +375,7 @@ class Login(ObtainAuthToken):
     def post(self, request, *args, **kwargs):
         email = request.data.get("email")
         password = request.data.get("password")
-        user = User.objects.get(email=email, password=password)
-        print("pre user")
+        user = authenticate(email=email,password=password)
         if user is not None:
             # Check if the user is a university
             if user.is_university:
