@@ -56,29 +56,6 @@ const SimplePolygonMap = ({ apiKey, lat, lng, coordinates, plotID, plotOGName })
   }, [apiKey, lat, lng]);
 
   useEffect(() => {
-    if (map && fetchedCoordinates.length > 0) {
-      const newPolygons = fetchedCoordinates.map(coordSet => {
-        const plotCoordinates = [{
-          lat: parseFloat(coordSet.latitude),
-          lng: parseFloat(coordSet.longitude)
-        }];
-        const newPolygon = new window.google.maps.Polygon({
-          paths: plotCoordinates,
-          strokeColor: "#0000FF",
-          strokeOpacity: 0.8,
-          strokeWeight: 2,
-          fillColor: "#0000FF",
-          fillOpacity: 0.35,
-          map: map,
-        });
-        return newPolygon;
-      });
-  
-      setCompletedPlots([...completedPlots, ...newPolygons]);
-    }
-  }, [map, fetchedCoordinates]);
-
-  useEffect(() => {
     if (fetchedCoordinates.length === 0 && lat && lng) {
       axios.get('http://127.0.0.1:8000/show/coordinates', {
         params: {
@@ -95,57 +72,32 @@ const SimplePolygonMap = ({ apiKey, lat, lng, coordinates, plotID, plotOGName })
         }));
         console.log(tempCoords)
         setFetchedCoordinates(tempCoords);
+        
+        if (tempCoords.length > 2 && map) {
+          const polygon = new window.google.maps.Polygon({
+            paths: tempCoords,
+            strokeColor: "#0000FF",
+            strokeOpacity: 0.8,
+            strokeWeight: 2,
+            fillColor: "#0000FF",
+            fillOpacity: 0.35,
+            editable: false,
+            draggable: false,
+            map: map,
+          });
+          setPolygon(polygon);
+  
+          const firstCoord = tempCoords[0];
+          map.setCenter(new window.google.maps.LatLng(firstCoord.lat, firstCoord.lng));
+        }
       })
       .catch(error => {
         console.error('Error fetching coordinates:', error);
       });
     }
-  }, [fetchedCoordinates, lat, lng, plotID, token]);
-  // useEffect(() => {
-  //   if (fetchedCoordinates.length === 0 && lat && lng) {
-  //     axios.get('http://127.0.0.1:8000/show/coordinates', {
-  //       params: {
-  //         plot_id: plotID
-  //       },
-  //       headers: {
-  //         Authorization: `Token ${token}`
-  //       }
-  //     })
-  //     .then(response => {
-  //       let temp_coords = []
-  //       for(let i = 0; i < response.data.length; i++)
-  //       {
-  //         temp_coords.push({
-  //           lat: parseFloat(response.data[i].latitude),
-  //           lng: parseFloat(response.data[i].longitude)
-  //         })
-  //       }
-  //       console.log("HELLO",temp_coords)
-  //       setFetchedCoordinates(temp_coords);
-  //     })
-  //     .catch(error => {
-  //       console.error('Error fetching coordinates:', error);
-  //     });
-  //   }
-  // }, [fetchedCoordinates, lat, lng, plotID, token]);
-
-  useEffect(() => {
-    if (map && coordinates.length > 0) {
-      const plotCoordinates = coordinates.map(coord => ({ lat: coord.lat, lng: coord.lng }));
-
-      const newPolygon = new window.google.maps.Polygon({
-        paths: plotCoordinates,
-        strokeColor: "#0000FF",
-        strokeOpacity: 0.8,
-        strokeWeight: 2,
-        fillColor: "#0000FF",
-        fillOpacity: 0.35,
-        map: map,
-      });
-
-      setCompletedPlots([newPolygon]);
-    }
-  }, [map, coordinates, lat, lng]);
+  }, [fetchedCoordinates, lat, lng, plotID, token, map]);
+  
+  
 
   useEffect(() => {
     if (map && drawingMode) {
