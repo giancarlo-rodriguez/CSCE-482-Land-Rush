@@ -39,15 +39,12 @@ function PlotSelect({ plotID, plotOGName }) {
     );
   };
 
-  const lat = 30.6187;
-  const lng = -96.3365;
-
   return (
     <div className="map-container" style={{ width: '100%', height: '100%' }}>
       <Wrapper apiKey="AIzaSyBwtGSYhRKGyxWWW3HEYzyoRi6T43147-o" render={renderMap}>
         <SimplePolygonMap 
-        lat={lat}
-        lng={lng}
+        lat={30.6187}
+        lng={-96.3365}
         coordinates={coordinates}
         plotID={plotID}
         plotOGName={plotOGName}
