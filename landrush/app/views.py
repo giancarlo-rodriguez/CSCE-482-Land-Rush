@@ -48,7 +48,6 @@ class FillPlot(APIView):
             #6. run 'algorithm(lat/long list, orgs with users) // this returns an image.png
             image_data = algorithm(plot_coordinates)
             #7. save image in database
-            FilledPlot.objects.all().delete()
             filled_plot = FilledPlot(event=event)
             filled_plot.image.save('filled_plot.png', ContentFile(image_data), save=True)
             #8. return 201 if success
