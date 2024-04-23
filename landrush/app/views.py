@@ -80,7 +80,24 @@ class GetFilledPlot(APIView):
         except Exception as e:
             return Response(str(e), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+class GetAllFilledPlots(APIView):
+    def get(self, request):
+        try:
+            # Get all filled plot instances from the database
+            FilledPlot.objects.all().delete()
+            filled_plots = FilledPlot.objects.all()
 
+            # Serialize the filled plot instances into JSON
+            serialized_plots = serialize('json', filled_plots)
+
+            # Deserialize the JSON data to convert it into a Python object
+            deserialized_plots = json.loads(serialized_plots)
+
+            # Return the serialized data as JSON response
+            return JsonResponse(deserialized_plots, safe=False)
+        except Exception as e:
+            return Response(str(e), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
 class StudentRegister(APIView):
     def post(self, request):
         try:
