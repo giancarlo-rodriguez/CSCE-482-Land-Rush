@@ -264,7 +264,7 @@ class ShowJoinOrgPending(APIView):
             return JsonResponse(serializer.data, status=200, safe=False)
         except Exception as error:
             return JsonResponse({"error": str(error)}, status=500)
-
+"""
 class RegisterForEvent(APIView):
     authentication_classes = [TokenAuthentication]
     #permission_classes = [?is user admin of org]
@@ -275,6 +275,7 @@ class RegisterForEvent(APIView):
         register_for_event = OrgRegisteredEvent(organization = organization, event = event)
         register_for_event.save()
         return HttpResponse("Organization has registered for event")
+"""
 
 class JoinOrgResponse(APIView):
     authentication_classes = [TokenAuthentication]
@@ -525,5 +526,27 @@ class AverageRegistrationTime(APIView):
                 orgs_attending[org_id] = (1,difference.total_seconds() / 60)
         return Response(orgs_attending)
 
+class RegisterOrgEvent(APIView):
+    authentication_classes = [TokenAuthentication]
+
+    def post(self, request):
+        event_id = request.data.get("event_id")
+        organization_id = request.data.get("organization_id")
+        org = Organization.objects.get(id=organization_id)
+        event = Event.objects.get(id=event_id)
+        org_registered_event = OrgRegisteredEvent(event=event, organization=org)
+        org_registered_event.save()
+        return Response("Registered for event", status=status.HTTP_200_OK)
+
+class StudentOrgRegisteredEvent(APIView):
+    authentication_classes = [TokenAuthentication]
+    def get(self,request):
+        event_id = request.data.get("event_id")
+        organization_id = request.data.get("organization_id")
+        org = Organization.objects.get(id = organization_id)
+        event = Event.objects.get(id = event_id)
+        org_registed_event = OrgRegisteredEvent(event = event, organization = org)
+        org_registed_event.save()
+        return HttpResponse("Registered for event")
 
 # Create the view for running the algorithm

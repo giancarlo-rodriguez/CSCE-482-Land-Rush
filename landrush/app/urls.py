@@ -35,7 +35,7 @@ urlpatterns = [
     path('join/org/response',views.JoinOrgResponse.as_view()), #Needs to be done in frontend
     path('create/event',views.CreateEvent.as_view()), #Needs to be done in frontend
     path('delete/event',views.DeleteEvent.as_view()),
-    path('event/org/register',views.RegisterForEvent.as_view()), #Needs to be done in frontend
+    #path('event/org/register',views.RegisterForEvent.as_view()), #Needs to be done in frontend
     path('show/profile',views.ShowProfile.as_view()), #Done in frontend
     path('show/user/orgs',views.UserOrganizations.as_view()), #Done in frontend
     path('show/event',views.ShowEvent.as_view()), #Done in frontend
@@ -47,5 +47,6 @@ urlpatterns = [
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
     path('update/plot', views.CreatePlot.as_view()),
     path('event/student/register',views.StudentRegisterEvent.as_view()),
+    path('event/org/register',views.RegisterOrgEvent.as_view()),
     path('show/registered/students',views.AverageRegistrationTime.as_view()),
 ]

@@ -1,161 +1,126 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import './student.css';
 import Cookies from 'js-cookie';
 
-const MembersList = () => {
-  const [organizations, setOrganizations] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [joinRequests, setJoinRequests] = useState([]);
-  const [newOrgName, setNewOrgName] = useState('');
-  const [showModal, setShowModal] = useState(false);
+const OrgEvents = () => {
+  const [events, setEvents] = useState([]);
+  const [orgId, setOrgId] = useState(null);
+  const [isCountdownOver, setIsCountdownOver] = useState(false);
 
   useEffect(() => {
-    const token = Cookies.get('token');
-    if (token) {
-      axios.get('http://127.0.0.1:8000/show/orgs', {
-        headers: {
-          Authorization: `Token ${token}`
-        }
-      })
-      .then(response => {
-        setOrganizations(response.data);
-      })
-      .catch(error => {
-        console.error('Error fetching organizations:', error);
-      });
-    }
+    const fetchEvents = async () => {
+      try {
+        const token = Cookies.get('token');
+        const response = await axios.get('http://127.0.0.1:8000/show/event', {
+          headers: {
+            Authorization: `Token ${token}`
+          }
+        });
+        setEvents(response.data);
+      } catch (error) {
+        console.error('Error fetching events:', error);
+      }
+    };
+
+    // Extract orgId from URL
+    const pathParts = window.location.pathname.split('/');
+    const orgIdFromUrl = parseInt(pathParts[pathParts.length - 2]); // Assuming orgId is second-to-last part of the URL
+    setOrgId(orgIdFromUrl);
+
+    fetchEvents();
   }, []);
 
-  const handleSearch = (event) => {
-    setSearchTerm(event.target.value);
-  };
-
-  const handleJoinRequest = (organizationName, organizationId, userHasRole) => {
-    if (userHasRole === 'Admin') {
-      window.location.href = `/org/${organizationId}`;
-    } else if (userHasRole === 'Regular member') {
-      window.location.href = `/org/${organizationId}/events`;
-    } else {
-      // Make a POST request to join the organization
+  const handleRegisterEvent = async (eventId) => {
+    try {
       const token = Cookies.get('token');
-      axios.post(`http://127.0.0.1:8000/join/org`, { organization: organizationName }, {
+      await axios.post('http://127.0.0.1:8000/event/org/register', {
+        event_id: eventId,
+        organization_id: orgId
+      }, {
         headers: {
           Authorization: `Token ${token}`
         }
-      })
-      .then(response => {
-        console.log('Request to join organization:', organizationName);
-        // Optionally, you can update the UI to reflect the successful join request
-      })
-      .catch(error => {
-        console.error('Error joining organization:', error);
-        // Handle error, if needed
       });
+      console.log('Registered for event');
+      // You can perform additional actions here, such as updating state
+    } catch (error) {
+      console.error('Error registering for event:', error);
     }
   };
 
-  const handleCreateOrganization = () => {
-    axios.post('http://127.0.0.1:8000/create/org/request', { organization: newOrgName }, {
-      headers: {
-        Authorization: `Token ${Cookies.get('token')}`
-      }
-    })
-    .then(() => {
-      setNewOrgName('');
-      setShowModal(false);
-      // Refetch the updated organization list from the server
-      axios.get('http://127.0.0.1:8000/show/orgs', {
-        headers: {
-          Authorization: `Token ${Cookies.get('token')}`
-        }
-      })
-      .then(response => {
-        setOrganizations(response.data);
-      })
-      .catch(error => {
-        console.error('Error fetching organizations:', error);
-      });
-    })
-    .catch(error => {
-      console.error('Error creating organization:', error);
-    });
-  };
-  
-  const sortedOrganizations = organizations.sort((a, b) => {
-    if (a.user_has_role === 'Admin') {
-      return -1; // a comes before b
-    } else if (b.user_has_role === 'Admin') {
-      return 1; // b comes before a
-    } else if (a.user_has_role === 'Regular member') {
-      return -1; // a comes before b
-    } else if (b.user_has_role === 'Regular member') {
-      return 1; // b comes before a
+  const renderOrgsDropdown = (orgs) => {
+    if (orgs.length === 0) {
+      return null; // No orgs registered, so return null
     } else {
-      return 0; // no change in order
+      return (
+        <select>
+          {orgs.map((org, index) => (
+            <option key={index} value={org.id}>{org.name}</option>
+          ))}
+        </select>
+      );
     }
-  });
+  };
+
+  const renderCountdownOrButton = (timestamp, eventId, orgs) => {
+    // Convert the timestamp to local time zone
+    const eventDate = new Date(timestamp);
+    const eventDateLocal = new Date(eventDate.getTime() + eventDate.getTimezoneOffset() * 60000);
+    
+    // Get the current local date and time
+    const currentDate = new Date();
+    
+    // Calculate the time difference in milliseconds
+    const differenceInMs = eventDateLocal.getTime() - currentDate.getTime();
+    
+    // Convert the time difference to days
+    const differenceInDays = differenceInMs / (1000 * 3600 * 24);
+    
+    const daysLeft = Math.floor(differenceInDays); // Calculate the days left without decimals
+    console.log(timestamp);
+    console.log(eventId, daysLeft);
+
+    if (daysLeft > 2) {
+      // If more than 2 days left, render countdown
+      const remainingDays = daysLeft - 2;
+      const hours = Math.floor((differenceInMs / (1000 * 3600)) % 24); // Calculate hours
+      const minutes = Math.floor((differenceInMs / (1000 * 60)) % 60); // Calculate minutes
+      return (
+        <span>{remainingDays} days, {hours} hours, {minutes} minutes left</span>
+      );
+    } else if (daysLeft > 1 && !isCountdownOver) {
+      // If between 1 and 2 days left, set the countdown over flag
+      setIsCountdownOver(true);
+      return (
+        <span>1 day left</span>
+      );
+    } else if (orgs.length === 0 && isCountdownOver) {
+      // If no orgs registered and countdown is over, display "No orgs registered"
+      return <span>No orgs registered</span>;
+    } else {
+      // If 2 days or less left and countdown is over, render the register button
+      return (
+        <button className="register-button" onClick={() => handleRegisterEvent(eventId)}>Register</button>
+      );
+    }
+  };
 
   return (
-    <div className="member-list-container">
-      <div className="join-requests">
-        <h2>Join Requests</h2>
-        <ul>
-          {joinRequests.map((request, index) => (
-            <li key={index}>{request}</li>
-          ))}
-        </ul>
-      </div>
-      <input
-        type="text"
-        placeholder="Search by name..."
-        value={searchTerm}
-        onChange={handleSearch}
-        className="member-search-bar"
-      />
-      <div className="member-grid-container">
-        <button onClick={() => setShowModal(true)}>Add Organization</button>
-        {showModal && (
-          <div className="modal">
-            <div className="modal-content">
-              <span className="close" onClick={() => setShowModal(false)}>&times;</span>
-              <input
-                type="text"
-                placeholder="Enter organization name..."
-                value={newOrgName}
-                onChange={(e) => setNewOrgName(e.target.value)}
-              />
-              <button onClick={handleCreateOrganization}>Create</button>
-            </div>
+    <div className="org-events-list">
+      {events.map((event) => (
+        <div key={event.id} className="event-bar">
+          <img src={event.thumbnail} alt="Event Thumbnail" className="event-bar-thumbnail" />
+          <div className="event-bar-details">
+            <span className="event-bar-name">{event.name}</span>
+            {renderOrgsDropdown(event.registered_orgs)}
           </div>
-        )}
-        <table className="member-table">
-          <thead>
-            <tr>
-              <th>Organization</th>
-              <th>Membership Status</th>
-              <th>Join Request</th>
-            </tr>
-          </thead>
-          <tbody>
-            {sortedOrganizations.map((organization, index) => (
-              <tr key={index} className="member-tr">
-                <td>{organization.name}</td>
-                <td>{organization.user_has_role}</td>
-                <td>
-                  <button onClick={() => handleJoinRequest(organization.name, organization.id, organization.user_has_role)}>
-                    {organization.user_has_role === 'Admin' ? 'Go to Organization' :
-                      organization.user_has_role === 'Regular member' ? 'View Events' :
-                        'Request to Join'}
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+          <div className="event-bar-register">
+            {renderCountdownOrButton(event.timestamp, event.id, event.registered_orgs)}
+          </div>
+        </div>
+      ))}
     </div>
   );
 };
 
-export default MembersList;
+export default OrgEvents;

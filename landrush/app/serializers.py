@@ -14,6 +14,7 @@ class EventSerializer(serializers.ModelSerializer):
         slug_field='name'
     )
     registered = serializers.SerializerMethodField()
+    registered_orgs = serializers.SerializerMethodField()
 
     def get_registered(self, event):
         # Check if the current user is registered for this event
@@ -25,9 +26,17 @@ class EventSerializer(serializers.ModelSerializer):
                 return is_registered
         return False
 
+    def get_registered_orgs(self, event):
+        # Get all organizations registered for this event
+        registered_orgs = models.OrgRegisteredEvent.objects.filter(event=event)
+        org_data = [{'id': org.organization.id, 'name': org.organization.name} for org in registered_orgs]
+        return org_data
+
     class Meta:
         model = models.Event
-        fields = ['id', 'name', 'plot', 'created', 'university', 'timestamp', 'registered']
+        fields = ['id', 'name', 'plot', 'created', 'university', 'timestamp', 'registered', 'registered_orgs']
+
+
 
 class PlotSerializer(serializers.ModelSerializer):
     university = serializers.SlugRelatedField(
