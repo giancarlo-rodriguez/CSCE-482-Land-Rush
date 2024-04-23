@@ -105,10 +105,10 @@ class StudentRegister(APIView):
             req_name = request.data.get("fullName")
             req_email = request.data.get("email")
             req_password = request.data.get("password")
-            university_id = request.data.get("university_id")  # Adjust the key to match frontend
-            university = University.objects.get(id = university_id)
+            university = request.data.get("university")  # Adjust the key to match frontend
+            university = University.objects.get(name = university)
 
-            if not (req_email and req_password and university_id and req_name):
+            if not (req_email and req_password and university and req_name):
                 return Response("Email, password, and university name are required.", status=status.HTTP_400_BAD_REQUEST)
 
             # Check if the university already exists
