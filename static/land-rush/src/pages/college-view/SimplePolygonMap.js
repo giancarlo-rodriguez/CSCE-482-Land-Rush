@@ -9,9 +9,6 @@ const SimplePolygonMap = ({ apiKey, lat, lng, coordinates, plotID, plotOGName })
   const [map, setMap] = useState(null);
   const [polygon, setPolygon] = useState(null);
   const [drawingMode, setDrawingMode] = useState(false);
-  const [completedPlots, setCompletedPlots] = useState([]);
-  const [highlightedPlots, setHighlightedPlots] = useState([]);
-  const [selectedPlot, setSelectedPlot] = useState(null);
   const [currentCoordinatePoints, setCurrentCoordinatePoints] = useState(0);
   const [modifyModeActive, setModifyModeActive] = useState(false);
   const [drawModeActive, setDrawModeActive] = useState(false);
@@ -76,10 +73,10 @@ const SimplePolygonMap = ({ apiKey, lat, lng, coordinates, plotID, plotOGName })
         if (tempCoords.length > 2 && map) {
           const polygon = new window.google.maps.Polygon({
             paths: tempCoords,
-            strokeColor: "#0000FF",
+            strokeColor: "black",
             strokeOpacity: 0.8,
             strokeWeight: 2,
-            fillColor: "#0000FF",
+            fillColor: "black",
             fillOpacity: 0.35,
             editable: false,
             draggable: false,
@@ -89,6 +86,7 @@ const SimplePolygonMap = ({ apiKey, lat, lng, coordinates, plotID, plotOGName })
   
           const firstCoord = tempCoords[0];
           map.setCenter(new window.google.maps.LatLng(firstCoord.lat, firstCoord.lng));
+          setDrawModeActive(false);
         }
       })
       .catch(error => {
@@ -97,187 +95,108 @@ const SimplePolygonMap = ({ apiKey, lat, lng, coordinates, plotID, plotOGName })
     }
   }, [fetchedCoordinates, lat, lng, plotID, token, map]);
   
-  
-
   useEffect(() => {
-    if (map && drawingMode) {
+    if (map && modifyModeActive) {
       const clickListener = map.addListener('click', (event) => {
         const path = polygon.getPath();
         path.push(event.latLng);
       });
-
+  
       const rightClickListener = map.addListener('rightclick', () => {
         const path = polygon.getPath();
         if (path.getLength() > 0) {
           path.pop();
         }
       });
-
+  
       return () => {
         window.google.maps.event.removeListener(clickListener);
         window.google.maps.event.removeListener(rightClickListener);
       };
     }
-  }, [map, polygon, drawingMode]);
-
-  const handleSelectPlot = (plot) => {
-    setSelectedPlot(plot);
-    handleHighlightPlot(plot);
-  };
-
-  useEffect(() => {
-    completedPlots.forEach(plot => {
-      const clickListener = plot.addListener('click', () => {
-        handleSelectPlot(plot);
-      });
-
-      return () => {
-        window.google.maps.event.removeListener(clickListener);
-      };
-    });
-  }, [completedPlots]);
-
-  useEffect(() => {
-    const CoordinatesArray = completedPlots.map(plot => {
-      const path = plot.getPath().getArray();
-      return path.map(Coord => [Coord.lat(), Coord.lng()]);
-    });
-    if (completedPlots) {
-      localStorage.setItem('completedPlot', JSON.stringify(CoordinatesArray));
-    }
-
-  }, [completedPlots]);
-
-  const handleHighlightPlot = (plot) => {
-    if (!drawingMode) {
-      if (highlightedPlots.includes(plot)) {
-        plot.setOptions({ strokeColor: "black", fillColor: "#284d00" });
-        setHighlightedPlots(prevPlots => prevPlots.filter(prevPlot => prevPlot !== plot));
-      } else {
-        plot.setOptions({ strokeColor: "red", fillColor: "red" });
-        setHighlightedPlots(prevPlots => [...prevPlots, plot]);
-        setSelectedPlot(plot);
-      }
-    }
-  };
-
-  const handleAddPoint = () => {
-    if (!drawingMode && !selectedPlot) {
-      if (map) {
-        const newPolygon = new window.google.maps.Polygon({
-          strokeColor: "#0000FF",
-          strokeOpacity: 0.8,
-          strokeWeight: 2,
-          fillColor: "#0000FF",
-          fillOpacity: 0.35,
-          editable: true,
-          draggable: true,
-          map: map,
-        });
-        setPolygon(newPolygon);
-        setDrawingMode(true);
-        setCurrentCoordinatePoints(currentCoordinatePoints + 1);
-        setModifyModeActive(false);
-        setDrawModeActive(true);
-      }
-    }
-  };
+  }, [map, polygon, modifyModeActive]);
 
   const handleModifyPlot = () => {
-    if (selectedPlot) {
-      selectedPlot.setEditable(!selectedPlot.getEditable());
-      if (!selectedPlot.getEditable()) {
-        selectedPlot.setOptions({ strokeColor: "black", fillColor: "#284d00" });
-        setSelectedPlot(null);
-      } else {
-        selectedPlot.setOptions({ strokeColor: "orange", fillColor: "orange", draggable: true });
+    if (!drawingMode) {
+      if (map && polygon) { // Check if there's an existing polygon
+        polygon.setEditable(true); // Set the existing polygon to be editable
+        setModifyModeActive(true);
+        setDrawModeActive(false);
+      } else { // If there's no existing polygon, create a new one
+        if (map) {
+          const newPolygon = new window.google.maps.Polygon({
+            strokeColor: "#0000FF",
+            strokeOpacity: 0.8,
+            strokeWeight: 2,
+            fillColor: "#0000FF",
+            fillOpacity: 0.35,
+            editable: true,
+            draggable: true,
+            map: map,
+          });
+          setPolygon(newPolygon);
+          setDrawingMode(true);
+          setCurrentCoordinatePoints(currentCoordinatePoints + 1);
+          setModifyModeActive(true);
+          setDrawModeActive(true);
+        }
+      }
+    } else if (!drawingMode && polygon) { // Check if drawing mode is not active and there's an existing polygon
+      if (map) {
+        setDrawingMode(false);
+        setCurrentCoordinatePoints(currentCoordinatePoints + 1);
+        setModifyModeActive(false);
         setDrawModeActive(false);
       }
     }
-  };
-
-  const handleResetPlot = () => {
-    setCompletedPlots(prevPlots => prevPlots.filter(plot => !highlightedPlots.includes(plot)));
-
-    highlightedPlots.forEach(plot => {
-      plot.setMap(null);
-      if (plot === selectedPlot) {
-        setSelectedPlot(null);
-      }
-    });
-    setHighlightedPlots([]);
   };
 
   const handleCompletePlot = async () => {
     if ((drawModeActive || modifyModeActive) && polygon && polygon.getPath().getLength() > 2) {
       polygon.setOptions({ editable: false, draggable: false, strokeColor: "black", fillColor: "#284d00" });
       setDrawingMode(false);
-      setCompletedPlots([...completedPlots, polygon]);
-      setPolygon(null);
-      setCurrentCoordinatePoints(0);
-      setDrawModeActive(false);
       setModifyModeActive(false);
-
-      if (plotID === 0) {
-        const updatedCompletedPlots = [...completedPlots, polygon];
-        setCompletedPlots(updatedCompletedPlots);
+      setDrawModeActive(false);
   
-        const coordinatesToSend = updatedCompletedPlots.map(plot => {
-          return plot.getPath().getArray().map(coord => {
-            return [coord.lat(), coord.lng()];
-          });
-        });
+      const coordinatesToSend = polygon.getPath().getArray().map(coord => {
+        return [coord.lat(), coord.lng()];
+      });
   
-        try {
-          const response = await axios.post('http://127.0.0.1:8000/create/plot', {
-            coordinates: coordinatesToSend,
+      try {
+        let response;
+        if (plotID === 0) {
+          response = await axios.post('http://127.0.0.1:8000/create/plot', {
+            coordinates: [coordinatesToSend],
             plot_name: plotName || 'Plot Name'
           }, {
             headers: {
               Authorization: `Token ${token}` 
             }
           });
-          handleFeedback('Plot created successfully!');
-        } catch (error) {
-          handleFeedback('Error creating plot');
-          console.error('Error creating plot:', error);
-        }
-      } else if (plotID > 0) {
-        const updatedCompletedPlots = [...completedPlots, polygon];
-        setCompletedPlots(updatedCompletedPlots);
-  
-        const coordinatesToSend = updatedCompletedPlots.map(plot => {
-          return plot.getPath().getArray().map(coord => {
-            return [coord.lat(), coord.lng()];
-          });
-        });
-        try {
-          const response = await axios.put('http://127.0.0.1:8000/create/plot', {
+          handleFeedback("Plot Created Successfully");
+          console.log("Post Successful");
+        } else if (plotID > 0) {
+          response = await axios.put('http://127.0.0.1:8000/create/plot', {
             plot_id: plotID,
-            coordinates: coordinatesToSend,
+            coordinates: [coordinatesToSend],
             plot_name: plotName || 'Plot Name'
           }, {
             headers: {
               Authorization: `Token ${token}` 
             }
           });
-          handleFeedback('Plot updated successfully!');
-        } catch (error) {
-          handleFeedback('Error updating plot');
-          console.error('Error updating plot:', error);
+          handleFeedback("Plot Updated Successfully");
+          console.log("Put Successful");
         }
-      } else {
-        handleFeedback('Error: plotID');
+      } catch (error) {
+        handleFeedback('Operation Failed');
+        console.error('Error updating plot:', error);
       }
+    } else {
+      handleFeedback('A plot requires at least 3 points.')
     }
   };
-
-  const handleFeedback = (message) => {
-    setFeedbackMessage(message);
-    setShowFeedback(true);
-    setTimeout(() => setShowFeedback(false), 3000);
-  };
-
+  
   const handleDeletePlot = async () => {
     try {
       const response = await axios.delete('http://127.0.0.1:8000/delete/plot', {
@@ -286,29 +205,33 @@ const SimplePolygonMap = ({ apiKey, lat, lng, coordinates, plotID, plotOGName })
           Authorization: `Token ${token}`
         }
       });
-      handleFeedback(response.data);
+      handleFeedback("Plot Deleted Successfully");
+      setPolygon(null);
     } catch (error) {
-      handleFeedback('Error deleting plot');
+      handleFeedback('Error deleting plot: ' + error.response.data.detail);
       console.error('Error deleting plot:', error);
     }
   };
+  
 
-
+  const handleFeedback = (message) => {
+    setFeedbackMessage(message);
+    setShowFeedback(true);
+    setTimeout(() => setShowFeedback(false), 3000);
+  };
 
 return (
   <div style={{ height: '100%', width: '100%', display: 'flex', flexDirection: 'column' }}>
     <div style={{ height: '80%', width: '100%' }} ref={mapRef}></div>
     <div style={{ marginTop: '10px', width: '100%', textAlign: 'center' }}>Editing Plot: {plotID === 0 ? "New Plot" : plotOGName}</div>
     <div style={{ marginTop: '10px', width: '100%', textAlign: 'center' }}>
-      <button onClick={handleAddPoint} disabled={drawModeActive || modifyModeActive}>Add Points</button>
-      <button onClick={handleModifyPlot} disabled={!selectedPlot}>Modify Shape</button>
-      <button onClick={handleResetPlot} disabled={!highlightedPlots.length}>Reset</button>
+      <button onClick={handleModifyPlot} disabled={drawModeActive || modifyModeActive}>Modify Points</button>
     </div>
     <div style={{ marginTop: '10px', width: '100%', textAlign: 'center' }}>
       <input type="text" value={plotName} onChange={(e) => setPlotName(e.target.value)} placeholder='Update Name'></input>
     </div>
     <div style={{ marginTop: '10px', width: '100%', textAlign: 'center' }}>
-      <button onClick={handleCompletePlot} disabled={!drawModeActive && !modifyModeActive}>Update</button>
+      <button onClick={handleCompletePlot} disabled={!drawModeActive && !modifyModeActive}>Update Plot</button>
       <button onClick={handleDeletePlot}>Delete Plot</button>
     </div>
     {showFeedback && <div className="feedback-popup">{feedbackMessage}</div>}
