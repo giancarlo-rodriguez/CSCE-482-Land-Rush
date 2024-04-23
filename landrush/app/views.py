@@ -25,7 +25,7 @@ def home(request):
     return HttpResponse("Hello, world. You're at the landrush app home.")
 
 class FillPlot(APIView):
-    def get(self, request):
+    def post(self, request):
         try:
             #1. get event ID from request
             event_id = request.data.get('event_id')
@@ -56,7 +56,7 @@ class FillPlot(APIView):
             return Response(str(e), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
 class GetFilledPlot(APIView):
-    def get(self, request):
+    def post(self, request):
         try:
             # Get event ID from request body
            
