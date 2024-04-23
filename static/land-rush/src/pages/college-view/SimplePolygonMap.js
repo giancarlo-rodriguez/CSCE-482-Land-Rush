@@ -278,6 +278,22 @@ const SimplePolygonMap = ({ apiKey, lat, lng, coordinates, plotID, plotOGName })
     setTimeout(() => setShowFeedback(false), 3000);
   };
 
+  const handleDeletePlot = async () => {
+    try {
+      const response = await axios.delete('http://127.0.0.1:8000/delete/plot', {
+        data: { plot_id: plotID },
+        headers: {
+          Authorization: `Token ${token}`
+        }
+      });
+      handleFeedback(response.data);
+    } catch (error) {
+      handleFeedback('Error deleting plot');
+      console.error('Error deleting plot:', error);
+    }
+  };
+
+
 
 return (
   <div style={{ height: '100%', width: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -293,6 +309,7 @@ return (
     </div>
     <div style={{ marginTop: '10px', width: '100%', textAlign: 'center' }}>
       <button onClick={handleCompletePlot} disabled={!drawModeActive && !modifyModeActive}>Update</button>
+      <button onClick={handleDeletePlot}>Delete Plot</button>
     </div>
     {showFeedback && <div className="feedback-popup">{feedbackMessage}</div>}
   </div>
