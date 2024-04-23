@@ -30,8 +30,17 @@ const SignUp = () => {
       password: password,
       university: selectedUniversity
     }).then((res) => {
+      axios.post("http://127.0.0.1:8000/login", {
+      email: email,
+      password: password,
+    }).then((res) => {
       Cookies.set('token', res.data.token, { expires: 7 });
       window.location.href = '/student';
+    }).catch((err) =>{
+      console.log(err);
+      setError("Invalid email or password"); // Handle authentication error
+    });
+      
     }).catch((err) => {
       console.error('Error signing up:', err);
       setError('Error signing up. Please try again.');
