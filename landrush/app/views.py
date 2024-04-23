@@ -396,7 +396,6 @@ class Login(ObtainAuthToken):
             print("invalid credentials")
             return HttpResponse("Invalid credentials.")
 
-
 class CreateOrg(APIView):
     authentication_classes = [TokenAuthentication]
     def post(self,request):
@@ -423,6 +422,26 @@ class DeleteOrg(APIView):
         except:
             return HttpResponse("Org Not deleted.")
 
+class AddAccountToOrg(APIView):
+    authentication_classes = [TokenAuthentication]
+
+    def post(self, request):
+        org_name = request.data.get("organization")
+        
+        try:
+            organization = Organization.objects.get(name=org_name)
+            user = request.user
+
+            if Role.objects.filter(user=user, organization=organization).exists():
+                return HttpResponse("User is already a member of this organization.", status=400)
+            else:
+                new_role = Role(user=user, organization=organization)
+                new_role.save()
+                return HttpResponse("User added to organization successfully!", status=201)
+        
+        except Organization.DoesNotExist:
+            return HttpResponse("Organization not found.", status=404)
+        
 class CreateEvent(APIView):
     authentication_classes = [TokenAuthentication]
     def post(self,request):
@@ -557,7 +576,6 @@ class ShowPlots(APIView):
             plots_json = serializers.PlotSerializer(plots, many=True)
             return Response(plots_json.data)
 
-
 class ShowCoordinates(APIView):
     authentication_classes = [TokenAuthentication]
     def get(self,request):
@@ -637,7 +655,6 @@ class StudentUnregisterEvent(APIView):
             return HttpResponse("You are not registered for this event.")
 
         return HttpResponse("Unregistered for event")
-
 
 class AverageRegistrationTime(APIView):
     authentication_classes = [TokenAuthentication]

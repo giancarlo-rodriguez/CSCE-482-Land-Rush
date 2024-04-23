@@ -69,12 +69,29 @@
 import React, { useState, useEffect } from 'react';
 import './style.css';
 import image1 from "./image.png";
+import Cookies from 'js-cookie';
+import axios from 'axios';
+
 const OrgEvents = () => {
   const [events, setEvents] = useState([]);
 
   useEffect(() => {
-    // Fetch events from the backend
-    fetchEvents();
+    // Fetch events when component mounts
+    const token = Cookies.get('token');
+    if (token) {
+      axios.get('http://127.0.0.1:8000/show/event', {
+        headers: {
+          Authorization: `Token ${token}`
+        }
+      })
+      .then(response => {
+        console.log('Events:', response.data);
+        setEvents(response.data);
+      })
+      .catch(error => {
+        console.error('Error fetching events:', error);
+      });
+    }
   }, []);
 
   const fetchEvents = async () => {

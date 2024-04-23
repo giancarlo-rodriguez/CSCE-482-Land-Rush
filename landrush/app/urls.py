@@ -57,4 +57,5 @@ urlpatterns = [
     path('fill-plot', views.FillPlot.as_view()),
     path('get-filled-plot', views.GetFilledPlot.as_view()),
     path('get-all-filled-plots', views.GetAllFilledPlots.as_view()),
+    path('add/account/to/org/', views.AddAccountToOrg.as_view()),
 ]
