@@ -118,11 +118,11 @@ const SimplePolygonMap = ({ apiKey, lat, lng, coordinates, plotID, plotOGName })
 
   const handleModifyPlot = () => {
     if (!drawingMode) {
-      if (map && polygon) { // Check if there's an existing polygon
-        polygon.setEditable(true); // Set the existing polygon to be editable
+      if (map && polygon) {
+        polygon.setEditable(true);
         setModifyModeActive(true);
         setDrawModeActive(false);
-      } else { // If there's no existing polygon, create a new one
+      } else {
         if (map) {
           const newPolygon = new window.google.maps.Polygon({
             strokeColor: "#0000FF",
@@ -141,7 +141,7 @@ const SimplePolygonMap = ({ apiKey, lat, lng, coordinates, plotID, plotOGName })
           setDrawModeActive(true);
         }
       }
-    } else if (!drawingMode && polygon) { // Check if drawing mode is not active and there's an existing polygon
+    } else if (!drawingMode && polygon) {
       if (map) {
         setDrawingMode(false);
         setCurrentCoordinatePoints(currentCoordinatePoints + 1);
@@ -220,23 +220,27 @@ const SimplePolygonMap = ({ apiKey, lat, lng, coordinates, plotID, plotOGName })
     setTimeout(() => setShowFeedback(false), 3000);
   };
 
-return (
-  <div style={{ height: '100%', width: '100%', display: 'flex', flexDirection: 'column' }}>
-    <div style={{ height: '80%', width: '100%' }} ref={mapRef}></div>
-    <div style={{ marginTop: '10px', width: '100%', textAlign: 'center' }}>Editing Plot: {plotID === 0 ? "New Plot" : plotOGName}</div>
-    <div style={{ marginTop: '10px', width: '100%', textAlign: 'center' }}>
-      <button onClick={handleModifyPlot} disabled={drawModeActive || modifyModeActive}>Modify Points</button>
+  return (
+    <div style={{ height: '100%', width: '100%', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ height: '80%', width: '100%' }} ref={mapRef}></div>
+      <div style={{ marginTop: '10px', width: '100%', textAlign: 'center' }}>Editing Plot: {plotID === 0 ? "New Plot" : plotOGName}</div>
+      <div style={{ marginTop: '10px', width: '100%', textAlign: 'center' }}>
+        <button onClick={handleModifyPlot} disabled={drawModeActive || modifyModeActive}>Modify Points</button>
+      </div>
+      <div style={{ marginTop: '10px', width: '100%', textAlign: 'center' }}>
+        <input type="text" value={plotName} onChange={(e) => setPlotName(e.target.value)} placeholder='Update Name'></input>
+      </div>
+      <div style={{ marginTop: '10px', width: '100%', textAlign: 'center' }}>
+        {plotID === 0 ? (
+          <button onClick={handleCompletePlot} disabled={!drawModeActive && !modifyModeActive}>Create Plot</button>
+        ) : (
+          <button onClick={handleCompletePlot} disabled={!drawModeActive && !modifyModeActive}>Update Plot</button>
+        )}
+        {plotID !== 0 && <button onClick={handleDeletePlot}>Delete Plot</button>}
+      </div>
+      {showFeedback && <div className="feedback-popup">{feedbackMessage}</div>}
     </div>
-    <div style={{ marginTop: '10px', width: '100%', textAlign: 'center' }}>
-      <input type="text" value={plotName} onChange={(e) => setPlotName(e.target.value)} placeholder='Update Name'></input>
-    </div>
-    <div style={{ marginTop: '10px', width: '100%', textAlign: 'center' }}>
-      <button onClick={handleCompletePlot} disabled={!drawModeActive && !modifyModeActive}>Update Plot</button>
-      <button onClick={handleDeletePlot}>Delete Plot</button>
-    </div>
-    {showFeedback && <div className="feedback-popup">{feedbackMessage}</div>}
-  </div>
-);
+  );
 };
 
 export default SimplePolygonMap;

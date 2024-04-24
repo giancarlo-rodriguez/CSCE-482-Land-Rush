@@ -9,7 +9,6 @@ const OrganizationsList = () => {
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    // Fetch events when component mounts
     const token = Cookies.get('token');
     if (token) {
       axios.get('http://127.0.0.1:8000/show/orgs', {
