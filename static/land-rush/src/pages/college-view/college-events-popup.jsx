@@ -107,6 +107,7 @@ const EventDetailsPopup = ({ eventID, eventData }) => {
           });
           console.log('Event deleted successfully');
           handleFeedback("Event Deleted Successfully");
+          window.location.reload();
         } catch (error) {
           console.error('Error deleting event:', error);
         }

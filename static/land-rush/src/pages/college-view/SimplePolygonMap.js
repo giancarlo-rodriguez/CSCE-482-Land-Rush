@@ -122,6 +122,11 @@ const SimplePolygonMap = ({ apiKey, lat, lng, coordinates, plotID, plotOGName })
         polygon.setEditable(true);
         setModifyModeActive(true);
         setDrawModeActive(false);
+        polygon.setOptions({
+          strokeColor:"#0000FF",
+          fillColor: "#0000FF",
+          draggable: true,
+        })
       } else {
         if (map) {
           const newPolygon = new window.google.maps.Polygon({
@@ -207,6 +212,7 @@ const SimplePolygonMap = ({ apiKey, lat, lng, coordinates, plotID, plotOGName })
       });
       handleFeedback("Plot Deleted Successfully");
       setPolygon(null);
+      window.location.reload();
     } catch (error) {
       handleFeedback('Error deleting plot: ' + error.response.data.detail);
       console.error('Error deleting plot:', error);
@@ -225,7 +231,11 @@ const SimplePolygonMap = ({ apiKey, lat, lng, coordinates, plotID, plotOGName })
       <div style={{ height: '80%', width: '100%' }} ref={mapRef}></div>
       <div style={{ marginTop: '10px', width: '100%', textAlign: 'center' }}>Editing Plot: {plotID === 0 ? "New Plot" : plotOGName}</div>
       <div style={{ marginTop: '10px', width: '100%', textAlign: 'center' }}>
-        <button onClick={handleModifyPlot} disabled={drawModeActive || modifyModeActive}>Modify Points</button>
+        {plotID === 0 ? (
+          <button onClick={handleModifyPlot} disabled={drawModeActive || modifyModeActive}>Draw Points</button>
+        ) : (
+          <button onClick={handleModifyPlot} disabled={drawModeActive || modifyModeActive}>Modify Points</button>
+        )}
       </div>
       <div style={{ marginTop: '10px', width: '100%', textAlign: 'center' }}>
         <input type="text" value={plotName} onChange={(e) => setPlotName(e.target.value)} placeholder='Update Name'></input>

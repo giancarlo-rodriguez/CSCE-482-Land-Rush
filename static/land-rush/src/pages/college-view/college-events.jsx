@@ -45,6 +45,10 @@ const CollegeEvents = () => {
     if (selectedEvent === null) {
       setSelectedEvent(0);
     }
+    else {
+      setSelectedEvent(null)
+      setSelectedEvent(0);
+    }
   };
 
   const filteredEvents = events.filter((event) =>
