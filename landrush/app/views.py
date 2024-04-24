@@ -308,17 +308,12 @@ class ShowJoinOrgPending(APIView):
     def get(self, request):
         try:
             # Assuming the user is an admin for multiple organizations
-            print("-------------------------here-1---------------------------")
             admin_roles = Role.objects.filter(user=request.user, is_admin=True)
-            print("--------------------------------here0----------------------")
             organizations = [role.organization for role in admin_roles]
-            print("-----------------------here--------------------------")
             pending_join_requests = []
             for org in organizations:
                 pending_join_requests.extend(PendingJoinOrg.objects.filter(organization=org))
-            print("--------------------here2----------------------")
             serializer = serializers.PendingJoinOrgSerializer(pending_join_requests, many=True)
-            print("---------------------------------here3-----------------------------------")
             return JsonResponse(serializer.data, status=200, safe=False)
         except Exception as error:
             return JsonResponse({"error": str(error)}, status=500)
@@ -490,14 +485,12 @@ class DeleteEvent(APIView):
 
 class ShowEvent(APIView):
     authentication_classes = [TokenAuthentication]
-    def get(self,request):
-        print(request.user)
-        print()
-        print()
-        print()
-        events = Event.objects.filter(university = request.user.university)
-        event_json = serializers.EventSerializer(events, many=True)
-        return Response(event_json.data)
+
+    def get(self, request):
+        events = Event.objects.filter(university=request.user.university)
+        serializer_context = {'request': request}  # Create serializer context
+        event_serializer = serializers.EventSerializer(events, many=True, context=serializer_context)
+        return Response(event_serializer.data)
 
 class CreatePlot(APIView):
     authentication_classes = [TokenAuthentication]
@@ -591,13 +584,18 @@ class OrgRegisterEvent(APIView):
         try:
             event_id = request.data.get("event_id")
             organization_id = request.data.get("org_id")
+            
+            # Check if the organization is already registered for the event
+            if OrgRegisteredEvent.objects.filter(organization_id=organization_id, event_id=event_id).exists():
+                return Response("Organization is already registered for this event", status=status.HTTP_400_BAD_REQUEST)
             organization = Organization.objects.get(id=organization_id)
-            event = Event.objects.get(university = request.user.university, id = event_id)
-            register_for_event = OrgRegisteredEvent(organization = organization, event = event)
+            event = Event.objects.get(university=request.user.university, id=event_id)
+            register_for_event = OrgRegisteredEvent(organization=organization, event=event)
             register_for_event.save()
-            return HttpResponse("Organization has registered for event")
+            return Response("Organization has registered for event", status=status.HTTP_201_CREATED)
         except:
-            return HttpResponse("Registration not successful")
+            return Response("Registration not successful", status=status.HTTP_400_BAD_REQUEST)
+
 
 class OrgUnregisterEvent(APIView):
     authentication_classes = [TokenAuthentication]

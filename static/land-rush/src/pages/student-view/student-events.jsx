@@ -2,106 +2,148 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
+// Define fetchEvents function
+const fetchEvents = async (orgId, setEvents) => {
+  try {
+    const token = Cookies.get('token');
+    const response = await axios.get('http://127.0.0.1:8000/show/event', {
+      headers: {
+        Authorization: `Token ${token}`
+      }
+    });
+
+    // Assuming the API response contains an array of events
+    const updatedEvents = response.data.map(event => {
+      const isRegistered = event.registered;
+      return { ...event, isRegistered }; // Add isRegistered property to event object
+    });
+
+    console.log(updatedEvents); // Check if isRegistered property is added
+    setEvents(updatedEvents);
+  } catch (error) {
+    console.error('Error fetching events:', error);
+  }
+};
+
 const OrgEvents = () => {
   const [events, setEvents] = useState([]);
   const [orgId, setOrgId] = useState(null);
-  const [isCountdownOver, setIsCountdownOver] = useState(false);
+  const [selectedOrgId, setSelectedOrgId] = useState(null);
 
   useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const token = Cookies.get('token');
-        const response = await axios.get('http://127.0.0.1:8000/show/event', {
-          headers: {
-            Authorization: `Token ${token}`
-          }
-        });
-        setEvents(response.data);
-      } catch (error) {
-        console.error('Error fetching events:', error);
-      }
-    };
-
-    // Extract orgId from URL
     const pathParts = window.location.pathname.split('/');
-    const orgIdFromUrl = parseInt(pathParts[pathParts.length - 2]); // Assuming orgId is second-to-last part of the URL
+    const orgIdFromUrl = parseInt(pathParts[pathParts.length - 2], 10);
     setOrgId(orgIdFromUrl);
-
-    fetchEvents();
   }, []);
+
+  useEffect(() => {
+    if (orgId !== null) {
+      fetchEvents(orgId, setEvents);
+    }
+  }, [orgId]);
 
   const handleRegisterEvent = async (eventId) => {
     try {
       const token = Cookies.get('token');
-      await axios.post('http://127.0.0.1:8000/event/org/register', {
+      await axios.post('http://127.0.0.1:8000/event/student/register', {
         event_id: eventId,
-        organization_id: orgId
+        organization_id: selectedOrgId // Use the selectedOrgId when registering
       }, {
         headers: {
           Authorization: `Token ${token}`
         }
       });
       console.log('Registered for event');
-      // You can perform additional actions here, such as updating state
+      // Refetch events after registration
+      fetchEvents(orgId, setEvents);
     } catch (error) {
       console.error('Error registering for event:', error);
     }
   };
 
-  const renderOrgsDropdown = (orgs) => {
-    if (orgs.length === 0) {
-      return null; // No orgs registered, so return null
-    } else {
-      return (
-        <select>
-          {orgs.map((org, index) => (
-            <option key={index} value={org.id}>{org.name}</option>
-          ))}
-        </select>
-      );
+  const handleUnregisterEvent = async (eventId, eventOrgId) => {
+    try {
+      const token = Cookies.get('token');
+      await axios.post('http://127.0.0.1:8000/event/student/unregister', {
+        event_id: eventId,
+        organization_id: selectedOrgId || eventOrgId // Use selectedOrgId if available, otherwise use eventOrgId
+      }, {
+        headers: {
+          Authorization: `Token ${token}`
+        }
+      });
+      console.log('Unregistered from event');
+      // Refetch events after unregistration
+      fetchEvents(orgId, setEvents);
+    } catch (error) {
+      console.error('Error unregistering from event:', error);
     }
   };
+  
 
-  const renderCountdownOrButton = (timestamp, eventId, orgs) => {
-    // Convert the timestamp to local time zone
+  const calculateDaysDifference = (timestamp) => {
     const eventDate = new Date(timestamp);
-    const eventDateLocal = new Date(eventDate.getTime() + eventDate.getTimezoneOffset() * 60000);
-    
-    // Get the current local date and time
     const currentDate = new Date();
-    
-    // Calculate the time difference in milliseconds
-    const differenceInMs = eventDateLocal.getTime() - currentDate.getTime();
-    
-    // Convert the time difference to days
-    const differenceInDays = differenceInMs / (1000 * 3600 * 24);
-    
-    const daysLeft = Math.floor(differenceInDays); // Calculate the days left without decimals
-    console.log(timestamp);
-    console.log(eventId, daysLeft);
+    const differenceInMs = eventDate.getTime() - currentDate.getTime();
+    return Math.floor(differenceInMs / (1000 * 3600 * 24));
+  };
 
-    if (daysLeft > 2) {
-      // If more than 2 days left, render countdown
-      const remainingDays = daysLeft - 2;
-      const hours = Math.floor((differenceInMs / (1000 * 3600)) % 24); // Calculate hours
-      const minutes = Math.floor((differenceInMs / (1000 * 60)) % 60); // Calculate minutes
+  const handleOrgSelectChange = (e) => {
+    const orgId = parseInt(e.target.value);
+    setSelectedOrgId(orgId);
+  };
+
+  const renderTimer = (timestamp, event) => {
+    const eventDate = new Date(timestamp);
+    eventDate.setHours(eventDate.getHours() + 5);
+    const registrationCloseDate = new Date(eventDate.getTime() - (2 * 24 * 60 * 60 * 1000)); // Subtract 2 days in milliseconds
+    const currentDate = new Date();
+    const differenceInMs = registrationCloseDate.getTime() - currentDate.getTime();
+    const daysDiff = Math.floor(differenceInMs / (1000 * 3600 * 24));
+
+    const handleRegisterClick = () => {
+      handleRegisterEvent(event.id);
+    };
+
+    const handleUnregisterClick = (eventId, eventOrgId) => {
+      handleUnregisterEvent(eventId, eventOrgId);
+    };
+    
+
+    if (daysDiff >= 0) {
+      const eventDateString = registrationCloseDate.toLocaleString('en-US', {
+        hour: 'numeric',
+        minute: 'numeric',
+        hour12: true,
+        month: 'numeric',
+        day: 'numeric',
+        year: 'numeric'
+      });
+
       return (
-        <span>{remainingDays} days, {hours} hours, {minutes} minutes left</span>
+        <>
+          <span className="timer">Registration closes at: {eventDateString}</span>
+          {event.isRegistered ? (
+            <button className="unregister-button" onClick={() => handleUnregisterClick(event.id, event.registered)}>Unregister</button>
+          ) : (
+            <>
+              <select onChange={handleOrgSelectChange}>
+                <option value="">Select Organization</option>
+                {event.registered_orgs.map(org => (
+                  <option key={org.id} value={org.id}>{org.name}</option>
+                ))}
+              </select>
+              <button className="register-button" onClick={handleRegisterClick}>Register</button>
+            </>
+          )}
+        </>
       );
-    } else if (daysLeft > 1 && !isCountdownOver) {
-      // If between 1 and 2 days left, set the countdown over flag
-      setIsCountdownOver(true);
-      return (
-        <span>1 day left</span>
-      );
-    } else if (orgs.length === 0 && isCountdownOver) {
-      // If no orgs registered and countdown is over, display "No orgs registered"
-      return <span>No orgs registered</span>;
     } else {
-      // If 2 days or less left and countdown is over, render the register button
-      return (
-        <button className="register-button" onClick={() => handleRegisterEvent(eventId)}>Register</button>
-      );
+      if (event.isRegistered) {
+        return <span className="registration-message">Registered for the event</span>;
+      } else {
+        return <span className="registration-message">Registration has closed</span>;
+      }
     }
   };
 
@@ -109,13 +151,9 @@ const OrgEvents = () => {
     <div className="org-events-list">
       {events.map((event) => (
         <div key={event.id} className="event-bar">
-          <img src={event.thumbnail} alt="Event Thumbnail" className="event-bar-thumbnail" />
           <div className="event-bar-details">
             <span className="event-bar-name">{event.name}</span>
-            {renderOrgsDropdown(event.registered_orgs)}
-          </div>
-          <div className="event-bar-register">
-            {renderCountdownOrButton(event.timestamp, event.id, event.registered_orgs)}
+            {renderTimer(event.timestamp, event)}
           </div>
         </div>
       ))}
