@@ -6,7 +6,7 @@ function HomeAboutus() {
   return (
     <div className="container">
       <div style={{ textAlign: 'center' }}>
-        <pre style={{ fontSize: '300%', textDecoration: 'underline', fontWeight: 'bold' }}>
+        <pre style={{ fontSize: '300%', maxWidth: '100%', overflow: 'hidden', textDecoration: 'underline', fontWeight: 'bold' }}>
           Land Rush Overview and Documentation
         </pre>
       </div>
