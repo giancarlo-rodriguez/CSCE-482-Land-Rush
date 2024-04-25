@@ -39,15 +39,12 @@ function PlotSelect({ plotID, plotOGName }) {
     );
   };
 
-  const lat = 30.6187;
-  const lng = -96.3365;
-
   return (
     <div className="map-container" style={{ width: '100%', height: '100%' }}>
       <Wrapper apiKey="AIzaSyBwtGSYhRKGyxWWW3HEYzyoRi6T43147-o" render={renderMap}>
         <SimplePolygonMap 
-        lat={lat}
-        lng={lng}
+        lat={30.6187}
+        lng={-96.3365}
         coordinates={coordinates}
         plotID={plotID}
         plotOGName={plotOGName}
@@ -62,6 +59,16 @@ function Tool({ plotID, plotOGName }) {
     <div className="popup-content" style={{ height: '100%', width: '100%', display: 'flex', flexDirection: 'column' }}>
       <div className="box" style={{ height: '100%', width: '100%' }}>
         <PlotSelect plotID={plotID} plotOGName={plotOGName}/>
+      </div>
+      <div className="instructions">
+        <p>Instructions</p>
+        <p>Begin adjusting points by clicking draw/modify points</p>
+        <p>- Left-click on the map to add a point connected to the previously placed point.</p>
+        <p>- Left-click on a transparent middle-point between two points to insert a new one between them.</p>
+        <p>- Right-click on the map to remove the last point placed from the polygon.</p>
+        <p>- Move points by dragging them.</p>
+        <p>Clicking Create/Update Plot will finalize the coordinates on the map and update the database.</p>
+        <p>Clicking Delete Plot will erase it from the database.</p>
       </div>
     </div>
   );

@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.core.files.base import ContentFile
 from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.contrib.auth import authenticate
 from django.core.serializers import serialize
@@ -9,30 +10,105 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
-from .models import User, University, PendingCreateOrg, PendingJoinOrg, Role, Organization,Event, OrgRegisteredEvent, Coordinates, Plot, StudentRegisteredEvent
+from .models import User, University, PendingCreateOrg, PendingJoinOrg, Role, Organization,Event, OrgRegisteredEvent, Coordinates, Plot, StudentRegisteredEvent, FilledPlot
 from .permissions import IsStudent, IsUniversity, IsOrgAdmin
 import json
 from rest_framework.renderers import JSONRenderer
 from . import serializers
 from datetime import datetime
-
+from .algo import algorithm
 
 # Add this at the top of your file to configure logging
 # Create your views here.
 def home(request):
+    algorithm()
     return HttpResponse("Hello, world. You're at the landrush app home.")
 
+class FillPlot(APIView):
+    def post(self, request):
+        try:
+            #1. get event ID from request
+            event_id = request.data.get('event_id')
+            #2. find the plot for that event ID
+            exists = FilledPlot.objects.filter(event_id=event_id).exists()
+            if exists:
+                return Response("A filled plot already exists for this event", status=status.HTTP_400_BAD_REQUEST)
+            event = Event.objects.get(id=event_id)
+            #3. get lat/long points for that plot
+            plot = event.plot
+            plot_coordinates_from_db = Coordinates.objects.filter(plot=plot)
+            plot_coordinates = []
+            #4. convert lat/long list with strings to doubles/floats
+            for p in plot_coordinates_from_db:
+                plot_coordinates.append((float(p.longitude), float(p.latitude)))
+            
+            #5. get all orgs with user count that will be attending that event
+            # registered_students = StudentRegisteredEvent.objects.filter(event=event)
+            # print(registered_students)
+            #6. run 'algorithm(lat/long list, orgs with users) // this returns an image.png
+            image_data = algorithm(plot_coordinates)
+            #7. save image in database
+            filled_plot = FilledPlot(event=event)
+            filled_plot.image.save('filled_plot.png', ContentFile(image_data), save=True)
+            #8. return 201 if success
+            return Response("Image saved successfully", status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response(str(e), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+class GetFilledPlot(APIView):
+    def post(self, request):
+        try:
+            # Get event ID from request body
+           
+            event_id = request.data.get('event_id')
+            # Find the filled plot entry for the given event ID
+            
+            filled_plot = FilledPlot.objects.filter(event_id=event_id).first()
 
+            # Initialize a list to store image data for each filled plot
+            image_data_list = []
+
+            # Loop through each filled plot instance
+            with filled_plot.image.open() as image_file:
+                image_data = image_file.read()
+                image_data_list.append(image_data)
+            # Return the image data in the response
+            response = HttpResponse(image_data, content_type='image/png')
+            
+            response['Content-Disposition'] = 'attachment; filename="filled_plot.png"'
+            return response
+        except FilledPlot.DoesNotExist:
+            return Response("Filled plot not found for the given event ID", status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response(str(e), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class GetAllFilledPlots(APIView):
+    def get(self, request):
+        try:
+            # Get all filled plot instances from the database
+            filled_plots = FilledPlot.objects.all()
+
+            # Serialize the filled plot instances into JSON
+            serialized_plots = serialize('json', filled_plots)
+
+            # Deserialize the JSON data to convert it into a Python object
+            deserialized_plots = json.loads(serialized_plots)
+
+            # Return the serialized data as JSON response
+            return JsonResponse(deserialized_plots, safe=False)
+        except Exception as e:
+            return Response(str(e), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
 class StudentRegister(APIView):
     def post(self, request):
         try:
             req_name = request.data.get("fullName")
             req_email = request.data.get("email")
             req_password = request.data.get("password")
-            university_id = request.data.get("university_id")  # Adjust the key to match frontend
-            university = University.objects.get(id = university_id)
+            university = request.data.get("university")  # Adjust the key to match frontend
+            university = University.objects.get(name = university)
 
-            if not (req_email and req_password and university_id and req_name):
+            if not (req_email and req_password and university and req_name):
                 return Response("Email, password, and university name are required.", status=status.HTTP_400_BAD_REQUEST)
 
             # Check if the university already exists
@@ -51,9 +127,6 @@ class StudentRegister(APIView):
         except Exception as e:
             return Response(str(e), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
-
-
-
 class UniversityRegister(APIView):
     def post(self, request):
         try:
@@ -123,6 +196,7 @@ class OrganizationList(APIView):
         university = request.user.university
         organizations = Organization.objects.filter(university=university)
         serializer = serializers.OrganizationSerializer(organizations, many=True, context={'request': request})
+
         return Response(serializer.data, status=status.HTTP_200_OK)
 """
 join org if we do org member request
@@ -212,21 +286,15 @@ class ShowJoinOrgPending(APIView):
     def get(self, request):
         try:
             # Assuming the user is an admin for multiple organizations
-            print("-------------------------here-1---------------------------")
             admin_roles = Role.objects.filter(user=request.user, is_admin=True)
-            print("--------------------------------here0----------------------")
             organizations = [role.organization for role in admin_roles]
-            print("-----------------------here--------------------------")
             pending_join_requests = []
             for org in organizations:
                 pending_join_requests.extend(PendingJoinOrg.objects.filter(organization=org))
-            print("--------------------here2----------------------")
             serializer = serializers.PendingJoinOrgSerializer(pending_join_requests, many=True)
-            print("---------------------------------here3-----------------------------------")
             return JsonResponse(serializer.data, status=200, safe=False)
         except Exception as error:
             return JsonResponse({"error": str(error)}, status=500)
-
 
 class JoinOrgResponse(APIView):
     authentication_classes = [TokenAuthentication]
@@ -276,14 +344,13 @@ class Login(ObtainAuthToken):
     def post(self, request, *args, **kwargs):
         email = request.data.get("email")
         password = request.data.get("password")
-        user = authenticate(email=email, password=password)
-
+        user = authenticate(email=email,password=password)
         if user is not None:
             # Check if the user is a university
             if user.is_university:
                 # Generate or retrieve token
                 token, created = Token.objects.get_or_create(user=user)
-
+                print("token uni", token)
                 # Return token along with user role
                 return Response({
                     'token': token.key,
@@ -292,14 +359,14 @@ class Login(ObtainAuthToken):
             else:
                 # Return token along with user role as student
                 token, created = Token.objects.get_or_create(user=user)
-
+                print("token studnet", token)
                 return Response({
                     'token': token.key,
                     'user_role': 'student'
                 })
         else:
+            print("invalid credentials")
             return HttpResponse("Invalid credentials.")
-
 
 class CreateOrg(APIView):
     authentication_classes = [TokenAuthentication]
@@ -327,29 +394,26 @@ class DeleteOrg(APIView):
         except:
             return HttpResponse("Org Not deleted.")
 
-class JoinOrg(APIView):
+class AddAccountToOrg(APIView):
     authentication_classes = [TokenAuthentication]
 
     def post(self, request):
-        join_requester = request.user
-        organization_name = request.data.get("organization")
-        if not organization_name:
-            return HttpResponseBadRequest("Organization name not provided in the URL query parameters")
-
+        org_name = request.data.get("organization")
+        
         try:
-            org = Organization.objects.get(name=organization_name, university=join_requester.university)
+            organization = Organization.objects.get(name=org_name)
+            user = request.user
+
+            if Role.objects.filter(user=user, organization=organization).exists():
+                return HttpResponse("User is already a member of this organization.", status=400)
+            else:
+                new_role = Role(user=user, organization=organization)
+                new_role.save()
+                return HttpResponse("User added to organization successfully!", status=201)
+        
         except Organization.DoesNotExist:
-            return HttpResponse("Organization does not exist at your university")
-
-        # Check if the user is already a member of the organization
-        if Role.objects.filter(user=join_requester, organization=org).exists():
-            return HttpResponse("You are already a member of this organization")
-
-        # Create a regular role for the user in the organization
-        new_role = Role(user=join_requester, organization=org, is_admin=False)
-        new_role.save()
-
-        return HttpResponse("You have been added to the organization as a regular member")
+            return HttpResponse("Organization not found.", status=404)
+        
 
 class CreateEvent(APIView):
     authentication_classes = [TokenAuthentication]
@@ -400,10 +464,12 @@ class DeleteEvent(APIView):
 
 class ShowEvent(APIView):
     authentication_classes = [TokenAuthentication]
-    def get(self,request):
-        events = Event.objects.filter(university = request.user.university)
-        event_json = serializers.EventSerializer(events, many=True)
-        return Response(event_json.data)
+
+    def get(self, request):
+        events = Event.objects.filter(university=request.user.university)
+        serializer_context = {'request': request}  # Create serializer context
+        event_serializer = serializers.EventSerializer(events, many=True, context=serializer_context)
+        return Response(event_serializer.data)
 
 class CreatePlot(APIView):
     authentication_classes = [TokenAuthentication]
@@ -481,13 +547,13 @@ class ShowPlots(APIView):
             plots_json = serializers.PlotSerializer(plots, many=True)
             return Response(plots_json.data)
 
-
 class ShowCoordinates(APIView):
     authentication_classes = [TokenAuthentication]
     def get(self,request):
         plot = Plot.objects.get(id = request.GET["plot_id"])   
         coordinates = Coordinates.objects.filter(plot = plot)
         coordinates_json = serializers.CoordinateSerializer(coordinates, many = True)
+        print(coordinates_json.data)
         return Response(coordinates_json.data)
 
 class OrgRegisterEvent(APIView):
@@ -497,13 +563,18 @@ class OrgRegisterEvent(APIView):
         try:
             event_id = request.data.get("event_id")
             organization_id = request.data.get("org_id")
+            
+            # Check if the organization is already registered for the event
+            if OrgRegisteredEvent.objects.filter(organization_id=organization_id, event_id=event_id).exists():
+                return Response("Organization is already registered for this event", status=status.HTTP_400_BAD_REQUEST)
             organization = Organization.objects.get(id=organization_id)
-            event = Event.objects.get(university = request.user.university, id = event_id)
-            register_for_event = OrgRegisteredEvent(organization = organization, event = event)
+            event = Event.objects.get(university=request.user.university, id=event_id)
+            register_for_event = OrgRegisteredEvent(organization=organization, event=event)
             register_for_event.save()
-            return HttpResponse("Organization has registered for event")
+            return Response("Organization has registered for event", status=status.HTTP_201_CREATED)
         except:
-            return HttpResponse("Registration not successful")
+            return Response("Registration not successful", status=status.HTTP_400_BAD_REQUEST)
+
 
 class OrgUnregisterEvent(APIView):
     authentication_classes = [TokenAuthentication]
@@ -561,7 +632,6 @@ class StudentUnregisterEvent(APIView):
 
         return HttpResponse("Unregistered for event")
 
-
 class AverageRegistrationTime(APIView):
     authentication_classes = [TokenAuthentication]
     def get(self,request):
@@ -579,6 +649,28 @@ class AverageRegistrationTime(APIView):
                 orgs_attending[org_id] = (1,difference.total_seconds() / 60)
         return Response(orgs_attending)
 
+class RegisterOrgEvent(APIView):
+    authentication_classes = [TokenAuthentication]
+
+    def post(self, request):
+        event_id = request.data.get("event_id")
+        organization_id = request.data.get("organization_id")
+        org = Organization.objects.get(id=organization_id)
+        event = Event.objects.get(id=event_id)
+        org_registered_event = OrgRegisteredEvent(event=event, organization=org)
+        org_registered_event.save()
+        return Response("Registered for event", status=status.HTTP_200_OK)
+
+class StudentOrgRegisteredEvent(APIView):
+    authentication_classes = [TokenAuthentication]
+    def get(self,request):
+        event_id = request.data.get("event_id")
+        organization_id = request.data.get("organization_id")
+        org = Organization.objects.get(id = organization_id)
+        event = Event.objects.get(id = event_id)
+        org_registed_event = OrgRegisteredEvent(event = event, organization = org)
+        org_registed_event.save()
+        return HttpResponse("Registered for event")
 class OrgMemberCount(APIView):
     #authentication_classes = [TokenAuthentication]
     def get(self,request):

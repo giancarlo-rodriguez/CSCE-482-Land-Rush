@@ -8,8 +8,9 @@ const CollegePlots = () => {
   const [plots, setPlots] = useState([]);
   const [selectedPlot, setSelectedPlot] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [toolComponents, setToolComponents] = useState({});
 
-  useEffect(() => {
+  const fetchPlots = () => {
     const token = Cookies.get('token');
     if (token) {
       axios.get('http://127.0.0.1:8000/show/plots', {
@@ -24,6 +25,12 @@ const CollegePlots = () => {
         console.error('Error fetching plots:', error);
       });
     }
+  };
+
+  useEffect(() => {
+    fetchPlots();
+    const interval = setInterval(fetchPlots, 1000);
+    return () => clearInterval(interval);
   }, []);
 
   const handlePlotClick = (plotID) => {
@@ -31,18 +38,23 @@ const CollegePlots = () => {
   };
 
   const handleCreateNewPlot = () => {
-    if (selectedPlot === null) {
-      setSelectedPlot(0);
-    }
+    setSelectedPlot(0);
   };
 
   const filteredPlots = plots.filter(plot =>
     plot.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const renderToolComponent = (plotID) => {
+    if (plotID === 0 || !toolComponents[plotID]) {
+      return (
+        <Tool key={plotID} plotID={plotID} plotOGName={plotID === 0 ? 'New Plot' : plots.find(plot => plot.id === plotID).name}/>
+      );
+    } else {
+      return toolComponents[plotID];
+    }
+  };
   
-  const selectedPlotObject = plots.find(plot => plot.id === selectedPlot);
-
-
   return (
     <div className="college-plots-container">
       <div className="college-plots-sidebar">
@@ -72,18 +84,13 @@ const CollegePlots = () => {
         </div>
       </div>
       <div className="college-plots-content">
-      {selectedPlot !== null && selectedPlot === 0 && (
-        <Tool plotID={selectedPlot} plotOGName='New Plot'/>
-      )}
-      {selectedPlot === null && (
-        <div className="placeholder">Select or create a plot</div>
-      )}
-      {selectedPlot > 0 && (
-        <Tool plotID={selectedPlot} plotOGName={selectedPlotObject.name} />
-      )}
+        {selectedPlot !== null && renderToolComponent(selectedPlot)}
+        {selectedPlot === null && (
+          <div className="placeholder">Select or create a plot</div>
+        )}
+      </div>
     </div>
-  </div>
-);
+  );
 };
 
 export default CollegePlots;
