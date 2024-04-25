@@ -84,19 +84,19 @@ class Organization:
 #     Organization("E", 5, 10),
 #     Organization("F", 6, 10),
 # ]
-orgs = [
-    Organization("A", 1, 15),
-    Organization("B", 2, 15),
-    Organization("C", 3, 10),
-    Organization("D", 4, 10),
-    Organization("E", 5, 10),
-    Organization("F", 6, 10),
-    Organization("G", 7, 10),
-    Organization("H", 8, 5),
-    Organization("I", 9, 5),
-    Organization("J", 10, 5),
-    Organization("K", 11, 5),
-]
+# orgs = [
+#     Organization("A", 1, 15),
+#     Organization("B", 2, 15),
+#     Organization("C", 3, 10),
+#     Organization("D", 4, 10),
+#     Organization("E", 5, 10),
+#     Organization("F", 6, 10),
+#     Organization("G", 7, 10),
+#     Organization("H", 8, 5),
+#     Organization("I", 9, 5),
+#     Organization("J", 10, 5),
+#     Organization("K", 11, 5),
+# ]
 
 def calcSectionArea(coords):
     """
@@ -129,10 +129,6 @@ def calcSqftPerOrg(section_area, organizations):
     if total_attendance < section_occupancy:
         for org in organizations:
             org.sqft = (org.member_count * SQFT_PER_PERSON) * (section_area / total_area)
-
-
-
-
 
 
 def createPolygon(section_coords):
@@ -171,16 +167,46 @@ def createGrid(polygon):
     return grid, valid
 
 
+def algorithm(section_coords, orgs_attending):
+    """
+        Run the algorithm that partitions a section into plots for individual organizations.
+        Args:   section_coords - coordinates of the section in (longitude, latitude)
+                org_names
+                req_times
+                member_count
+    """
+    section_area = calcSectionArea(section_coords)
+    section_occupancy = section_area / SQFT_PER_PERSON
 
+    total_orgs = []
+    for org in orgs_attending:
+        members = orgs_attending[org][0]
+        time = orgs_attending[org][1]
+        total_orgs.append(Organization(org, time / members, members))
 
+    total_orgs = sorted(total_orgs, key=lambda organization: getattr(organization, 'req_time'))
 
-
-
-
-def algorithm(section_coords):
+    orgs = []
+    total_member_count = 0
+    for org in total_orgs:
+        if total_member_count + org.member_count <= section_occupancy:
+            orgs.append(org)
+    calcSqftPerOrg(section_area, orgs)
+ 
     polygon = createPolygon(section_coords)
     grid, valid = createGrid(polygon)
+
     def bfs(start, name, grid, visited, allocated, cells_needed):
+        """
+        Run BFS on an orgnization, allocating the necessary square footage.
+        Args:   start - start position (x,y)
+                name - name of the organization being allocated
+                grid - the 2d matrix on top of the image
+                visited - the cells that have been visited by BFS
+                allocated - 2d matrix showing which cells have been allocated
+                cells_needed - the cells needed to get neeeded square footage for the org
+        """
+
         q = deque([(start[0], start[1])])
         cells = 0
         while q:
@@ -195,8 +221,6 @@ def algorithm(section_coords):
                         if cells == cells_needed:
                             return
                         q.append(coord)
-    section_area = calcSectionArea(section_coords)
-    calcSqftPerOrg(section_area, orgs)
 
     def splitSection(grid, organizations):
         """
