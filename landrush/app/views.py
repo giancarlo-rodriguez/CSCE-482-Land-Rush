@@ -21,35 +21,49 @@ from .algo import algorithm
 # Add this at the top of your file to configure logging
 # Create your views here.
 def home(request):
-    algorithm()
+    # algorithm()
     return HttpResponse("Hello, world. You're at the landrush app home.")
 
 class FillPlot(APIView):
+    authentication_classes = [TokenAuthentication]
     def post(self, request):
         try:
             #1. get event ID from request
             event_id = request.data.get('event_id')
+
+            event = Event.objects.get(id = event_id)
+            orgs_attending = {}
+            registered_students = StudentRegisteredEvent.objects.filter(event = event)
+            for registered_student in registered_students: 
+                org_id = registered_student.organization.id
+                time_registered = registered_student.date_time_registered
+                difference = time_registered - event.created
+                if(org_id in orgs_attending):
+                    orgs_attending[org_id] = (orgs_attending[org_id][0] + 1, orgs_attending[org_id][1] + difference.total_seconds() / 60)
+                else:
+                    orgs_attending[org_id] = (1,difference.total_seconds() / 60)
+
             #2. find the plot for that event ID
             exists = FilledPlot.objects.filter(event_id=event_id).exists()
             if exists:
                 return Response("A filled plot already exists for this event", status=status.HTTP_400_BAD_REQUEST)
             event = Event.objects.get(id=event_id)
+
             #3. get lat/long points for that plot
             plot = event.plot
             plot_coordinates_from_db = Coordinates.objects.filter(plot=plot)
             plot_coordinates = []
+
             #4. convert lat/long list with strings to doubles/floats
             for p in plot_coordinates_from_db:
                 plot_coordinates.append((float(p.longitude), float(p.latitude)))
-            
-            #5. get all orgs with user count that will be attending that event
-            # registered_students = StudentRegisteredEvent.objects.filter(event=event)
-            # print(registered_students)
-            #6. run 'algorithm(lat/long list, orgs with users) // this returns an image.png
-            image_data = algorithm(plot_coordinates)
+
+            image_data = algorithm(plot_coordinates, orgs_attending)
+
             #7. save image in database
             filled_plot = FilledPlot(event=event)
             filled_plot.image.save('filled_plot.png', ContentFile(image_data), save=True)
+
             #8. return 201 if success
             return Response("Image saved successfully", status=status.HTTP_201_CREATED)
         except Exception as e:
