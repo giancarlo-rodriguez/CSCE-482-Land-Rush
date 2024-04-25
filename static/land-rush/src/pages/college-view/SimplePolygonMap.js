@@ -227,8 +227,8 @@ const SimplePolygonMap = ({ apiKey, lat, lng, coordinates, plotID, plotOGName })
   };
 
   return (
-    <div style={{ height: '100%', width: '100%', display: 'flex', flexDirection: 'column' }}>
-      <div style={{ height: '80%', width: '100%' }} ref={mapRef}></div>
+    <div style={{ height: '100%', width: '100%', display: 'flex', flexDirection: 'column', marginTop: 0 }}>
+      <div style={{ height: '200%', width: '100%', flex: 2 }} ref={mapRef}></div>
       <div style={{ marginTop: '10px', width: '100%', textAlign: 'center' }}>Editing Plot: {plotID === 0 ? "New Plot" : plotOGName}</div>
       <div style={{ marginTop: '10px', width: '100%', textAlign: 'center' }}>
         {plotID === 0 ? (
