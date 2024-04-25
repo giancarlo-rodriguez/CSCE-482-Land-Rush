@@ -241,29 +241,7 @@ class JoinOrg(APIView):
         
         return HttpResponse("Join request Created")
 """
-class JoinOrg(APIView):
-    authentication_classes = [TokenAuthentication]
 
-    def post(self, request):
-        join_requester = request.user
-        organization_name = request.data.get("organization")
-        if not organization_name:
-            return HttpResponseBadRequest("Organization name not provided in the URL query parameters")
-
-        try:
-            org = Organization.objects.get(name=organization_name, university=join_requester.university)
-        except Organization.DoesNotExist:
-            return HttpResponse("Organization does not exist at your university")
-
-        # Check if the user is already a member of the organization
-        if Role.objects.filter(user=join_requester, organization=org).exists():
-            return HttpResponse("You are already a member of this organization")
-
-        # Create a regular role for the user in the organization
-        new_role = Role(user=join_requester, organization=org, is_admin=False)
-        new_role.save()
-
-        return HttpResponse("You have been added to the organization as a regular member")
 
 class DropOrg(APIView):
     authentication_classes = [TokenAuthentication]
@@ -454,6 +432,7 @@ class AddAccountToOrg(APIView):
         except Organization.DoesNotExist:
             return HttpResponse("Organization not found.", status=404)
         
+
 class CreateEvent(APIView):
     authentication_classes = [TokenAuthentication]
     def post(self,request):
@@ -740,9 +719,6 @@ class MembersAttendingEvent(APIView):
         return JsonResponse(members_serializer.data, safe = False)
         #except:
        #     return HttpResponse("Oops. Can't get list of members attending.")
-
-
-
 
 
 # Create the view for running the algorithm
