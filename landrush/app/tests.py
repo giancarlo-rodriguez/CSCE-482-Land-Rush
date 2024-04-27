@@ -18,7 +18,7 @@ class StudentRegisterTestCase(TestCase):
             "fullName": "John Doe",
             "email": "john@example.com",
             "password": "testpassword",
-            "university": "Test University"
+            "university": "Test University",
         }
         response = self.client.post('/register/student', data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -33,7 +33,7 @@ class StudentRegisterTestCase(TestCase):
             "fullName": "Jane Doe",
             "email": "john@example.com",
             "password": "testpassword",
-            "university": "Test University"
+            "university": "Test University",
         }
         response = self.client.post('/register/student', data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -48,7 +48,7 @@ class UniversityRegisterTestCase(TestCase):
         data = {
             "email": "test@example.com",
             "password": "testpassword",
-            "universityName": "Test University"
+            "universityName": "Test University",
         }
         response = self.client.post('/register/university', data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -61,11 +61,10 @@ class UniversityRegisterTestCase(TestCase):
     def test_university_already_exists(self):
         # Create a university with the same name as in the previous test
         University.objects.create(name="Test University")
-
         data = {
             "email": "test@example.com",
             "password": "testpassword",
-            "universityName": "Test University"
+            "universityName": "Test University",
         }
         response = self.client.post('/register/university', data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -86,7 +85,7 @@ class OrganizationTestCase(TestCase):
 
     def test_create_organization_success(self):
         data = {
-            "organization": "Test Organization"
+            "organization": "Test Organization",
         }
         response = self.client.post('/create/org/request', data, format='json')
         self.assertEqual(response.status_code, 200)
@@ -119,7 +118,9 @@ class OrganizationTestCase(TestCase):
 
         Role.objects.create(user=self.new_user, organization=new_org)
         url = '/add/account/to/org'
-        data = {'organization': 'Test Organization'}
+        data = {
+            'organization': 'Test Organization',
+        }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
@@ -140,7 +141,7 @@ class EventtTestCase(TestCase):
         self.valid_payload = {
             'event_name': 'Test Event',
             'event_date': '2024-04-27T12:00:00',
-            'plot_id': self.new_plot.id
+            'plot_id': self.new_plot.id,
         }
     
     def test_create_event_success(self):
@@ -155,7 +156,9 @@ class EventtTestCase(TestCase):
         event = Event.objects.create(name='Test Event',plot = self.new_plot, university = self.new_uni)
         new_event= Event.objects.get(name = 'Test Event')
         url = '/delete/event'
-        data = {'event_id': new_event.id}
+        data = {
+            'event_id': new_event.id,
+        }
         response = self.client.delete(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(Event.objects.count(), 0)

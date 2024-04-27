@@ -22,38 +22,39 @@ urlpatterns = [
     path('', views.home, name='home'),
     path('login',views.Login.as_view(), name='login'), #Done frontend
     path('logout',views.Logout.as_view()), #Done in frontend
-    path('register/student',views.StudentRegister.as_view()), #Done in frontend
+    path('show/profile',views.ShowProfile.as_view()), #Done in frontend
+
     path('register/university',views.UniversityRegister.as_view()),
-    path('create/org/request',views.CreateOrg.as_view()), #needs to be created in frontend
-    path('show/orgs',views.OrganizationList.as_view()),
-    path('join/org',views.JoinOrg.as_view()), #Done in frontend
-    path('drop/org',views.DropOrg.as_view()),
-    path('choose/uni',views.ChooseUniversity.as_view()),
-    path('join/org/response',views.JoinOrgResponse.as_view()), #Needs to be done in frontend
     path('create/event',views.CreateEvent.as_view()), #Needs to be done in frontend
     path('delete/event',views.DeleteEvent.as_view()),
-    path('event/org/register',views.OrgRegisterEvent.as_view()), #Needs to be done in frontend
-    path('event/org/unregister',views.OrgUnregisterEvent.as_view()), #Needs to be done in frontend
-    path('show/profile',views.ShowProfile.as_view()), #Done in frontend
-    path('show/user/orgs',views.UserOrganizations.as_view()), #Done in frontend
-    path('show/event',views.ShowEvent.as_view()), #Done in frontend
-    path('show/join/org',views.ShowJoinOrgPending.as_view()), #Done in the frontend
     path('create/plot',views.CreatePlot.as_view()),
     path('show/plots',views.ShowPlots.as_view()),
     path('show/coordinates', views.ShowCoordinates.as_view()),
-    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
-    path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
-    path('update/plot', views.CreatePlot.as_view()),
-    path('event/student/register',views.StudentRegisterEvent.as_view()),
-    path('event/org/register',views.RegisterOrgEvent.as_view()),
-    path('event/student/unregister',views.StudentUnregisterEvent.as_view()),
-    path('show/registered/students',views.AverageRegistrationTime.as_view()),
-    path('delete/plot',views.DeletePlot.as_view()),
-    path('org/count',views.OrgMemberCount.as_view()),
-    path('delete/org',views.DeleteOrg.as_view()),
-    path('show/org/attending',views.MembersAttendingEvent.as_view()),
+    path('update/plot', views.CreatePlot.as_view()),    
     path('fill-plot', views.FillPlot.as_view()),
     path('get-filled-plot', views.GetFilledPlot.as_view()),
     path('get-all-filled-plots', views.GetAllFilledPlots.as_view()),
-    path('add/account/to/org/', views.AddAccountToOrg.as_view()),
+    path('delete/plot',views.DeletePlot.as_view()),
+
+    path('register/student',views.StudentRegister.as_view()), #Done in frontend
+    path('choose/uni',views.ChooseUniversity.as_view()),
+    path('create/org/request',views.CreateOrg.as_view()), #needs to be created in frontend
+    path('join/org',views.JoinOrg.as_view()), #Done in frontend
+    path('join/org/response',views.JoinOrgResponse.as_view()), #Needs to be done in frontend
+    path('drop/org',views.DropOrg.as_view()),
+    path('show/orgs',views.OrganizationList.as_view()),
+    path('delete/org',views.DeleteOrg.as_view()),
+    path('event/org/register',views.OrgRegisterEvent.as_view()), #Needs to be done in frontend
+    path('event/org/unregister',views.OrgUnregisterEvent.as_view()), #Needs to be done in frontend
+    path('show/org/attending',views.MembersAttendingEvent.as_view()),
+    path('event/student/register',views.StudentRegisterEvent.as_view()),
+    path('event/student/unregister',views.StudentUnregisterEvent.as_view()),
+    path('show/registered/students',views.AverageRegistrationTime.as_view()),
+    path('show/user/orgs',views.UserOrganizations.as_view()), #Done in frontend
+    path('show/event',views.ShowEvent.as_view()), #Done in frontend
+    path('show/join/org',views.ShowJoinOrgPending.as_view()), #Done in the frontend
+    path('org/count',views.OrgMemberCount.as_view()),
+
+    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 ]

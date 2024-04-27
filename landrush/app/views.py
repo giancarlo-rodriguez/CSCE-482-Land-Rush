@@ -201,24 +201,6 @@ class ChooseUniversity(APIView):
         university_names = University.objects.values_list('name', flat=True)
         return Response(university_names)
 
-"""
-Temporary Commented out.
-Not needed for MVP. Create org directly after request for MVP. 
-class CreateOrg(APIView):
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsStudent]
-    def get(self,request):
-        create_requester = request.user
-        org_name = request.GET["organization"]
-        try:
-            check_exists = Organization.objects.get(name = org_name)
-            return HttpResponse("Organization already exists")
-        except:
-            university = request.user.university
-            create_org = PendingCreateOrg(requester = create_requester, org_name = org_name, university = university)
-            create_org.save()
-            return HttpResponse("Organization create request submitted")
-"""
         
 class OrganizationList(APIView):
     authentication_classes = [TokenAuthentication]
@@ -231,31 +213,6 @@ class OrganizationList(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-"""
-join org if we do org member request
-class JoinOrg(APIView):
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsStudent]
-
-    def post(self, request):
-        join_requester = request.user
-        organization_name = request.data.get("organization")
-        if not organization_name:
-            return HttpResponseBadRequest("Organization name not provided in the URL query parameters")
-        
-        try:
-            org = Organization.objects.get(name=organization_name)
-        except Organization.DoesNotExist:
-            return HttpResponse("Organization does not exist")
-
-        if join_requester.university != org.university:
-            return HttpResponse("You are not a member of this organization's university")
-        
-        org_join = PendingJoinOrg(requester=join_requester, organization=org)
-        org_join.save()
-        
-        return HttpResponse("Join request Created")
-"""
 class JoinOrg(APIView):
     authentication_classes = [TokenAuthentication]
 
@@ -449,23 +406,6 @@ class DeleteOrg(APIView):
             deleted_org.delete()
         except:
             return HttpResponse("Org Not deleted.")
-
-
-class AddAccountToOrg(APIView):
-    authentication_classes = [TokenAuthentication]
-    def post(self, request):
-        org_name = request.data.get("organization")
-        try:
-            organization = Organization.objects.get(name=org_name)
-            user = request.user
-            if Role.objects.filter(user=user, organization=organization).exists():
-                return HttpResponse("User is already a member of this organization.", status=400)
-            else:
-                new_role = Role(user=user, organization=organization)
-                new_role.save()
-                return HttpResponse("User added to organization successfully!", status=201)
-        except Organization.DoesNotExist:
-            return HttpResponse("Organization not found.", status=404)
 
 
 class CreateEvent(APIView):
@@ -700,30 +640,6 @@ class AverageRegistrationTime(APIView):
             else:
                 orgs_attending[org_id] = (1,difference.total_seconds() / 60)
         return Response(orgs_attending)
-
-
-class RegisterOrgEvent(APIView):
-    authentication_classes = [TokenAuthentication]
-    def post(self, request):
-        event_id = request.data.get("event_id")
-        organization_id = request.data.get("organization_id")
-        org = Organization.objects.get(id=organization_id)
-        event = Event.objects.get(id=event_id)
-        org_registered_event = OrgRegisteredEvent(event=event, organization=org)
-        org_registered_event.save()
-        return Response("Registered for event", status=status.HTTP_200_OK)
-
-
-class StudentOrgRegisteredEvent(APIView):
-    authentication_classes = [TokenAuthentication]
-    def get(self,request):
-        event_id = request.data.get("event_id")
-        organization_id = request.data.get("organization_id")
-        org = Organization.objects.get(id = organization_id)
-        event = Event.objects.get(id = event_id)
-        org_registed_event = OrgRegisteredEvent(event = event, organization = org)
-        org_registed_event.save()
-        return HttpResponse("Registered for event")
 
 
 class OrgMemberCount(APIView):

@@ -2,6 +2,7 @@ import io
 import math
 import numpy as np
 import matplotlib.pyplot as plt
+
 from shapely.geometry import Polygon
 from shapely.geometry import Point
 from shapely.prepared import prep
@@ -217,10 +218,6 @@ def algorithm(section_coords, orgs_attending):
     buffer = io.BytesIO()
     plt.savefig(buffer, format='png')
     buffer.seek(0)
-
-    # Read the image data from the buffer
-    image_data = buffer.read()
-
+    image_data = buffer.read() # Read the image data from the buffer
     plt.close(fig)  # Close the figure to free up resources
-
     return image_data

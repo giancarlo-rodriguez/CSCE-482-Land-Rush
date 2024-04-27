@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from . import models
 
+
 class UniversitySerializer(serializers.ModelSerializer):
     class Meta:
         model = models.University
@@ -18,12 +19,13 @@ class EventSerializer(serializers.ModelSerializer):
     def get_registered(self, event):
         # Check if the current user is registered for this event
         request = self.context.get('request')
-        if request and not request.user.is_anonymous:
-            if not request.user.is_university:
-                # If the user is not a university, get the organization ID they are registered with
-                registered_org = models.StudentRegisteredEvent.objects.filter(member=request.user, event=event).first()
-                if registered_org:
-                    return registered_org.organization.id
+        if not request:
+            return None
+        if request.user.is_anonymous or request.user.is_university:
+            return None
+        registered_org = models.StudentRegisteredEvent.objects.filter(member=request.user, event=event).first()
+        if registered_org:
+            return registered_org.organization.id
         return None
 
     def get_registered_orgs(self, event):
@@ -34,7 +36,16 @@ class EventSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Event
-        fields = ['id', 'name', 'plot', 'created', 'university', 'timestamp', 'registered', 'registered_orgs']
+        fields = [
+            'id',
+            'name',
+            'plot',
+            'created',
+            'university',
+            'timestamp',
+            'registered',
+            'registered_orgs',
+        ]
 
 
 class PlotSerializer(serializers.ModelSerializer):
@@ -45,7 +56,11 @@ class PlotSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Plot
-        fields = ['id', 'name', 'university']
+        fields = [
+            'id',
+            'name',
+            'university',
+        ]
 
 
 class CoordinateSerializer(serializers.ModelSerializer):
@@ -56,7 +71,11 @@ class CoordinateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Coordinates
-        fields = ['longitude', 'latitude', 'plot']
+        fields = [
+            'longitude',
+            'latitude',
+            'plot',
+        ]
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -67,7 +86,12 @@ class UserSerializer(serializers.ModelSerializer):
     
     class Meta: 
         model = models.User
-        fields = ['email','name','university','is_university']
+        fields = [
+            'email',
+            'name',
+            'university',
+            'is_university',
+        ]
 
 
 class OrganizationSerializer(serializers.ModelSerializer):
@@ -81,7 +105,13 @@ class OrganizationSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Organization
 
-        fields = ['id','university', 'name', 'num_people', 'user_has_role']
+        fields = [
+            'id',
+            'university',
+            'name',
+            'num_people',
+            'user_has_role',
+        ]
 
     def get_num_people(self, obj):
         return models.Role.objects.filter(organization=obj).count()
@@ -89,13 +119,11 @@ class OrganizationSerializer(serializers.ModelSerializer):
     def get_user_has_role(self, obj):
         user = self.context['request'].user
         role = models.Role.objects.filter(user=user, organization=obj).first()
-        if role:
-            if role.is_admin:
-                return "Admin"
-            else:
-                return "Regular member"
-        else:
+        if not role:
             return "Not a member"
+        if role.is_admin:
+            return "Admin"
+        return "Regular Member"
 
 
 class RoleSerializer(serializers.ModelSerializer):
@@ -110,7 +138,12 @@ class RoleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Role
-        fields = ['id','organization','user','is_admin']
+        fields = [
+            'id',
+            'organization',
+            'user',
+            'is_admin',
+        ]
 
 
 class PendingJoinOrgSerializer(serializers.ModelSerializer):
@@ -125,7 +158,10 @@ class PendingJoinOrgSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.PendingJoinOrg
-        fields = ['requester','organization']
+        fields = [
+            'requester',
+            'organization',
+        ]
 
 
 class PendingCreateOrgSerializer(serializers.ModelSerializer):
@@ -140,7 +176,11 @@ class PendingCreateOrgSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.PendingCreateOrg
-        fields = ['requester', 'university', 'org_name']
+        fields = [
+            'requester',
+            'university',
+            'org_name',
+        ]
 
 
 class OrgRegisteredEventSerializer(serializers.ModelSerializer):
@@ -155,4 +195,8 @@ class OrgRegisteredEventSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = models.OrgRegisteredEvent
-        fields = ['date_registered','event','organization']
+        fields = [
+            'date_registered',
+            'event',
+            'organization',
+        ]

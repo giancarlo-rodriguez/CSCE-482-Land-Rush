@@ -2,6 +2,7 @@ from rest_framework import permissions
 from .models import Organization
 from .models import Role
 
+
 class IsUniversity(permissions.BasePermission):
     def has_permission(self, request, view):
         return(request.user.is_university)
