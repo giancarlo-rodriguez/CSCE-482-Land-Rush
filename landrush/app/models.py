@@ -1,17 +1,10 @@
-from django.db import models
+import io
 
 from django.contrib.auth.models import AbstractBaseUser
 from django.contrib.auth.models import BaseUserManager
-from django.utils import timezone
-import io
 from django.core.files.base import ContentFile
-
-# Create your models here.
 from django.db import models
 from django.utils import timezone
-
-
-    
 
 
 class University(models.Model):
@@ -35,7 +28,6 @@ class UserManager(BaseUserManager):
     """
     Custom user manager for user creation
     """
-
     def create_user(self, email, password, is_university=False, **extra_fields):
         """
         Creates and saves a user with the given email, password, and other fields.
@@ -73,7 +65,6 @@ class User(AbstractBaseUser):
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
-
     objects = UserManager()
 
     def __str__(self):
@@ -122,7 +113,6 @@ class Role(models.Model):
     organization = models.ForeignKey(Organization, related_name='role', on_delete=models.CASCADE, null=True, blank=True)
     is_admin = models.BooleanField(default=False)
 
-
     class Meta:
         db_table = "roles"
         verbose_name_plural = "Roles"
@@ -151,7 +141,12 @@ class Plot(models.Model):
     def __str__(self):
         return self.name + " at " + self.university.name
 
+
 class Coordinates(models.Model):
+    """
+    Model for Coordinates table
+    Each row is a coordinate for a plot within a section
+    """
     id = models.IntegerField(primary_key = True)
     plot = models.ForeignKey(Plot, related_name = "event", on_delete=models.CASCADE)
     latitude = models.CharField(max_length=250)
@@ -182,6 +177,10 @@ class Event(models.Model):
 
 
 class PendingJoinOrg(models.Model):
+    """
+    Model for PendingJoinOrg table
+    Each row represents a student awaiting approval to join an organization
+    """
     id = models.IntegerField(primary_key=True)
     requester = models.ForeignKey(User, related_name='join_requester', on_delete = models.CASCADE)
     organization = models.ForeignKey(Organization, related_name = 'requested_org', on_delete = models.CASCADE)
@@ -192,7 +191,12 @@ class PendingJoinOrg(models.Model):
     def __str__(self):
         return self.requester.email + ' wants to join ' + self.organization.name
 
+
 class PendingCreateOrg(models.Model):
+    """
+    Model for PendingCreateOrg table
+    Each row represents an organization awaiting approval to join a university
+    """
     id = models.IntegerField(primary_key=True)
     requester = models.ForeignKey(User, related_name='create_requester', on_delete = models.CASCADE)
     university = models.ForeignKey(University, related_name = 'requested_org', on_delete = models.CASCADE)
@@ -204,8 +208,11 @@ class PendingCreateOrg(models.Model):
     def __str__(self):
         return self.requester.email + ' wants to create ' + self.org_name
 
-
 class OrgRegisteredEvent(models.Model):
+    """
+    Model for OrgRegisteredEvent table
+    Each row represents an organization registered for an event
+    """
     id = models.IntegerField(primary_key = True)
     organization = models.ForeignKey(Organization, related_name = 'registered_org', on_delete=models.CASCADE)
     event = models.ForeignKey(Event, related_name= 'event', on_delete=models.CASCADE)
@@ -214,16 +221,21 @@ class OrgRegisteredEvent(models.Model):
     def __str__(self):
         return self.organization.name + ' registered for  ' + self.event.name
 
+
 class StudentRegisteredEvent(models.Model):
+    """
+    Model for StudentRegisteredEvent table
+    Each row represents a student registered for an event
+    """
     id = models.IntegerField(primary_key = True)
     organization = models.ForeignKey(Organization, related_name = 'registered_member_org', on_delete=models.CASCADE)
     member = models.ForeignKey(User, related_name= 'registered_member', on_delete=models.CASCADE)
     event = models.ForeignKey(Event, related_name= 'registered_member_event', on_delete=models.CASCADE)
     date_time_registered = models.DateTimeField(default=timezone.now)
-
     
     def __str__(self):
         return self.member.name + " attending " + self.event.name + " through " + self.organization.name
+
 
 class FilledPlot(models.Model):
     """

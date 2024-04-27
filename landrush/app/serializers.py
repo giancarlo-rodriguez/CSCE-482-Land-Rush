@@ -1,12 +1,11 @@
 from rest_framework import serializers
 from . import models
 
-
-
 class UniversitySerializer(serializers.ModelSerializer):
     class Meta:
         model = models.University
         slug_field = 'name'
+
 
 class EventSerializer(serializers.ModelSerializer):
     university = serializers.SlugRelatedField(
@@ -38,8 +37,6 @@ class EventSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'plot', 'created', 'university', 'timestamp', 'registered', 'registered_orgs']
 
 
-
-
 class PlotSerializer(serializers.ModelSerializer):
     university = serializers.SlugRelatedField(
         read_only = True,
@@ -50,6 +47,7 @@ class PlotSerializer(serializers.ModelSerializer):
         model = models.Plot
         fields = ['id', 'name', 'university']
 
+
 class CoordinateSerializer(serializers.ModelSerializer):
     plot = serializers.SlugRelatedField(
         read_only = True,
@@ -59,6 +57,7 @@ class CoordinateSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Coordinates
         fields = ['longitude', 'latitude', 'plot']
+
 
 class UserSerializer(serializers.ModelSerializer):
     university = serializers.SlugRelatedField(
@@ -99,7 +98,6 @@ class OrganizationSerializer(serializers.ModelSerializer):
             return "Not a member"
 
 
-
 class RoleSerializer(serializers.ModelSerializer):
     organization = serializers.SlugRelatedField(
         read_only = True,
@@ -120,7 +118,6 @@ class PendingJoinOrgSerializer(serializers.ModelSerializer):
         read_only = True,
         slug_field = 'email'
     )
-
     organization = serializers.SlugRelatedField(
         read_only = True,
         slug_field = 'name'
@@ -130,12 +127,12 @@ class PendingJoinOrgSerializer(serializers.ModelSerializer):
         model = models.PendingJoinOrg
         fields = ['requester','organization']
 
+
 class PendingCreateOrgSerializer(serializers.ModelSerializer):
     requester = serializers.SlugRelatedField(
         read_only = True,
         slug_field = 'email'
     )
-
     university = serializers.SlugRelatedField(
         read_only = True,
         slug_field = 'name'
@@ -145,12 +142,12 @@ class PendingCreateOrgSerializer(serializers.ModelSerializer):
         model = models.PendingCreateOrg
         fields = ['requester', 'university', 'org_name']
 
+
 class OrgRegisteredEventSerializer(serializers.ModelSerializer):
     organization = serializers.SlugRelatedField(
         read_only = True,
         slug_field = 'name'
     )
-
     event = serializers.SlugRelatedField(
         read_only = True,
         slug_field = 'name'

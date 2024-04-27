@@ -1,3 +1,4 @@
+import io
 import math
 import numpy as np
 import matplotlib.pyplot as plt
@@ -6,9 +7,7 @@ from shapely.geometry import Point
 from shapely.prepared import prep
 from queue import Queue
 from collections import deque
-import io
-# COORDS (LAT, LONG)
-# DICT (ORG ID: (member count, total time))
+
 
 # CONSTANTS
 EARTH_RADIUS_IN_METERS = 6367460.0
@@ -36,67 +35,12 @@ colors = [
     [0.0, 0.7, 0.7], # Cyan
 ]
 
-# LONGITUDE, LATITUDE
-# SECTION 1
-# section_coords = [
-#     (-96.345868662483245, 30.607906710335737),
-#     (-96.34530003421388, 30.607274178848026),
-#     (-96.34579356063634, 30.606925592211482),
-#     (-96.34600813734177, 30.606874804649784),
-# ]
-# section_coords = [
-#     (30.607906710335737, -96.345868662483245),
-#     (30.607274178848026, -96.34530003421388),
-#     (30.606925592211482, -96.34579356063634),
-#     (30.606874804649784, -96.34600813734177),
-# ]
-
-# SECTION 2
-section_coords1 = [
-    (-96.34607133776048, 30.608116259627238),
-    (-96.3459345450978, 30.607973132735594),
-    (-96.34601769357906, 30.607333676136324),
-    (-96.3460874310149, 30.60734060168168),
-    (-96.3460311046244, 30.60739369751292),
-    (-96.34647635133008, 30.60790387771211),
-]
-# section_coords = [
-#     (30.608116259627238, -96.34607133776048),
-#     (30.607973132735594, -96.34593454509788),
-#     (30.607333676136324, -96.34601769357906),
-#     (30.60734060168168, -96.3460874310149),
-#     (30.60739369751292, -96.3460311046244),
-#     (30.60790387771211, -96.34647635133008),
-# ]
-
 class Organization:
     def __init__(self, name, average_req_time, member_count):
         self.name = name
         self.req_time = average_req_time
         self.member_count = member_count
         self.sqft = 0
-
-# orgs = [
-#     Organization("A", 1, 69),
-#     Organization("B", 2, 47),
-#     Organization("C", 3, 25),
-#     Organization("D", 4, 17),
-#     Organization("E", 5, 10),
-#     Organization("F", 6, 10),
-# ]
-# orgs = [
-#     Organization("A", 1, 15),
-#     Organization("B", 2, 15),
-#     Organization("C", 3, 10),
-#     Organization("D", 4, 10),
-#     Organization("E", 5, 10),
-#     Organization("F", 6, 10),
-#     Organization("G", 7, 10),
-#     Organization("H", 8, 5),
-#     Organization("I", 9, 5),
-#     Organization("J", 10, 5),
-#     Organization("K", 11, 5),
-# ]
 
 def calcSectionArea(coords):
     """
@@ -179,20 +123,19 @@ def algorithm(section_coords, orgs_attending):
     section_occupancy = section_area / SQFT_PER_PERSON
 
     total_orgs = []
+    orgs = []
     for org in orgs_attending:
         members = orgs_attending[org][0]
         time = orgs_attending[org][1]
         total_orgs.append(Organization(org, time / members, members))
-
     total_orgs = sorted(total_orgs, key=lambda organization: getattr(organization, 'req_time'))
-
-    orgs = []
+    
     total_member_count = 0
     for org in total_orgs:
         if total_member_count + org.member_count <= section_occupancy:
             orgs.append(org)
+
     calcSqftPerOrg(section_area, orgs)
- 
     polygon = createPolygon(section_coords)
     grid, valid = createGrid(polygon)
 
@@ -267,9 +210,6 @@ def algorithm(section_coords, orgs_attending):
                 ax.add_patch(plt.Rectangle((x - CELL_SIZE / 2, y - CELL_SIZE / 2), CELL_SIZE, CELL_SIZE, linewidth=0, edgecolor='none', facecolor="Black"))
             if point in allocated:
                 org_name = allocated[point]
-                # org_colors[]
-                # if org_name not in org_colors:
-                #     org_colors[org_name] = np.random.rand(3,)  # Generate a random color for the organization
                 color = org_colors[org_name]
                 ax.add_patch(plt.Rectangle((x - CELL_SIZE / 2, y - CELL_SIZE / 2), CELL_SIZE, CELL_SIZE, linewidth=0, edgecolor='none', facecolor=color))
 

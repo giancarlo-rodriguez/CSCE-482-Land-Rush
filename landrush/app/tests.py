@@ -1,11 +1,12 @@
+import requests
+
 from django.test import TestCase
 from django.test import Client
 from rest_framework.test import APIClient
 from rest_framework.authtoken.models import Token
 from rest_framework import status
-import requests
 from .models import *
-# Create your tests here.
+
 
 class StudentRegisterTestCase(TestCase):
     def setUp(self):
@@ -38,6 +39,7 @@ class StudentRegisterTestCase(TestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data, "Student already exists")
 
+
 class UniversityRegisterTestCase(TestCase):
     def setUp(self):
         self.client = APIClient()
@@ -48,14 +50,10 @@ class UniversityRegisterTestCase(TestCase):
             "password": "testpassword",
             "universityName": "Test University"
         }
-
         response = self.client.post('/register/university', data, format='json')
-
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-
         self.assertTrue(University.objects.filter(name="Test University").exists())
         self.assertTrue(User.objects.filter(email="test@example.com").exists())
-
         user = User.objects.get(email="test@example.com")
         self.assertEqual(user.university.name, "Test University")
         self.assertTrue(user.is_university)
@@ -69,11 +67,10 @@ class UniversityRegisterTestCase(TestCase):
             "password": "testpassword",
             "universityName": "Test University"
         }
-
         response = self.client.post('/register/university', data, format='json')
-
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data, "University already exists")
+
 
 class OrganizationTestCase(TestCase):
     def setUp(self):
@@ -125,6 +122,7 @@ class OrganizationTestCase(TestCase):
         data = {'organization': 'Test Organization'}
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
 
 class EventtTestCase(TestCase):
     def setUp(self):

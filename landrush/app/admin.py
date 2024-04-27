@@ -10,7 +10,7 @@ from .models import PendingJoinOrg
 from .models import OrgRegisteredEvent, StudentRegisteredEvent
 from .models import Coordinates
 
-# Register your models here.
+# Models registered here
 admin.site.register(University)
 admin.site.register(User)
 admin.site.register(Organization)
@@ -22,4 +22,3 @@ admin.site.register(PendingJoinOrg)
 admin.site.register(OrgRegisteredEvent)
 admin.site.register(Coordinates)
 admin.site.register(StudentRegisteredEvent)
-

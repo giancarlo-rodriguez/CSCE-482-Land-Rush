@@ -18,7 +18,6 @@ if (location.pathname.startsWith('/admin')) {
     <>
         <li><Link to="/admin">Admin</Link></li>
         <li><Link to="/admin/colleges">Active Colleges</Link></li>
-        {/* <li><Link to="/admin/messages">Messages</Link></li> */}
         <li><Link to="/home">Signout</Link></li>
         {/* Modify as needed*/}
         </>
@@ -30,8 +29,6 @@ if (location.pathname.startsWith('/admin')) {
         <li><Link to="/college/plots">Land Plots</Link></li>
         <li><Link to="/college/events">Events</Link></li>
         <li><Link to="/college/orgs">Organizations</Link></li>
-        { /* <li><Link to="/college/info">College Information</Link></li>
-        <li><Link to="/college/messages">Messages</Link></li> */}
         <li><Link to="/home">Signout</Link></li>
         {/* Modify as needed*/}
         </>
@@ -40,9 +37,8 @@ if (location.pathname.startsWith('/admin')) {
     navLinks = (
     <>
         <li><Link to="/home">Home</Link></li>
-        { /* <li><Link to="/home/aboutus">About Us</Link></li> */}
         <li><Link to="/home/RegisterStudent">Register Student</Link></li>
-        <li><Link to="/home/RegisterUniversity">Register Universtiy</Link></li>  
+        <li><Link to="/home/RegisterUniversity">Register University</Link></li>  
         <li><Link to="/home/signin">Sign In</Link></li>
     </>
     );

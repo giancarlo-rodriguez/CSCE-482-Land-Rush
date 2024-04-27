@@ -1,8 +1,8 @@
 from django.urls import path
-from . import views
-from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
+from rest_framework import permissions
+from . import views
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -18,7 +18,6 @@ schema_view = get_schema_view(
 )
 
 
-
 urlpatterns = [
     path('', views.home, name='home'),
     path('login',views.Login.as_view(), name='login'), #Done frontend
@@ -30,12 +29,9 @@ urlpatterns = [
     path('join/org',views.JoinOrg.as_view()), #Done in frontend
     path('drop/org',views.DropOrg.as_view()),
     path('choose/uni',views.ChooseUniversity.as_view()),
-    #path('create/org/response',views.CreateOrgResponse.as_view()), #Needs to be done in frontend
-    #path('create/org/show',views.showCreateOrgPending.as_view()), #Needs to be done in frontend
     path('join/org/response',views.JoinOrgResponse.as_view()), #Needs to be done in frontend
     path('create/event',views.CreateEvent.as_view()), #Needs to be done in frontend
     path('delete/event',views.DeleteEvent.as_view()),
-    #path('event/org/register',views.RegisterForEvent.as_view()), #Needs to be done in frontend
     path('event/org/register',views.OrgRegisterEvent.as_view()), #Needs to be done in frontend
     path('event/org/unregister',views.OrgUnregisterEvent.as_view()), #Needs to be done in frontend
     path('show/profile',views.ShowProfile.as_view()), #Done in frontend

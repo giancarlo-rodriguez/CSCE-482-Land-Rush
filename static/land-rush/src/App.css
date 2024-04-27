@@ -15,12 +15,13 @@ body {
 .navbar ul {
   list-style-type: none;
   margin: 0;
-  padding: 0;
+  padding: 10;
 }
 
 .navbar li {
   display: inline;
-  margin-right: 10px;
+  margin-right: 50px;
+
 }
 
 .navbar li a {
