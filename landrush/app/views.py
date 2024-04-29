@@ -584,8 +584,10 @@ class OrgUnregisterEvent(APIView):
 class StudentRegisterEvent(APIView):
     authentication_classes = [TokenAuthentication]
     def post(self,request):
+        print('hit')
         event_id = request.data.get("event_id")
         organization_id = request.data.get("organization_id")
+        print(event_id, organization_id)
         org = Organization.objects.get(id = organization_id)
         try:
             check_membership = Role.objects.get(organization = org, user = request.user)
