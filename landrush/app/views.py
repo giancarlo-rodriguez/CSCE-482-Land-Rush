@@ -136,7 +136,7 @@ class StudentRegister(APIView):
             req_password = request.data.get("password")
             university = request.data.get("university")  # Adjust the key to match frontend
             university = University.objects.get(name = university)
-
+            print()
             if not (req_email and req_password and university and req_name):
                 return Response("Email, password, and university name are required.", status=status.HTTP_400_BAD_REQUEST)
 
@@ -334,6 +334,7 @@ class UserOrganizations(APIView):
     authentication_classes = [TokenAuthentication]
     def get(self, request):
         user = request.user
+        print(user)
         user_roles = Role.objects.filter(user=user)
         user_organizations = [role.organization for role in user_roles]
         serializer = serializers.OrganizationSerializer(user_organizations, many=True)
@@ -582,7 +583,6 @@ class OrgUnregisterEvent(APIView):
 class StudentRegisterEvent(APIView):
     authentication_classes = [TokenAuthentication]
     def post(self,request):
-        print('hit')
         event_id = request.data.get("event_id")
         organization_id = request.data.get("organization_id")
         print(event_id, organization_id)
