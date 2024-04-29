@@ -44,14 +44,16 @@ class FillPlot(APIView):
     def post(self, request):
         try:
             #1. get event ID from request
-            print("hit")
             event_id = request.data.get('event_id')
-            print("hit", event_id)
+            print("event_id:", event_id)
             event = Event.objects.get(id = event_id)
             orgs_attending = {}
             registered_students = StudentRegisteredEvent.objects.filter(event = event)
+            org_names = {}
             for registered_student in registered_students: 
                 org_id = registered_student.organization.id
+                org_name = registered_student.organization.name
+                org_names[org_id] = org_name
                 time_registered = registered_student.date_time_registered
                 difference = time_registered - event.created
                 if(org_id in orgs_attending):
@@ -59,9 +61,6 @@ class FillPlot(APIView):
                 else:
                     orgs_attending[org_id] = (1,difference.total_seconds() / 60)
             #2. find the plot for that event ID
-            exists = FilledPlot.objects.filter(event_id=event_id).exists()
-            if exists:
-                return Response("A filled plot already exists for this event", status=status.HTTP_400_BAD_REQUEST)
             event = Event.objects.get(id=event_id)
 
             #3. get lat/long points for that plot
@@ -72,9 +71,16 @@ class FillPlot(APIView):
             #4. convert lat/long list with strings to doubles/floats
             for p in plot_coordinates_from_db:
                 plot_coordinates.append((float(p.longitude), float(p.latitude)))
-            image_data = algorithm(plot_coordinates, orgs_attending)
+            image_data = algorithm(plot_coordinates, orgs_attending, org_names)
 
             #7. save image in database
+            if FilledPlot.objects.filter(event=event).exists():
+
+                filled_plots = FilledPlot.objects.filter(event=event)
+                print("len of filled plots",len(filled_plots))
+                filled_plots.delete()
+                print("len of filled plots",len(filled_plots))
+
             filled_plot = FilledPlot(event=event)
             filled_plot.image.save('filled_plot.png', ContentFile(image_data), save=True)
             #8. return 201 if success
@@ -321,8 +327,7 @@ class JoinOrgResponse(APIView):
             return HttpResponse("Rejected")
 
 
-# *********show resource views******** #
-#show profile info:
+
 class ShowProfile(APIView):
     authentication_classes = [TokenAuthentication]
     def get(self,request):
@@ -334,10 +339,13 @@ class UserOrganizations(APIView):
     authentication_classes = [TokenAuthentication]
     def get(self, request):
         user = request.user
-        print(user)
         user_roles = Role.objects.filter(user=user)
         user_organizations = [role.organization for role in user_roles]
-        serializer = serializers.OrganizationSerializer(user_organizations, many=True)
+        serializer = serializers.OrganizationSerializer(
+            user_organizations,
+            many=True,
+            context={'request': request}  # Pass request object to serializer context
+        )
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -361,16 +369,13 @@ class Login(ObtainAuthToken):
         else:
             # Check if the user is a university
             if user.is_university:
-                # Generate or retrieve token
                 token, created = Token.objects.get_or_create(user=user)
                 print("token uni", token)
-                # Return token along with user role
                 return Response({
                     'token': token.key,
                     'user_role': 'university'
                 })
             else:
-                # Return token along with user role as student
                 token, created = Token.objects.get_or_create(user=user)
                 print("token studnet", token)
                 return Response({
@@ -553,13 +558,13 @@ class OrgRegisterEvent(APIView):
         try:
             event_id = request.data.get("event_id")
             organization_id = request.data.get("org_id")
-            # Check if the organization is already registered for the event
             if OrgRegisteredEvent.objects.filter(organization_id=organization_id, event_id=event_id).exists():
                 return Response("Organization is already registered for this event", status=status.HTTP_400_BAD_REQUEST)
             organization = Organization.objects.get(id=organization_id)
             event = Event.objects.get(university=request.user.university, id=event_id)
             register_for_event = OrgRegisteredEvent(organization=organization, event=event)
             register_for_event.save()
+            print(organization, "registered")
             return Response("Organization has registered for event", status=status.HTTP_201_CREATED)
         except:
             return Response("Registration not successful", status=status.HTTP_400_BAD_REQUEST)
@@ -573,41 +578,58 @@ class OrgUnregisterEvent(APIView):
             organization_id = request.data.get("org_id")
             organization = Organization.objects.get(id=organization_id)
             event = Event.objects.get(university = request.user.university, id = event_id)
+            previous_students = StudentRegisteredEvent.objects.filter(event=event, organization=organization)
+            previous_students.delete()
             registration_obj = OrgRegisteredEvent.objects.get(organization = organization, event = event)
             registration_obj.delete()
             return HttpResponse("Organization has unregistered for event")
         except:
             return HttpResponse("Unregistration not successful")
 
-
 class StudentRegisterEvent(APIView):
     authentication_classes = [TokenAuthentication]
-    def post(self,request):
+    def post(self, request):
         event_id = request.data.get("event_id")
-        organization_id = request.data.get("organization_id")
-        print(event_id, organization_id)
-        org = Organization.objects.get(id = organization_id)
+        organization_id = request.data.get("org_id")
+        orgs = OrgRegisteredEvent.objects.all()
+        print("show orgs")
+        for org in orgs:
+            print(org)
+        print("***********")
         try:
-            check_membership = Role.objects.get(organization = org, user = request.user)
-        except:
-            return HttpResponse("You are not a member of this organization.")
-        member = request.user
-        event = Event.objects.get(id = event_id)
-        try:
-            check_other_registration = StudentRegisteredEvent.objects.get(event = event, member = member)
-            return HttpResponse("You have already registered for this event with another organization")
-        except:
-            pass
-        new_student_event = StudentRegisteredEvent(event = event, member = member, organization = org)
-        new_student_event.save()
-        return HttpResponse("Registered for event")
+            # Check if the organization is registered for the event
+            if not OrgRegisteredEvent.objects.filter(event_id=event_id, organization_id=organization_id).exists():
+                print("org didn't register yet")
+                return Response("The organization has not registered for this event yet.", status=status.HTTP_400_BAD_REQUEST)
+            org = Organization.objects.get(id=organization_id)
 
+            # Check if the user is a member of the organization
+            try:
+                check_membership = Role.objects.get(organization=org, user=request.user)
+            except Role.DoesNotExist:
+                return HttpResponse("You are not a member of this organization.")
+
+            # Check if the user has already registered for the event with another organization
+            member = request.user
+            event = Event.objects.get(id=event_id)
+            if StudentRegisteredEvent.objects.filter(event=event, member=member).exists():
+                return HttpResponse("You have already registered for this event with another organization.")
+
+            # Create new registration for the student
+            new_student_event = StudentRegisteredEvent(event=event, member=member, organization=org)
+            new_student_event.save()
+            return HttpResponse("Registered for event")
+        
+        except Event.DoesNotExist:
+            return HttpResponse("Event does not exist.")
+        except Organization.DoesNotExist:
+            return HttpResponse("Organization does not exist.")
 
 class StudentUnregisterEvent(APIView):
     authentication_classes = [TokenAuthentication]
     def post(self,request):
         event_id = request.data.get("event_id")
-        organization_id = request.data.get("organization_id")
+        organization_id = request.data.get("org_id")
         org = Organization.objects.get(id = organization_id)
         try:
             check_membership = Role.objects.get(organization = org, user = request.user)
@@ -658,8 +680,6 @@ class MembersAttendingEvent(APIView):
     def get(self,request):
         org_id = request.data.get("org_id")
         event_id = request.data.get("event_id")
-        print(org_id)
-        print(event_id)
         org = Organization.objects.get(id = org_id)
         event = Event.objects.get(id = event_id)
         students_registered_objects = StudentRegisteredEvent.objects.filter(event = event, organization = org)
@@ -669,4 +689,29 @@ class MembersAttendingEvent(APIView):
         members_serializer = serializers.UserSerializer(members_attending, many = True)
         return JsonResponse(members_serializer.data, safe = False)
 
-# Create the view for running the algorithm
+
+
+class UserAttendanceView(APIView):
+    authentication_classes = [TokenAuthentication]
+    def post(self, request):
+        uni = University.objects.get(name=request.user.university)
+        events = Event.objects.filter(university=uni)
+        user = User.objects.get(email=request.user)
+        attendance_data = []
+        for event in events:
+            student_registered = StudentRegisteredEvent.objects.filter(event=event, member=user)
+            for org in student_registered:
+                is_attending = StudentRegisteredEvent.objects.filter(event=event, member=user, organization=org.organization).exists()
+                # for v in StudentRegisteredEvent.objects.filter(event=event, member=user, organization=org.organization):
+                #     print("v",v, is_attending)
+                attendance_data.append({
+                    'user': user,
+                    'event': event.id,
+                    'organization': org.organization,
+                    'is_attending': is_attending
+                })
+            print(attendance_data)
+
+        serializer = serializers.UserAttendanceSerializer(attendance_data, many=True, context={'request': request})
+        print(serializer)
+        return Response(serializer.data, status=status.HTTP_200_OK)

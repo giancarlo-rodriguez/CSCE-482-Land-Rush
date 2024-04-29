@@ -79,30 +79,30 @@ const OrgEvents = () => {
     }
   };
 
-  const handleEventClick = (eventId) => {
-    const screenWidth = window.screen.availWidth;
-    const screenHeight = window.screen.availHeight;
-    const windowWidth = 800;
-    const windowHeight = 600;
-    const left = (screenWidth - windowWidth) / 2;
-    const top = (screenHeight - windowHeight) / 2;
-    const windowOptions = `width=${windowWidth},height=${windowHeight},top=${top},left=${left}`;
+  // const handleEventClick = (eventId) => {
+  //   const screenWidth = window.screen.availWidth;
+  //   const screenHeight = window.screen.availHeight;
+  //   const windowWidth = 800;
+  //   const windowHeight = 600;
+  //   const left = (screenWidth - windowWidth) / 2;
+  //   const top = (screenHeight - windowHeight) / 2;
+  //   const windowOptions = `width=${windowWidth},height=${windowHeight},top=${top},left=${left}`;
 
-    fetch('http://127.0.0.1:8000/get-filled-plot', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Token ${Cookies.get('token')}`
-      },
-      body: JSON.stringify({ event_id: eventId }),
-    })
-    .then(response => response.blob())
-    .then(blob => {
-      const url = URL.createObjectURL(blob);
-      window.open(url, '_blank', windowOptions);
-    })
-    .catch(error => console.error('Error:', error));
-  };
+  //   fetch('http://127.0.0.1:8000/get-filled-plot', {
+  //     method: 'POST',
+  //     headers: {
+  //       'Content-Type': 'application/json',
+  //       Authorization: `Token ${Cookies.get('token')}`
+  //     },
+  //     body: JSON.stringify({ event_id: eventId }),
+  //   })
+  //   .then(response => response.blob())
+  //   .then(blob => {
+  //     const url = URL.createObjectURL(blob);
+  //     window.open(url, '_blank', windowOptions);
+  //   })
+  //   .catch(error => console.error('Error:', error));
+  // };
 
   // Remaining code...
 
@@ -158,7 +158,6 @@ const OrgEvents = () => {
           <div className="event-bar-details">
             <span className="event-bar-name">{event.name}</span>
             {renderTimer(event.timestamp, event)}
-            <button className="view-plot-button" onClick={() => handleEventClick(event.id)}>View Filled Plot</button>
           </div>
         </div>
       ))}

@@ -112,7 +112,7 @@ def createGrid(polygon):
     return grid, valid
 
 
-def algorithm(section_coords, orgs_attending):
+def algorithm(section_coords, orgs_attending, org_names):
     """
         Run the algorithm that partitions a section into plots for individual organizations.
         Args:   section_coords - coordinates of the section in (longitude, latitude)
@@ -120,6 +120,7 @@ def algorithm(section_coords, orgs_attending):
                 req_times
                 member_count
     """
+    print("entered algo")
     section_area = calcSectionArea(section_coords)
     section_occupancy = section_area / SQFT_PER_PERSON
 
@@ -130,16 +131,18 @@ def algorithm(section_coords, orgs_attending):
         time = orgs_attending[org][1]
         total_orgs.append(Organization(org, time / members, members))
     total_orgs = sorted(total_orgs, key=lambda organization: getattr(organization, 'req_time'))
-    
+    print("algo 2")
     total_member_count = 0
     for org in total_orgs:
         if total_member_count + org.member_count <= section_occupancy:
             orgs.append(org)
-
+            print(org.member_count)
+    print("total membercount:",total_member_count)
+    print("algo 2")
     calcSqftPerOrg(section_area, orgs)
     polygon = createPolygon(section_coords)
     grid, valid = createGrid(polygon)
-
+    print("algo 3")
     def bfs(start, name, grid, visited, allocated, cells_needed):
         """
         Run BFS on an orgnization, allocating the necessary square footage.
@@ -190,7 +193,7 @@ def algorithm(section_coords, orgs_attending):
                     break
         return allocated
     allocated = splitSection(grid, orgs)
-    
+    print("algo 4")
     # Plotting
     fig, ax = plt.subplots()
     x, y = polygon.exterior.xy
@@ -199,13 +202,12 @@ def algorithm(section_coords, orgs_attending):
     org_colors = {}
     for i, org in enumerate(orgs):
         org_colors[org.name] = colors[i]
-
     for col_idx, col in enumerate(grid):
         for row_idx, cell in enumerate(col):
             # print("  ",cell)
             point = (row_idx, col_idx)
             x, y = cell
-            rect = plt.Rectangle((x - CELL_SIZE / 2, y - CELL_SIZE / 2), CELL_SIZE, CELL_SIZE, linewidth=0, edgecolor='black', facecolor='none')
+            rect = plt.Rectangle((x - CELL_SIZE / 2, y - CELL_SIZE / 2), CELL_SIZE, CELL_SIZE, linewidth=0, edgecolor='none', facecolor='none')
             ax.add_patch(rect)
             if point == (38,51):
                 ax.add_patch(plt.Rectangle((x - CELL_SIZE / 2, y - CELL_SIZE / 2), CELL_SIZE, CELL_SIZE, linewidth=0, edgecolor='none', facecolor="Black"))
@@ -213,11 +215,17 @@ def algorithm(section_coords, orgs_attending):
                 org_name = allocated[point]
                 color = org_colors[org_name]
                 ax.add_patch(plt.Rectangle((x - CELL_SIZE / 2, y - CELL_SIZE / 2), CELL_SIZE, CELL_SIZE, linewidth=0, edgecolor='none', facecolor=color))
-
+    print("algo 5")
     # Show plot
+    legend_handles = []
+    for org_id, org_name in org_names.items():
+        color = org_colors.get(org_id, [0, 0, 0])
+        legend_handles.append(plt.Rectangle((0, 0), 1, 1, fc=color, edgecolor='none'))
+    ax.legend(legend_handles, org_names.values(), loc='upper right')
     buffer = io.BytesIO()
     plt.savefig(buffer, format='png')
     buffer.seek(0)
     image_data = buffer.read() # Read the image data from the buffer
     plt.close(fig)  # Close the figure to free up resources
+    print("algo exited")
     return image_data

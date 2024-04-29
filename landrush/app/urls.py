@@ -54,7 +54,8 @@ urlpatterns = [
     path('show/event',views.ShowEvent.as_view()), #Done in frontend
     path('show/join/org',views.ShowJoinOrgPending.as_view()), #Done in the frontend
     path('org/count',views.OrgMemberCount.as_view()),
-
+    path('which/events/member/attending',views.UserAttendanceView.as_view()),
+#StudentAvaibleEvents
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 ]

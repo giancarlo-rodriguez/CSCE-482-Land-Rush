@@ -200,3 +200,68 @@ class OrgRegisteredEventSerializer(serializers.ModelSerializer):
             'event',
             'organization',
         ]
+class UserAttendanceSerializer(serializers.Serializer):
+    user = serializers.SlugRelatedField(
+        read_only=True,
+        slug_field='email'
+    )
+    event = serializers.IntegerField()
+    organization = serializers.SlugRelatedField(
+        read_only=True,
+        slug_field='name'
+    )
+    is_attending = serializers.SerializerMethodField()
+
+    def get_is_attending(self, obj):
+        """
+        Check if the user is attending the event with the specified organization.
+        """
+        request = self.context.get('request')
+        if not request:
+            return None
+        if request.user.is_anonymous or request.user.is_university:
+            return None
+        attending = models.StudentRegisteredEvent.objects.filter(member=request.user, event=obj['event'], organization=obj['organization']).exists()
+        return attending
+
+    def to_representation(self, instance):
+        """
+        Override the to_representation method to customize the output.
+        """
+        representation = super().to_representation(instance)
+        representation['user'] = instance['user'].email
+        representation['event'] = instance['event'].id
+        representation['organization'] = instance['organization'].name
+        return representation
+
+class UserAttendanceSerializer(serializers.Serializer):
+    user = serializers.SlugRelatedField(
+        read_only=True,
+        slug_field='email'
+    )
+    event = serializers.IntegerField()
+    organization = serializers.SlugRelatedField(
+        read_only=True,
+        slug_field='name'
+    )
+    is_attending = serializers.SerializerMethodField()
+
+    def get_is_attending(self, obj):
+        """
+        Check if the user is attending the event with the specified organization.
+        """
+        request = self.context.get('request')
+        if not request:
+            return None
+        if request.user.is_anonymous or request.user.is_university:
+            return None
+        attending = models.StudentRegisteredEvent.objects.filter(member=request.user, event_id=obj['event'], organization=obj['organization']).exists()
+        return attending
+
+    def to_representation(self, instance):
+        """
+        Override the to_representation method to customize the output.
+        """
+        representation = super().to_representation(instance)
+        representation['user'] = instance['user'].email
+        return representation
