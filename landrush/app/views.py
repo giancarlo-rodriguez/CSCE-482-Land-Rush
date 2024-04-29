@@ -44,11 +44,12 @@ class FillPlot(APIView):
     def post(self, request):
         try:
             #1. get event ID from request
+            print("hit")
             event_id = request.data.get('event_id')
+            print("hit", event_id)
             event = Event.objects.get(id = event_id)
             orgs_attending = {}
             registered_students = StudentRegisteredEvent.objects.filter(event = event)
-
             for registered_student in registered_students: 
                 org_id = registered_student.organization.id
                 time_registered = registered_student.date_time_registered
@@ -57,7 +58,6 @@ class FillPlot(APIView):
                     orgs_attending[org_id] = (orgs_attending[org_id][0] + 1, orgs_attending[org_id][1] + difference.total_seconds() / 60)
                 else:
                     orgs_attending[org_id] = (1,difference.total_seconds() / 60)
-
             #2. find the plot for that event ID
             exists = FilledPlot.objects.filter(event_id=event_id).exists()
             if exists:
@@ -72,13 +72,11 @@ class FillPlot(APIView):
             #4. convert lat/long list with strings to doubles/floats
             for p in plot_coordinates_from_db:
                 plot_coordinates.append((float(p.longitude), float(p.latitude)))
-
             image_data = algorithm(plot_coordinates, orgs_attending)
 
             #7. save image in database
             filled_plot = FilledPlot(event=event)
             filled_plot.image.save('filled_plot.png', ContentFile(image_data), save=True)
-
             #8. return 201 if success
             return Response("Image saved successfully", status=status.HTTP_201_CREATED)
         except Exception as e:
