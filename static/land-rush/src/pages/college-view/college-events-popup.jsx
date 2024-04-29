@@ -87,6 +87,7 @@ const EventDetailsPopup = ({ eventID, eventData }) => {
           console.log(timestamp);
           console.log('Event updated successfully');
           handleFeedback("Event Updated Successfully");
+          window.location.reload();
         }
       } catch (error) {
         console.error('Error:', isNewEvent ? 'creating event' : 'updating event', error);
@@ -114,7 +115,25 @@ const EventDetailsPopup = ({ eventID, eventData }) => {
       }
     }
   };
-
+  const fillPlot = async () => {
+      const token = Cookies.get('token');
+      if (token) {
+        try {
+          await axios.post(`http://127.0.0.1:8000/fill-plot`, {
+            headers: {
+              Authorization: `Token ${token}`
+            },
+             event_id: eventID 
+          });
+          console.log('Event deleted successfully');
+          handleFeedback("Event Deleted Successfully");
+          window.location.reload();
+          alert("Plot saved successfully")
+        } catch (error) {
+          console.error('Error deleting event:', error);
+        }
+      }
+  };
   const handleFeedback = (message) => {
     setFeedbackMessage(message);
     setShowFeedback(true);
@@ -156,6 +175,7 @@ const EventDetailsPopup = ({ eventID, eventData }) => {
             <p><strong>Event Name:</strong> {eventName}</p>
             <p><strong>Plot:</strong> {plots.find(plot => plot.id === plotID)?.name}</p>
             <p><strong>Timestamp:</strong> {timestamp}</p>
+            <button onClick={fillPlot} style={{ color: 'green' }}>Fill Plot</button>
             <button onClick={handleDelete} style={{ color: 'red' }}>Delete</button>
           </>
         )}
