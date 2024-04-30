@@ -7,6 +7,7 @@ const OrgEvents = () => {
   const [orgId, setOrgId] = useState(null);
   const [plotImageUrl, setPlotImageUrl] = useState('');
   const [orgs, setOrgs] = useState([]);
+  const [selectedOrgIds, setSelectedOrgIds] = useState({});
 
   useEffect(() => {
     fetchOrganizations();
@@ -45,7 +46,7 @@ const OrgEvents = () => {
       fetchEvents(orgId);
     }
   }, [orgId]);
- 
+
   const fetchEvents = async (orgId) => {
     try {
       const token = Cookies.get('token');
@@ -55,12 +56,6 @@ const OrgEvents = () => {
         }
       });
   
-      const updatedEvents = response.data.map(event => {
-        return { ...event, isRegistered: false };
-      });
-      
-      console.log("Events from backend:", updatedEvents);
-  
       const userAttendanceResponse = await axios.post('http://127.0.0.1:8000/which/events/member/attending', {
       }, {
         headers: {
@@ -68,26 +63,19 @@ const OrgEvents = () => {
         }
       });
   
-      console.log("User attendance response:", userAttendanceResponse.data);
-
       const attendedEventsIds = userAttendanceResponse.data.map(event => event.event);
-      // Update the isRegistered property for the events the user is attending
-      const updatedEventsWithAttendance = updatedEvents.map(event => {
-        if (attendedEventsIds.includes(event.id)) {
-          console.log("Event ID found in attended events:", event);
-          return { ...event, isRegistered: true };
-        }
-        return event;
+      
+  
+      const updatedEvents = response.data.map(event => {
+        const isRegistered = attendedEventsIds.includes(event.id);
+        return { ...event, isRegistered };
       });
   
-      console.log("Updated events with attendance:", updatedEventsWithAttendance);
-  
-      setEvents(updatedEventsWithAttendance);
+      setEvents(updatedEvents);
     } catch (error) {
       console.error('Error fetching events:', error);
     }
   };
-  
 
   const handleRegisterEvent = async (eventId) => {
     try {
@@ -160,33 +148,87 @@ const OrgEvents = () => {
   };
 
   const renderTimer = (timestamp, event) => {
-    // Render timer logic
+    const eventDate = new Date(timestamp);
+    const currentDate = new Date();
+    
+    // Calculate registration opening date
+    const registrationOpenDate = new Date(eventDate.getTime() - (7 * 24 * 60 * 60 * 1000));
+    // Calculate registration closing date
+    const registrationCloseDate = new Date(eventDate.getTime() - (1 * 24 * 60 * 60 * 1000));
+  
+    const isRegistrationOpen = currentDate.getTime() >= registrationOpenDate.getTime();
+    const isRegistrationClosed = currentDate.getTime() >= registrationCloseDate.getTime();
+  
+    const remainingTime = registrationCloseDate.getTime() - currentDate.getTime();
+    const daysDiff = Math.floor(remainingTime / (1000 * 3600 * 24));
+    const hoursDiff = Math.floor((remainingTime % (1000 * 3600 * 24)) / (1000 * 3600));
+    const minutesDiff = Math.floor((remainingTime % (1000 * 3600)) / (1000 * 60));
+    const secondsDiff = Math.floor((remainingTime % (1000 * 60)) / 1000);
+  
+    const handleRegisterClick = async () => {
+      if (!event.isRegistered) {
+        await handleRegisterEvent(event.id);
+      } else {
+        await handleUnregisterEvent(event.id);
+      }
+    };
+  
+    if (!isRegistrationOpen && !isRegistrationClosed) {
+      return (
+        <span className="timer">
+          Registration Opens In: {daysDiff}:{hoursDiff}:{minutesDiff}:{secondsDiff}
+        </span>
+      );
+    } else if (isRegistrationOpen && !isRegistrationClosed && !event.isRegistered) {
+      return (
+        <span className="timer">
+          Registration Closes In: {daysDiff}:{hoursDiff}:{minutesDiff}:{secondsDiff}
+          <button className='events-button' onClick={handleRegisterClick}>Register</button>
+        </span>
+      );
+    } else if (isRegistrationOpen && !isRegistrationClosed && event.isRegistered) {
+      return (
+        <span className="timer">
+          Registration Locks In: {daysDiff}:{hoursDiff}:{minutesDiff}:{secondsDiff}
+          <button className='events-button' onClick={handleRegisterClick}>Unregister</button>
+          <button className='events-button' onClick={() => handleEventClick(event.id)}>View Plot</button>
+          {plotImageUrl && <img src={plotImageUrl} alt="Filled Plot" />}
+        </span>
+      );
+    } else if (event.isRegistered) {
+      return (
+        <span className="registration-message">
+          You registered successfully.
+          <button className='events-button' onClick={() => handleEventClick(event.id)}>View Plot</button>
+          {plotImageUrl && <img src={plotImageUrl} alt="Filled Plot" />}
+        </span>
+      );
+    } else {
+      return <span className="registration-message">You didn't register.</span>;
+    }
   };
+  
+  
 
   return (
     <div className="org-events-list">
-      <select onChange={handleOrgChange} value={orgId || ''}>
+      <select className="org-dropdown" onChange={handleOrgChange} value={orgId || ''}>
         <option value="">Select Organization</option>
         {orgs.map(org => (
           <option key={org.id} value={org.id}>{org.name}</option>
         ))}
       </select>
 
-      {events.map(event => (
-        <div key={event.id} className="event-bar">
-          <div className="event-bar-details">
-            <span className="event-bar-name">{event.name}</span>
-            {renderTimer(event.timestamp, event)}
-            {event.isRegistered ? (
-              <button className="unregister-button" onClick={() => handleUnregisterEvent(event.id)}>Unregister</button>
-            ) : (
-              <button className="register-button" onClick={() => handleRegisterEvent(event.id)}>Register</button>
-            )}
-            <button className="view-plot-button" onClick={() => handleEventClick(event.id)}>View Plot</button>
+      {events
+        .filter(event => event.registered_orgs.some(org => org.id === orgId))
+        .map(event => (
+          <div key={event.id} className="event-bar">
+            <div className="event-bar-details">
+              <span className="event-bar-name">{event.name}</span>
+              {renderTimer(event.timestamp, event)}
+            </div>
           </div>
-        </div>
-      ))}
-      {plotImageUrl && <img src={plotImageUrl} alt="Filled Plot" />}
+        ))}
     </div>
   );
 };
