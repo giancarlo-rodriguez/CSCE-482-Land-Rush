@@ -137,9 +137,9 @@ const OrgEvents = () => {
         <>
           <span className="timer">Registration closes at: {eventDateString}</span>
           {event.isRegistered ? (
-            <button className="unregister-button" onClick={handleUnregisterClick}>Unregister</button>
+            <button className="events-button" onClick={handleUnregisterClick}>Unregister</button>
           ) : (
-            <button className="register-button" onClick={handleRegisterClick}>Register</button>
+            <button className="events-button" onClick={handleRegisterClick}>Register</button>
           )}
         </>
       );

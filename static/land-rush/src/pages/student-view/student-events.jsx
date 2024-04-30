@@ -7,6 +7,7 @@ const OrgEvents = () => {
   const [orgId, setOrgId] = useState(null);
   const [plotImageUrl, setPlotImageUrl] = useState('');
   const [orgs, setOrgs] = useState([]);
+  const [selectedOrgIds, setSelectedOrgIds] = useState({});
 
   useEffect(() => {
     fetchOrganizations();
@@ -21,31 +22,22 @@ const OrgEvents = () => {
         }
       });
       setOrgs(response.data);
-      console.log("intial fetch:", response.data)
     } catch (error) {
       console.error('Error fetching organizations:', error);
     }
   };
 
-
   const handleOrgChange = (event) => {
     const selectedOrgId = parseInt(event.target.value, 10);
     setOrgId(selectedOrgId);
-
-    // Update the isRegistered property for all events based on the selected organization
-    const updatedEvents = events.map(event => {
-      const isRegisteredForOrg = event.registered_orgs.some(org => org.id === selectedOrgId);
-      return { ...event, isRegisteredForOrg };
-    });
-
-    setEvents(updatedEvents);
   };
+
   useEffect(() => {
     if (orgId !== null) {
       fetchEvents(orgId);
     }
   }, [orgId]);
- 
+
   const fetchEvents = async (orgId) => {
     try {
       const token = Cookies.get('token');
@@ -54,78 +46,12 @@ const OrgEvents = () => {
           Authorization: `Token ${token}`
         }
       });
-  
-      const updatedEvents = response.data.map(event => {
-        return { ...event, isRegistered: false };
-      });
-      
-      console.log("Events from backend:", updatedEvents);
-  
-      const userAttendanceResponse = await axios.post('http://127.0.0.1:8000/which/events/member/attending', {
-      }, {
-        headers: {
-          Authorization: `Token ${token}`
-        }
-      });
-  
-      console.log("User attendance response:", userAttendanceResponse.data);
 
-      const attendedEventsIds = userAttendanceResponse.data.map(event => event.event);
-      // Update the isRegistered property for the events the user is attending
-      const updatedEventsWithAttendance = updatedEvents.map(event => {
-        if (attendedEventsIds.includes(event.id)) {
-          console.log("Event ID found in attended events:", event);
-          return { ...event, isRegistered: true };
-        }
-        return event;
-      });
-  
-      console.log("Updated events with attendance:", updatedEventsWithAttendance);
-  
-      setEvents(updatedEventsWithAttendance);
+      setEvents(response.data);
     } catch (error) {
       console.error('Error fetching events:', error);
     }
   };
-  
-  // const fetchEvents = async (orgId) => {
-  //   try {
-  //     const token = Cookies.get('token');
-  //     const response = await axios.get('http://127.0.0.1:8000/show/event', {
-  //       headers: {
-  //         Authorization: `Token ${token}`
-  //       }
-  //     });
-
-  //     const updatedEvents = response.data.map(event => {
-        
-
-  //       return { ...event, isRegistered:false };
-  //     });
-  //     const userAttendanceResponse = await axios.post('http://127.0.0.1:8000/which/events/member/attending', {
-  //     }, {
-  //       headers: {
-  //         Authorization: `Token ${token}`
-  //       }
-  //     });
-
-  //     const attendedEventsIds = userAttendanceResponse.data.map(event => event.id);
-
-  //     // Update the isRegistered property for the events the user is attending
-  //     const updatedEventsWithAttendance = updatedEvents.map(event => {
-  //       console.log("event before value", event)
-  //       if (attendedEventsIds.includes(event.id)) {
-  //         console.log("event changed value")
-  //         return { ...event, isRegistered:true };
-  //       }
-  //       return event;
-  //     });
-  //     setEvents(updatedEventsWithAttendance);
-  //     console.log("updated events from fetch:", updatedEventsWithAttendance)
-  //   } catch (error) {
-  //     console.error('Error fetching events:', error);
-  //   }
-  // };
 
   const handleRegisterEvent = async (eventId) => {
     try {
@@ -138,18 +64,10 @@ const OrgEvents = () => {
           Authorization: `Token ${token}`
         }
       });
-      // Update the isRegistered property of the event
-      const updatedEvents = events.map(event => {
-        if (event.id === eventId) {
-          return { ...event, isRegistered: true };
-        }
-        return event;
-      });
-      setEvents(updatedEvents);
-      console.log("register for event", updatedEvents)
+      fetchEvents(orgId); // Refresh events after registration
+      setSelectedOrgIds(prevState => ({ ...prevState, [eventId]: orgId }));
     } catch (error) {
-      if (error)
-        console.error('Error registering for event:', error);
+      console.error('Error registering for event:', error);
     }
   };
 
@@ -164,15 +82,8 @@ const OrgEvents = () => {
           Authorization: `Token ${token}`
         }
       });
-      // Update the isRegistered property of the event
-      const updatedEvents = events.map(event => {
-        if (event.id === eventId) {
-          return { ...event, isRegistered: false };
-        }
-        return event;
-      });
-      setEvents(updatedEvents);
-      console.log("unregister:", updatedEvents)
+      fetchEvents(orgId); // Refresh events after unregistering
+      setSelectedOrgIds(prevState => ({ ...prevState, [eventId]: null }));
     } catch (error) {
       console.error('Error unregistering from event:', error);
     }
@@ -198,33 +109,87 @@ const OrgEvents = () => {
   };
 
   const renderTimer = (timestamp, event) => {
-    // Render timer logic
+    const eventDate = new Date(timestamp);
+    const currentDate = new Date();
+    
+    // Calculate registration opening date
+    const registrationOpenDate = new Date(eventDate.getTime() - (7 * 24 * 60 * 60 * 1000));
+  
+    // Calculate registration closing date
+    const registrationCloseDate = new Date(eventDate.getTime() - (1 * 24 * 60 * 60 * 1000));
+  
+    const isRegistrationOpen = currentDate.getTime() >= registrationOpenDate.getTime();
+    const isRegistrationClosed = currentDate.getTime() >= registrationCloseDate.getTime();
+  
+    const orgId = selectedOrgIds[event.id] || '';
+    const isOrgRegistered = event.registered == orgId;
+
+    const remainingTime = registrationCloseDate.getTime() - currentDate.getTime();
+    const daysDiff = Math.floor(remainingTime / (1000 * 3600 * 24));
+    const hoursDiff = Math.floor((remainingTime % (1000 * 3600 * 24)) / (1000 * 3600));
+    const minutesDiff = Math.floor((remainingTime % (1000 * 3600)) / (1000 * 60));
+    const secondsDiff = Math.floor((remainingTime % (1000 * 60)) / 1000);
+  
+    const handleRegisterClick = () => {
+      if (!isOrgRegistered) {
+        handleRegisterEvent(event.id, orgId);
+      } else {
+        handleUnregisterEvent(event.id, orgId);
+      }
+    };
+
+    if (!isRegistrationOpen && !isRegistrationClosed && !isOrgRegistered) {
+      return (
+        <span className="timer">
+          Registration Opens In: {daysDiff}:{hoursDiff}:{minutesDiff}:{secondsDiff}
+        </span>
+      );
+    } else if (isRegistrationOpen && !isRegistrationClosed && !isOrgRegistered) {
+      return (
+        <span className="timer">
+          Registration Closes In: {daysDiff}:{hoursDiff}:{minutesDiff}:{secondsDiff}
+          <button className='events-button' onClick={handleRegisterClick}>Register</button>
+        </span>
+      );
+    } else if (isRegistrationOpen && !isRegistrationClosed && isOrgRegistered) {
+      return (
+        <span className="timer">
+          Registration Locks In: {daysDiff}:{hoursDiff}:{minutesDiff}:{secondsDiff}
+          <button className='events-button' onClick={handleRegisterClick}>Unregister</button>
+          <button className='events-button' onclick={handleEventClick}>View Plot</button>
+          {plotImageUrl && <img src={plotImageUrl} alt="Filled Plot" />}
+        </span>
+      );
+    } else if (isOrgRegistered) {
+      return <span className="registration-message">
+        You registered successfully.
+        <button className='events-button' onclick={handleEventClick}>View Plot</button>
+        {plotImageUrl && <img src={plotImageUrl} alt="Filled Plot" />}
+      </span>;
+    } else {
+      return <span className="registration-message">You didn't register.</span>;
+    }
   };
 
   return (
     <div className="org-events-list">
-      <select onChange={handleOrgChange} value={orgId || ''}>
+      <select className="org-dropdown" onChange={handleOrgChange} value={orgId || ''}>
         <option value="">Select Organization</option>
         {orgs.map(org => (
           <option key={org.id} value={org.id}>{org.name}</option>
         ))}
       </select>
 
-      {events.map(event => (
-        <div key={event.id} className="event-bar">
-          <div className="event-bar-details">
-            <span className="event-bar-name">{event.name}</span>
-            {renderTimer(event.timestamp, event)}
-            {event.isRegistered ? (
-              <button className="unregister-button" onClick={() => handleUnregisterEvent(event.id)}>Unregister</button>
-            ) : (
-              <button className="register-button" onClick={() => handleRegisterEvent(event.id)}>Register</button>
-            )}
-            <button className="view-plot-button" onClick={() => handleEventClick(event.id)}>View Plot</button>
+      {events
+        .filter(event => event.registered_orgs.some(org => org.id === orgId))
+        .map(event => (
+          <div key={event.id} className="event-bar">
+            <div className="event-bar-details">
+              <span className="event-bar-name">{event.name}</span>
+              {renderTimer(event.timestamp, event)}
+            </div>
           </div>
-        </div>
-      ))}
-      {plotImageUrl && <img src={plotImageUrl} alt="Filled Plot" />}
+        ))}
     </div>
   );
 };
