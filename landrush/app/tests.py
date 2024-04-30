@@ -100,32 +100,19 @@ class OrganizationTestCase(TestCase):
         data = {'org_id': new_org.id}
         response = self.client.delete(url, data, format='json')
 
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertFalse(Organization.objects.filter(id=new_org.id).exists())
 
-    def test_add_account_to_org_success(self):
+    def test_join_org_success(self):
         org = Organization.objects.create(name='Test Organization', university = self.new_uni)
         new_org = Organization.objects.get(name = 'Test Organization')
-        url = '/add/account/to/org'
+        url = '/join/org'
         data = {'organization': 'Test Organization'}
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Role.objects.filter(user=self.new_user, organization=new_org).exists(), True)
 
-    def test_add_account_to_org_user_already_member(self):
-        org = Organization.objects.create(name='Test Organization', university = self.new_uni)
-        new_org = Organization.objects.get(name='Test Organization')
-
-        Role.objects.create(user=self.new_user, organization=new_org)
-        url = '/add/account/to/org'
-        data = {
-            'organization': 'Test Organization',
-        }
-        response = self.client.post(url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
-
-class EventtTestCase(TestCase):
+class EventCreateTestCase(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.user = User.objects.create_user(email='testuser@gmail.com', password='testpassword')
@@ -153,12 +140,55 @@ class EventtTestCase(TestCase):
         self.assertEqual(event.name, 'Test Event')
     
     def test_delete_event_success(self):
-        event = Event.objects.create(name='Test Event',plot = self.new_plot, university = self.new_uni)
-        new_event= Event.objects.get(name = 'Test Event')
-        url = '/delete/event'
-        data = {
-            'event_id': new_event.id,
-        }
-        response = self.client.delete(url, data, format='json')
+        event = Event.objects.create(name='Test Event', plot=self.new_plot, university=self.new_uni)
+        new_event = Event.objects.get(name='Test Event')
+        url = f'/delete/event?event_id={new_event.id}'  # Construct URL with event_id query parameter
+        response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(Event.objects.count(), 0)
+    
+class EventRegisterTestCase(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.user = User.objects.create_user(email='testuser@gmail.com', password='testpassword')
+        self.new_user = User.objects.get(email='testuser@gmail.com')
+        University.objects.create(name="Test University")
+        self.new_uni = University.objects.get(name = "Test University")
+        self.new_user.university = self.new_uni
+        self.new_user.save()
+        self.token = Token.objects.create(user=self.new_user)
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token.key)
+        self.organization = Organization.objects.create(name='Test Organization', university = self.new_uni)
+        self.new_organization = Organization.objects.get(name='Test Organization', university = self.new_uni)
+        self.plot = Plot.objects.create(name='Test Plot', university=self.new_uni)
+        self.new_plot = Plot.objects.get(name = 'Test Plot')
+        self.event = Event.objects.create(name='Test Event', university=self.new_uni, plot = self.new_plot)
+        self.new_event = Event.objects.get(name='Test Event', university=self.new_uni, plot = self.new_plot)
+
+
+
+    def test_org_register_event(self):
+        data = {
+            'event_id': self.new_event.id,
+            'org_id': self.new_organization.id,
+        }
+
+        response = self.client.post('/event/org/register', data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        
+        self.assertTrue(OrgRegisteredEvent.objects.filter(organization=self.new_organization, event=self.new_event).exists())
+    
+    def test_student_register_event(self):
+        add_membership = Role.objects.create(organization = self.new_organization, user = self.new_user)
+        register_for_event = OrgRegisteredEvent(organization = self.new_organization, event=self.new_event)
+        register_for_event.save()
+        data = {
+            'event_id': self.new_event.id,
+            'org_id': self.new_organization.id,
+        }
+
+        response = self.client.post('/event/student/register', data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        

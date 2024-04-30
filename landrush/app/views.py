@@ -238,7 +238,7 @@ class JoinOrg(APIView):
         new_role = Role(user=join_requester, organization=org, is_admin=False)
         new_role.save()
 
-        return HttpResponse("You have been added to the organization as a regular member")
+        return Response("You have been added to the organization as a regular member", status=status.HTTP_201_CREATED)
 
 
 class DropOrg(APIView):
@@ -408,6 +408,7 @@ class DeleteOrg(APIView):
             org_id = request.data.get("org_id")
             deleted_org = Organization.objects.get(id = org_id)
             deleted_org.delete()
+            return Response("Org deleted successfully ", status.HTTP_204_NO_CONTENT)
         except:
             return HttpResponse("Org Not deleted.")
 
@@ -618,8 +619,8 @@ class StudentRegisterEvent(APIView):
             # Create new registration for the student
             new_student_event = StudentRegisteredEvent(event=event, member=member, organization=org)
             new_student_event.save()
-            return HttpResponse("Registered for event")
-        
+            return Response("Registered for event",status = status.HTTP_201_CREATED)
+
         except Event.DoesNotExist:
             return HttpResponse("Event does not exist.")
         except Organization.DoesNotExist:
