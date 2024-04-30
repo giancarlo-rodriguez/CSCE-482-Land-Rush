@@ -191,4 +191,82 @@ class EventRegisterTestCase(TestCase):
         response = self.client.post('/event/student/register', data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-        
+
+#Integration testing 
+# Scenario 1
+#One University is created, Two users are created, 
+#User 1 creates an organization, User 2 joins User 1 organizattion.
+
+class ScenarioOneTestCase(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.client1 = APIClient()
+        self.client2 = APIClient()
+    
+    def test_Scenario_1(self):
+        # Create the university and test for accurate results
+        data = {
+            "email": "test@example.com",
+            "password": "testpassword",
+            "universityName": "Test University",
+        }
+        response = self.client.post('/register/university', data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(University.objects.filter(name="Test University").exists())
+        self.assertTrue(User.objects.filter(email="test@example.com").exists())
+        user = User.objects.get(email="test@example.com")
+        self.assertEqual(user.university.name, "Test University")
+        self.assertTrue(user.is_university)
+
+        #Create User 1 and test for accurate results
+        data = {
+            "fullName": "John Doe",
+            "email": "john@example.com",
+            "password": "john",
+            "university": "Test University",
+        }
+        response = self.client1.post('/register/student', data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(User.objects.filter(email="john@example.com").exists())
+        john_user = User.objects.get(email="john@example.com")
+        self.assertEqual(john_user.university.name, "Test University")
+        self.assertEqual(john_user.name, "John Doe")
+
+        #Create User 2 and test for accurate results.
+        data = {
+            "fullName": "Sasan Lotfi",
+            "email": "sasan@example.com",
+            "password": "sasan",
+            "university": "Test University",
+        }
+        response = self.client.post('/register/student', data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(User.objects.filter(email="sasan@example.com").exists())
+        sasan_user = User.objects.get(email="sasan@example.com")
+        self.assertEqual(sasan_user.university.name, "Test University")
+        self.assertEqual(sasan_user.name, "Sasan Lotfi")
+        #Create token for Sasan
+        sasan_token = Token.objects.create(user = sasan_user)
+        self.client1.credentials(HTTP_AUTHORIZATION='Token ' + sasan_token.key)
+
+        #Sasan Creates Organization Aggie Coding Club
+        data = {
+            "organization": "Aggie Coding Club",
+        }
+        response = self.client1.post('/create/org/request', data, format='json')
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(Organization.objects.filter(name="Aggie Coding Club").exists())
+        role = Role.objects.get(user= sasan_user, organization__name="Aggie Coding Club")
+        self.assertTrue(role.is_admin)
+
+        #Create token for john
+        john_token = Token.objects.create(user = john_user)
+        self.client2.credentials(HTTP_AUTHORIZATION='Token ' + john_token.key)
+
+        #John joins organization Aggie Coding Club
+        url = '/join/org'
+        data = {'organization': 'Aggie Coding Club'}
+        response = self.client2.post(url, data, format='json')
+        new_org = Organization.objects.get(name = data['organization'])
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Role.objects.filter(user=john_user, organization=new_org).exists(), True)
