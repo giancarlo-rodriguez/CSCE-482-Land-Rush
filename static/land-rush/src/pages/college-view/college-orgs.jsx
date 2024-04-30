@@ -1,6 +1,6 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import './style.css';
 
 const OrganizationsList = () => {
@@ -59,6 +59,25 @@ const OrganizationsList = () => {
     org.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const deleteOrg = (orgId) => {
+    const token = Cookies.get('token');
+    axios.delete('http://127.0.0.1:8000/delete/org', {
+      headers: {
+        Authorization: `Token ${token}`
+      },
+      data: {
+        org_id: orgId
+      }
+    })
+    .then(response => {
+      console.log('Org deleted successfully');
+      setOrganizations(prevOrgs => prevOrgs.filter(org => org.id !== orgId));
+    })
+    .catch(error => {
+      console.error('Error deleting org:', error);
+    });
+  };
+
   return (
     <div className="org-list-container">
       <input
@@ -75,11 +94,8 @@ const OrganizationsList = () => {
               <th onClick={() => requestSort('name')} className={`org-th ${getClassNamesFor('name')}`}>
                 Name
               </th>
-              <th onClick={() => requestSort('memberCount')} className={`org-th ${getClassNamesFor('memberCount')}`}>
-                Member Count
-              </th>
               <th onClick={() => requestSort('status')} className={`org-th ${getClassNamesFor('status')}`}>
-                Status
+                Options
               </th>
             </tr>
           </thead>
@@ -87,8 +103,9 @@ const OrganizationsList = () => {
             {filteredOrganizations.map((org, index) => (
               <tr key={index} className="org-tr">
                 <td className="org-td">{org.name}</td>
-                <td className="org-td">{org.memberCount}</td>
-                <td className="org-td">{org.status}</td>
+                <td className="org-td">
+                  <button onClick={() => deleteOrg(org.id)}>Delete</button>
+                </td>
               </tr>
             ))}
           </tbody>

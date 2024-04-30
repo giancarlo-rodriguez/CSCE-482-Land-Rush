@@ -40,7 +40,7 @@ function PlotSelect({ plotID, plotOGName }) {
   };
 
   return (
-    <div className="map-container" style={{ width: '100%', height: '100%' }}>
+    <div className="map-container">
       <Wrapper apiKey="AIzaSyBwtGSYhRKGyxWWW3HEYzyoRi6T43147-o" render={renderMap}>
         <SimplePolygonMap 
         lat={30.6187}
@@ -56,8 +56,8 @@ function PlotSelect({ plotID, plotOGName }) {
 
 function Tool({ plotID, plotOGName }) {
   return (
-    <div className="popup-content" style={{ height: '100%', width: '100%', display: 'flex', flexDirection: 'column' }}>
-      <div className="box" style={{ height: '100%', width: '100%' }}>
+    <div className="popup-content">
+      <div className="box">
         <PlotSelect plotID={plotID} plotOGName={plotOGName}/>
       </div>
       <div className="instructions">

@@ -1,427 +1,319 @@
 /* college-events */
-  
-  .college-events-container {
-    display: flex;
-    width: 100%;
-  }
-  
-  .college-events-sidebar {
-    width: 30%;
-    overflow-y: auto; /* Enable scrolling if events overflow */
-    padding: 20px; /* Added padding */
-  }
-  
-  .college-events-details {
-    width: 70%;
-    padding: 20px;
-  }
-  
-  .event-bar {
-    display: flex;
-    align-items: center;
-    width: calc(90%);
-    margin-bottom: 10px;
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    padding: 10px;
-    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+
+.college-events-details {
+  width: 70%;
+  padding: 20px;
 }
 
-.event-bar:hover {
-    transform: translateY(-5px);
-    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.3);
+.event-details-popup {
+  width: 70%;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  text-align: center; /* Center the content */
 }
 
-.event-bar:hover img {
-    filter: none;
+.event-details-popup h1 {
+  font-size: 24px;
+  margin-bottom: 20px;
 }
 
-.event-bar-thumbnail {
-    width: 96px;
-    height: 96px;
-    border-radius: 8px;
-    margin-right: 10px;
+.event-details-popup input[type="text"],
+.event-details-popup select,
+.event-details-popup input[type="datetime-local"],
+.event-details-popup button {
+  width: calc(100% - 40px); /* Subtract padding */
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-sizing: border-box; /* Include padding and border in width */
 }
 
-.event-bar-name {
-    font-weight: bold;
-    color: #333;
+.event-details-popup input[type="datetime-local"] {
+  height: 40px; /* Adjust height for datetime-local input */
 }
 
-.event-bar-details {
-    flex-grow: 1;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+.event-details-popup button {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: 4px;
+  background-color: #f4efd0;
+  color: #000;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+  border: 1px solid transparent;
 }
 
-.event-bar.clicked {
-    transform: translateY(2px);
-    box-shadow: none;
-    border: 2px solid #333;
-    background-color: #f0f0f0;
-    outline: none;
-    border-color: maroon;
-    box-shadow: 0px 0px 1px maroon;
+.event-details-popup button:hover {
+  color: #000;
+  background-color: #B4A269;
 }
 
-.event-bar-create-new {
-    display: flex;
-    align-items: center;
-    width: calc(90%);
-    margin-bottom: 10px;
-    justify-content: center;
-    border: 2px dashed maroon;
-    border-radius: 10px;
-    padding: 10px;
-    transition: transform 0.1s ease-in-out, box-shadow 0.1s ease-in-out;
-    cursor: pointer;
+.event-details-popup p {
+  margin-bottom: 10px;
 }
 
-  .event-bar-create-new:hover {
-    transform: translateY(-5px);
-    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.3);
-}
-  
-  .event-bar-create-new-name {
-    display: block;
-    text-align: center;
-    font-weight: bold;
+.event-details-popup p strong {
+  font-weight: bold;
 }
 
-.event-bar-create-new.clicked {
-    transform: translateY(2px);
-    box-shadow: none;
-    border: 2px solid #333;
-    background-color: #f0f0f0;
-    outline: none;
-    border-color: maroon;
-    box-shadow: 0px 0px 1px maroon;
+.plot-image-container {
 }
-
-.event-search-bar {
-    width: calc(90%);
-    padding: 10px;
-    margin-top: 10px;
-    border: 2px solid;
-    border-radius: 10px;
-    font-size: 16px;
-    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-  }
-  
-  .event-search-bar:focus {
-    outline: none;
-    border-color: maroon;
-    box-shadow: 0px 0px 10px maroon;
-  }
-  
 
 /* college-plots.css */
 
 .college-plots-container {
-    display: flex;
-    height: 100vh;
-  }
-  
-  .college-plots-sidebar {
-    width: 30%;
-    padding: 20px;
-    border-right: 2px solid #ccc;
-  }
-  
-  .college-plots-content {
-    width: 70%;
-    height: 100%;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .plot-list {
-    margin-top: 20px;
-    overflow-y: auto;
-    max-height: calc(100vh - 200px);
-  }
-  
-  .placeholder {
-    font-size: 20px;
-    font-weight: bold;
-    text-align: center;
-    margin-top: 100px;
-  }
+  display: flex;
+  height: 100vh;
+}
+
+.college-plots-sidebar {
+  width: 30%;
+  padding: 20px;
+  border-right: 2px solid #ccc;
+}
+
+.college-plots-content {
+  width: 70%;
+  height: 100%;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.plot-list {
+  margin-top: 20px;
+  overflow-y: auto;
+  max-height: calc(100vh - 200px);
+}
+
+.placeholder {
+  font-size: 20px;
+  font-weight: bold;
+  text-align: center;
+  margin-top: 100px;
+}
 
 .college-plots-list {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    border: 2px solid #ccc;
-    border-radius: 10px;
-    overflow: hidden;
-    padding: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border: 2px solid #ccc;
+  border-radius: 10px;
+  overflow: hidden;
+  padding: 10px;
 }
 
 .plot-bar {
-    display: flex;
-    align-items: center;
-    width: calc(90%);
-    margin-bottom: 10px;
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    padding: 10px;
-    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+  display: flex;
+  align-items: center;
+  width: calc(90%);
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  padding: 10px;
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
 }
 
 .plot-bar:hover {
-    transform: translateY(-5px);
-    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.3);
+  transform: translateY(-5px);
+  box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.3);
 }
 
 .plot-bar:hover img {
-    filter: none;
+  filter: none;
 }
 
 .plot-bar-thumbnail {
-    width: 96px;
-    height: 96px;
-    border-radius: 8px;
-    margin-right: 10px;
+  width: 96px;
+  height: 96px;
+  border-radius: 8px;
+  margin-right: 10px;
 }
 
 .plot-bar-name {
-    font-weight: bold;
-    color: #333;
+  font-weight: bold;
+  color: #333;
 }
 
 .plot-bar-details {
-    flex-grow: 1;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .plot-bar.clicked {
-    transform: translateY(2px);
-    box-shadow: none;
-    border: 2px solid #333;
-    background-color: #f0f0f0;
-    outline: none;
-    border-color: maroon;
-    box-shadow: 0px 0px 1px maroon;
+  transform: translateY(2px);
+  box-shadow: none;
+  border: 2px solid #333;
+  background-color: #f0f0f0;
+  outline: none;
+  border-color: maroon;
+  box-shadow: 0px 0px 1px maroon;
 }
 
 .plot-bar-create-new {
-    display: flex;
-    align-items: center;
-    width: calc(90%);
-    margin-bottom: 10px;
-    justify-content: center;
-    border: 2px dashed maroon;
-    border-radius: 10px;
-    padding: 10px;
-    transition: transform 0.1s ease-in-out, box-shadow 0.1s ease-in-out;
-    cursor: pointer;
+  display: flex;
+  align-items: center;
+  width: calc(90%);
+  margin-bottom: 10px;
+  justify-content: center;
+  border: 2px dashed maroon;
+  border-radius: 10px;
+  padding: 10px;
+  transition: transform 0.1s ease-in-out, box-shadow 0.1s ease-in-out;
+  cursor: pointer;
 }
 
-  .plot-bar-create-new:hover {
-    transform: translateY(-5px);
-    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.3);
+.plot-bar-create-new:hover {
+  transform: translateY(-5px);
+  box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.3);
 }
-  
-  .plot-bar-create-new-name {
-    display: block;
-    text-align: center;
-    font-weight: bold;
-    color: #007bff;
+
+.plot-bar-create-new-name {
+  display: block;
+  text-align: center;
+  font-weight: bold;
+  color: #007bff;
 }
 
 .plot-bar-create-new.clicked {
-    transform: translateY(2px);
-    box-shadow: none;
-    border: 2px solid #333;
-    background-color: #f0f0f0;
-    outline: none;
-    border-color: maroon;
-    box-shadow: 0px 0px 1px maroon;
+  transform: translateY(2px);
+  box-shadow: none;
+  border: 2px solid #333;
+  background-color: #f0f0f0;
+  outline: none;
+  border-color: maroon;
+  box-shadow: 0px 0px 1px maroon;
 }
 
 .plot-search-bar {
-    width: calc(90%);
-    padding: 10px;
-    margin-top: 10px;
-    border: 2px solid;
-    border-radius: 10px;
-    font-size: 16px;
-    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-  }
-  
-  .plot-search-bar:focus {
-    outline: none;
-    border-color: maroon;
-    box-shadow: 0px 0px 10px maroon;
-  }
+  width: calc(90%);
+  padding: 10px;
+  margin-top: 10px;
+  border: 2px solid;
+  border-radius: 10px;
+  font-size: 16px;
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+.plot-search-bar:focus {
+  outline: none;
+  border-color: maroon;
+  box-shadow: 0px 0px 10px maroon;
+}
 
 /* college-plots-tool */
 
 .popup-content {
-    background-color: #f0f0f0;
-    padding: 20px;
-    border-radius: 5px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    width: 100%;
-    height: 100%;
-    max-width: 800px;
-    max-height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  
-  .box {
-    width: 100%;
-    height: 100%;
-    max-width: 600px;
-    max-height: 600px;
-    overflow: hidden;
-  }
+  background-color: #f0f0f0;
+  padding: 20px;
+  border-radius: 5px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  width: 90%;
+  height: 90%;
+  max-width: 800px;
+  max-height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
 
-  .plot-tool-container {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-  }
+.box {
+  width: 100%;
+  height: 100%;
+  max-width: 600px;
+  max-height: 600px;
+  overflow: hidden;
+}
 
-  .map-container {
-    height: 100%;
-    width: 100%;
-    flex: 2;
-  }
+.instructions {
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 20px;
+  max-width: 600px;
+}
 
-  .feedback-popup {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background-color: rgba(0, 0, 0, 0.8);
-    color: white;
-    padding: 10px 20px; /* Adjust padding as needed */
-    border-radius: 5px;
-    z-index: 9999;
-  }
+.instructions p {
+  margin: 10px 0;
+}
+
+.plot-tool-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.map-container {
+  height: 100%;
+  width: 100%;
+  flex: 2;
+}
+
+.feedback-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 10px 20px; /* Adjust padding as needed */
+  border-radius: 5px;
+  z-index: 9999;
+}
 
 /* college-orgs */
 
 .org-list-container {
-    margin: 20px;
-    background-color: #f2f2f2;
-    padding: 20px;
-    border-radius: 10px;
+  margin: 20px;
+  background-color: #f2f2f2;
+  padding: 20px;
+  border-radius: 10px;
 }
 
 .org-search-bar {
-    width: 41%;
-    padding: 10px;
-    margin-bottom: 10px;
-    border-radius: 5px;
+  width: 41%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 5px;
 }
 
 .org-grid-container {
-    overflow-x: auto;
+  overflow-x: auto;
 }
 
 .org-table {
-    width: 100%;
-    border-collapse: collapse;
+  width: 100%;
+  border-collapse: collapse;
 }
 
 .org-th,
 .org-td {
-    border-bottom: 1px solid #ddd;
-    border-right: 1px solid #ddd;
-    padding: 8px;
-    text-align: left;
+  border-bottom: 1px solid #ddd;
+  border-right: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
 }
 
 .org-th {
-    background-color: maroon;
-    color: white;
+  background-color: #500000;
+  color: white;
 }
 
 .org-tr:nth-child(even) {
-    background-color: #f2f2f2;
+  background-color: #f2f2f2;
 }
 
 .org-tr:hover {
-    background-color: #ddd;
-}
-
-/* college-messages */
-
-  .msg-list-container {
-    margin: 20px;
-    background-color: #f2f2f2;
-    padding: 20px;
-    border-radius: 10px;
-}
-
-.msg-search-bar {
-    width: 40%;
-    padding: 10px;
-    margin-bottom: 10px;
-    border-radius: 5px;
-}
-
-.msg-grid-container {
-    overflow-x: auto;
-}
-
-.msg-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.msg-th,
-.msg-td {
-    border-bottom: 1px solid #ddd;
-    border-right: 1px solid #ddd;
-    padding: 8px;
-    text-align: left;
-}
-
-.msg-th {
-    background-color: maroon;
-    color: white;
-}
-
-.msg-tr:nth-child(even) {
-    background-color: #f2f2f2;
-}
-
-.msg-tr:hover {
-    background-color: #ddd;
-}
-
-.page-select {
-    margin-top: 10px;
-    text-align: center;
-  }
-  
-  .page-select button {
-    margin: 0 5px;
-  }
-
-
-  .instructions {
-  background-color: #f0f0f0;
-  border: 1px solid #ccc;
-  padding: 10px;
-  margin-top: 10px;
-  width: 100%;
-  max-width: 400px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.instructions p {
-  margin-bottom: 8px;
+  background-color: #ddd;
 }

@@ -1,6 +1,8 @@
+import Cookies from 'js-cookie';
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import './App.css';
+
 
 const getOrganizationIdFromPath = (path) => {
     const parts = path.split('/');
@@ -10,6 +12,10 @@ const getOrganizationIdFromPath = (path) => {
 function Navbar() {
 const location = useLocation();
 
+const handleSignout = () => {
+    Cookies.remove('token');
+};
+
 let navLinks;
 if (location.pathname.startsWith('/admin')) {
     navLinks = (
@@ -17,7 +23,7 @@ if (location.pathname.startsWith('/admin')) {
         <li><Link to="/admin">Admin</Link></li>
         <li><Link to="/admin/colleges">Active Colleges</Link></li>
         {/* <li><Link to="/admin/messages">Messages</Link></li> */}
-        <li><Link to="/home">Signout</Link></li>
+        <li><Link to="/home" onClick={handleSignout}>Signout</Link></li>
         {/* Modify as needed*/}
         </>
     );
@@ -30,7 +36,7 @@ if (location.pathname.startsWith('/admin')) {
         <li><Link to="/college/orgs">Organizations</Link></li>
         { /* <li><Link to="/college/info">College Information</Link></li>
         <li><Link to="/college/messages">Messages</Link></li> */}
-        <li><Link to="/home">Signout</Link></li>
+        <li><Link to="/home" onClick={handleSignout}>Signout</Link></li>
         {/* Modify as needed*/}
         </>
     );
@@ -51,7 +57,7 @@ if (location.pathname.startsWith('/admin')) {
         <>
         <li><Link to={`/org/${orgId}`}>Organization</Link></li>
         <li><Link to={`/org/${orgId}/events`}>Upcoming Events</Link></li>
-        <li><Link to={`/org/${orgId}/members`}>Current Members</Link></li>
+        { /* <li><Link to={`/org/${orgId}/members`}>Current Members</Link></li> */ }
         { /* <li><Link to={`/org/${orgId}/info`}>Organization Information</Link></li>
         <li><Link to={`/org/${orgId}/messages`}>Messages</Link></li> */ }
         <li><Link to="/student">Return to Student View</Link></li>
@@ -65,7 +71,7 @@ if (location.pathname.startsWith('/admin')) {
         <li><Link to="/student/events">Upcoming Events</Link></li>
         <li><Link to="/student/orgs">Your Organizations</Link></li>
         { /* <li><Link to="/student/info">Personal Information</Link></li> */ }
-        <li><Link to="/home">Signout</Link></li>
+        <li><Link to="/home" onClick={handleSignout}>Signout</Link></li>
         {/* Modify as needed*/}
         </>
     );

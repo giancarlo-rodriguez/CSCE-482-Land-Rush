@@ -101,3 +101,154 @@
     flex: 1;
     padding: 20px;
   }
+
+
+  .member-list-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .member-search-bar {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  .member-grid-container {
+    position: relative;
+  }
+  
+  .modal {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+  
+  .modal-content {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+  }
+  
+  .close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    cursor: pointer;
+  }
+  
+  .member-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .member-table th,
+  .member-table td {
+    padding: 10px;
+    border: 1px solid #ccc;
+  }
+  
+  .member-tr:nth-child(even) {
+    background-color: #f2f2f2;
+  }
+  
+  .member-tr:hover {
+    background-color: #e0e0e0;
+  }
+  
+  .member-actions button {
+    margin-right: 5px;
+  }
+  
+  /* Styling for buttons */
+  .member-grid-container button {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 5px;
+    border: none;
+    border-radius: 5px;
+    background-color: #f4efd0;
+    color: #000;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+  }
+  
+  .member-grid-container button:hover {
+    background-color: #B4A269;
+  }
+  
+  .member-search-bar {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  .member-grid-container {
+    position: relative;
+  }
+  
+  .modal {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+  
+  .modal-content {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+  }
+  
+  .close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    cursor: pointer;
+  }
+  
+  .member-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .member-table th,
+  .member-table td {
+    padding: 10px;
+    border: 1px solid #ccc;
+  }
+  
+  .member-tr:nth-child(even) {
+    background-color: #f2f2f2;
+  }
+  
+  .member-tr:hover {
+    background-color: #e0e0e0;
+  }
+  
+  .member-actions button {
+    margin-right: 5px;
+  }
+  
+  /* Styling for top bar */
+.member-grid-container th {
+  background-color: #500000;
+  color: white;
+}

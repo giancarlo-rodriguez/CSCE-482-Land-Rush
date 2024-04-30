@@ -10,24 +10,26 @@ const CollegePlots = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [toolComponents, setToolComponents] = useState({});
 
-  const fetchPlots = () => {
-    const token = Cookies.get('token');
-    if (token) {
-      axios.get('http://127.0.0.1:8000/show/plots', {
-        headers: {
-          Authorization: `Token ${token}`
-        }
-      })
-      .then(response => {
-        setPlots(response.data);
-      })
-      .catch(error => {
-        console.error('Error fetching plots:', error);
-      });
-    }
-  };
+
 
   useEffect(() => {
+    const fetchPlots = () => {
+      const token = Cookies.get('token');
+      if (token) {
+        axios.get('http://127.0.0.1:8000/show/plots', {
+          headers: {
+            Authorization: `Token ${token}`
+          }
+        })
+        .then(response => {
+          setPlots(response.data);
+        })
+        .catch(error => {
+          console.error('Error fetching plots:', error);
+        });
+      }
+    };
+    
     fetchPlots();
     const interval = setInterval(fetchPlots, 1000);
     return () => clearInterval(interval);

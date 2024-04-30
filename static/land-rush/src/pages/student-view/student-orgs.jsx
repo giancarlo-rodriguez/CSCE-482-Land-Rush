@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import './student.css';
 import Cookies from 'js-cookie';
+import React, { useEffect, useState } from 'react';
+import './student.css';
 
 const MembersList = () => {
   const [organizations, setOrganizations] = useState([]);
@@ -23,15 +23,15 @@ const MembersList = () => {
         }
       })
       .then(response => {
-        // Sort organizations based on membership status
+        // Sort organizations based on Membership status
         const sortedOrganizations = response.data.slice().sort((a, b) => {
           if (a.user_has_role === 'Admin') {
             return -1; // a comes before b
           } else if (b.user_has_role === 'Admin') {
             return 1; // b comes before a
-          } else if (a.user_has_role === 'Regular member') {
+          } else if (a.user_has_role === 'Regular Member') {
             return -1; // a comes before b
-          } else if (b.user_has_role === 'Regular member') {
+          } else if (b.user_has_role === 'Regular Member') {
             return 1; // b comes before a
           } else {
             return 0; // no change in order
@@ -52,7 +52,7 @@ const MembersList = () => {
   const handleJoinRequest = (organizationName, organizationId, userHasRole) => {
     if (userHasRole === 'Admin') {
       window.location.href = `/org/${organizationId}`;
-    } else if (userHasRole === 'Regular member') {
+    } else if (userHasRole === 'Regular Member') {
       axios.post('http://127.0.0.1:8000/drop/org', {
         organization: organizationName
       }, {
@@ -84,6 +84,39 @@ const MembersList = () => {
       });
     }
   };
+  
+  const handleDropOrg = (organizationName) => {
+    axios.post('http://127.0.0.1:8000/drop/org', {
+      organization: organizationName
+    }, {
+      headers: {
+        Authorization: `Token ${Cookies.get('token')}`
+      }
+    })
+    .then(() => {
+      // After dropping, fetch the updated organization list
+      fetchOrganizations();
+    })
+    .catch(error => {
+      console.error('Error dropping organization:', error);
+    });
+  };
+  
+  const handleDeleteOrg = (organizationId) => {
+    axios.delete('http://127.0.0.1:8000/delete/org', {
+      data: { org_id: organizationId }, // send data in request body
+      headers: {
+        Authorization: `Token ${Cookies.get('token')}`
+      }
+    })
+    .then(() => {
+      // After deleting, fetch the updated organization list
+      fetchOrganizations();
+    })
+    .catch(error => {
+      console.error('Error deleting organization:', error);
+    });
+  };
 
   const handleCreateOrganization = () => {
     axios.post('http://127.0.0.1:8000/create/org/request', { organization: newOrgName }, {
@@ -105,7 +138,6 @@ const MembersList = () => {
   return (
     <div className="member-list-container">
       <div className="join-requests">
-        <h2>Join Requests</h2>
         <ul>
           {joinRequests.map((request, index) => (
             <li key={index}>{request}</li>
@@ -140,23 +172,28 @@ const MembersList = () => {
             <tr>
               <th>Organization</th>
               <th>Membership Status</th>
-              <th>Join Request</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {organizations.map((organization, index) => (
-              <tr key={index} className="member-tr">
-                <td>{organization.name}</td>
-                <td>{organization.user_has_role}</td>
-                <td>
-                  <button onClick={() => handleJoinRequest(organization.name, organization.id, organization.user_has_role)}>
-                    {organization.user_has_role === 'Admin' ? 'Go to Organization' :
-                      organization.user_has_role === 'Regular member' ? 'Drop' :
-                        'Join'}
-                  </button>
-                </td>
-              </tr>
-            ))}
+            {organizations
+              .filter(org => org.name.toLowerCase().includes(searchTerm.toLowerCase()))
+              .map((organization, index) => (
+                <tr key={index} className="member-tr">
+                  <td>{organization.name}</td>
+                  <td>{organization.user_has_role}</td>
+                  <td>
+                    <button onClick={() => handleJoinRequest(organization.name, organization.id, organization.user_has_role)}>
+                      {organization.user_has_role === 'Admin' ? 'Go to Organization' :
+                        organization.user_has_role === 'Regular Member' ? 'Leave' :
+                          'Join'}
+                    </button>
+                    {organization.user_has_role === 'Admin' && (
+                      <button onClick={() => handleDeleteOrg(organization.id)}>Delete Org</button>
+                    )}
+                  </td>
+                </tr>
+              ))}
           </tbody>
         </table>
       </div>

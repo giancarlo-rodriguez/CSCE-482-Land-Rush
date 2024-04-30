@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
+import React, { useEffect, useState } from 'react';
+import './style.css';
 
 // Define fetchEvents function
 const fetchEvents = async (orgId, setEvents) => {

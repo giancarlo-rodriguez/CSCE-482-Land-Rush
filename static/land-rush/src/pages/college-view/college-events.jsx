@@ -30,9 +30,9 @@ const CollegeEvents = () => {
 
     fetchEvents();
 
-    // const interval = setInterval(fetchEvents, 100000000000000000000);
+    const interval = setInterval(fetchEvents, 1000);
 
-    // return () => clearInterval(interval);
+    return () => clearInterval(interval);
   }, []);
 
   const handleEventClick = (eventID) => {

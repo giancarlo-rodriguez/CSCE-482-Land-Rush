@@ -24,8 +24,6 @@ import HomeSignin from './pages/home-view/home-signin';
 import OrgEvents from './pages/org-view/org-events';
 import OrgInfo from './pages/org-view/org-info';
 import OrgLanding from './pages/org-view/org-landing';
-import OrgMembers from './pages/org-view/org-members';
-import OrgMessages from './pages/org-view/org-messages';
 
 // student-view
 import StudentEvents from './pages/student-view/student-events';
@@ -60,9 +58,8 @@ function Routelist() {
             {/* Organization */}
             <Route path="/org/:orgId" element={<OrgLanding />} />
             <Route path="/org/:orgId/events" element={<OrgEvents />} />
-            <Route path="/org/:orgId/members" element={<OrgMembers />} />
+            {/* <Route path="/org/:orgId/members" element={<OrgMembers />} /> */}
             <Route path="/org/:orgId/info" element={<OrgInfo />} />
-            <Route path="/org/:orgId/messages" element={<OrgMessages />} />
   
             {/* Student */}
             <Route path="/student" element={<StudentLanding />} />
