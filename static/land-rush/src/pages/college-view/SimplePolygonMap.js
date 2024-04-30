@@ -180,6 +180,7 @@ const SimplePolygonMap = ({ apiKey, lat, lng, coordinates, plotID, plotOGName })
           });
           handleFeedback("Plot Created Successfully");
           console.log("Post Successful");
+          window.location.reload();
         } else if (plotID > 0) {
           response = await axios.put('http://127.0.0.1:8000/create/plot', {
             plot_id: plotID,

@@ -31,8 +31,6 @@ const CollegePlots = () => {
     };
     
     fetchPlots();
-    const interval = setInterval(fetchPlots, 1000);
-    return () => clearInterval(interval);
   }, []);
 
   const handlePlotClick = (plotID) => {

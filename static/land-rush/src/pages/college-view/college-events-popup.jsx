@@ -79,6 +79,7 @@ const EventDetailsPopup = ({ eventID, eventData }) => {
           });
           console.log('Event created successfully');
           handleFeedback("Event Created Successfully");
+          window.location.reload();
 
         } else {
           await axios.put(`http://127.0.0.1:8000/create/event`, {
