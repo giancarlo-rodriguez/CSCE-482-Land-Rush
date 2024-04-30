@@ -252,3 +252,105 @@
   background-color: #500000;
   color: white;
 }
+
+/* Landing */
+
+.instructions-container {
+  background-color: #fff;
+  padding: 20px;
+  max-width: calc(80% + 40px);
+  margin: 20px auto;
+}
+
+.instructions {
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 20px;
+  max-width: 80%;
+  margin: 20px auto;
+  font-size: 1em;
+}
+
+.instructions h1 {
+  text-decoration: underline;
+  font-weight: bold;
+  text-align: center;
+}
+
+.instructions h2,
+.instructions h3,
+.instructions h4 {
+  text-align: center;
+  font-weight: unset;
+}
+
+.instructions p {
+  margin-bottom: 15px;
+  text-align:center;
+  justify-content: space-between;
+  display: flex;
+}
+
+.instructions p strong {
+  font-weight: bold;
+  text-decoration: underline;
+}
+
+.instructions ul {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+.instructions ul li {
+  margin-bottom: 10px;
+  margin-top: 20px;
+  font-weight: bold;
+  max-width: 70%;
+  margin-left: auto;
+  margin-right: auto;
+
+}
+
+.instructions ul li::before {
+  content: '•';
+  color: #500000;
+  display: inline-block;
+  width: 1em;
+  margin-left: -1em;
+}
+
+.instructions ul ul {
+  margin-top: 10px;
+}
+
+.instructions ul ul li {
+  margin-bottom: 5px;
+  margin-top: 0px;
+  font-weight: unset;
+}
+
+.instructions ul ul li::before {
+  content: '-';
+  color: #500000;
+  display: inline-block;
+  width: 1em;
+  margin-left: -1em;
+}
+
+.instructions ul ul ul {
+  margin-top: 10px;
+}
+
+.instructions ul ul ul li {
+  margin-bottom: 0;
+  font-weight: unset;
+}
+
+.instructions ul ul ul li::before {
+  content: '◦';
+  color: #007bff;
+  display: inline-block;
+  width: 1em;
+  margin-left: -1em;
+}
