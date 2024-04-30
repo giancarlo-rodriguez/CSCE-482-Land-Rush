@@ -5,7 +5,6 @@ function CollegeLanding() {
     <div className='instructions-container'>
       <div className='instructions'>
         <h1>University Home</h1>
-        <h4>Create and Modify Plots and Events and manage your organizations.</h4>
       </div>
       <div className='instructions'>
         <h1>Land Plots</h1>

@@ -88,44 +88,6 @@ const OrgEvents = () => {
     }
   };
   
-  // const fetchEvents = async (orgId) => {
-  //   try {
-  //     const token = Cookies.get('token');
-  //     const response = await axios.get('http://127.0.0.1:8000/show/event', {
-  //       headers: {
-  //         Authorization: `Token ${token}`
-  //       }
-  //     });
-
-  //     const updatedEvents = response.data.map(event => {
-        
-
-  //       return { ...event, isRegistered:false };
-  //     });
-  //     const userAttendanceResponse = await axios.post('http://127.0.0.1:8000/which/events/member/attending', {
-  //     }, {
-  //       headers: {
-  //         Authorization: `Token ${token}`
-  //       }
-  //     });
-
-  //     const attendedEventsIds = userAttendanceResponse.data.map(event => event.id);
-
-  //     // Update the isRegistered property for the events the user is attending
-  //     const updatedEventsWithAttendance = updatedEvents.map(event => {
-  //       console.log("event before value", event)
-  //       if (attendedEventsIds.includes(event.id)) {
-  //         console.log("event changed value")
-  //         return { ...event, isRegistered:true };
-  //       }
-  //       return event;
-  //     });
-  //     setEvents(updatedEventsWithAttendance);
-  //     console.log("updated events from fetch:", updatedEventsWithAttendance)
-  //   } catch (error) {
-  //     console.error('Error fetching events:', error);
-  //   }
-  // };
 
   const handleRegisterEvent = async (eventId) => {
     try {

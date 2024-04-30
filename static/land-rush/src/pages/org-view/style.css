@@ -260,3 +260,20 @@
     width: 1em;
     margin-left: -1em;
   }
+
+  .events-button {
+    padding: 10px;
+    margin-bottom: 5px;
+    margin-left: 5px;
+    border: none;
+    border-radius: 5px;
+    background-color: #f4efd0;
+    color: #000;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+  }
+  
+  .events-button:hover {
+    background-color: #B4A269;
+  }
