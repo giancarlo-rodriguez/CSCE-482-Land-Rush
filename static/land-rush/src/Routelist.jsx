@@ -1,38 +1,37 @@
-import { BrowserRouter as Router, Route, Routes, Link, useLocation } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 
 // admin-view
-import AdminLanding from './pages/admin-view/admin-landing';
 import AdminColleges from './pages/admin-view/admin-colleges';
+import AdminLanding from './pages/admin-view/admin-landing';
 import AdminMessages from './pages/admin-view/admin-messages';
 
 // college-view
-import CollegeLanding from './pages/college-view/college-landing';
-import CollegePlots from './pages/college-view/college-plots';
 import CollegeEvents from './pages/college-view/college-events';
-import CollegeOrgs from './pages/college-view/college-orgs';
 import CollegeInfo from './pages/college-view/college-info';
+import CollegeLanding from './pages/college-view/college-landing';
 import CollegeMessages from './pages/college-view/college-messages';
+import CollegeOrgs from './pages/college-view/college-orgs';
+import CollegePlots from './pages/college-view/college-plots';
 
 // home-view
-import HomeLanding from './pages/home-view/home-landing';
+import SignUpStudent from './pages/home-view/SignUpStudent';
+import SignUpUniversity from './pages/home-view/SignUpUniversity';
 import HomeAboutus from './pages/home-view/home-aboutus';
-import HomeRegister from './pages/home-view/home-register';
+import HomeLanding from './pages/home-view/home-landing';
 import HomeSignin from './pages/home-view/home-signin';
-import SignUpStudent from './pages/home-view/SignUpStudent'
-import SignUpUniversity from './pages/home-view/SignUpUniversity'
 
 // org-view
-import OrgLanding from './pages/org-view/org-landing';
 import OrgEvents from './pages/org-view/org-events';
-import OrgMembers from './pages/org-view/org-members';
 import OrgInfo from './pages/org-view/org-info';
+import OrgLanding from './pages/org-view/org-landing';
+import OrgMembers from './pages/org-view/org-members';
 import OrgMessages from './pages/org-view/org-messages';
 
 // student-view
-import StudentLanding from './pages/student-view/student-landing';
 import StudentEvents from './pages/student-view/student-events';
-import StudentOrgs from './pages/student-view/student-orgs';
 import StudentInfo from './pages/student-view/student-info';
+import StudentLanding from './pages/student-view/student-landing';
+import StudentOrgs from './pages/student-view/student-orgs';
 
 function Routelist() {
     return (

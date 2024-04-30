@@ -56,29 +56,29 @@ const CollegeEvents = () => {
   );
 
   return (
-    <div className="college-events-container">
-      <div className="college-events-sidebar">
+    <div className="college-plots-container">
+      <div className="college-plots-sidebar">
         <div
-            className={`event-bar-create-new ${selectedEvent === 0 ? 'clicked' : ''}`}
+            className={`plot-bar-create-new ${selectedEvent === 0 ? 'clicked' : ''}`}
             onClick={handleCreateNewEvent}
           >
-          <span className="event-bar-name">Create New Event</span>
+          <span className="plot-bar-name">Create New Event</span>
         </div>
         <input
           type="text"
           placeholder="Search events..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="event-search-bar"
+          className="plot-search-bar"
         />
-        <div className="event-list">
+        <div className="plot-list">
           {filteredEvents.map((event) => (
             <div
               key={event.id} 
-              className={`event-bar ${selectedEvent === event.id ? 'clicked' : ''}`} 
+              className={`plot-bar ${selectedEvent === event.id ? 'clicked' : ''}`} 
               onClick={() => handleEventClick(event.id)}
             >
-              <span className="event-bar-name">{event.name}</span>
+              <span className="plot-bar-name">{event.name}</span>
             </div>
           ))}
         </div>

@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
+import React, { useEffect, useState } from 'react';
+import './Login.css';
 
 const SignUp = () => {
   const [universities, setUniversities] = useState([]);
@@ -48,8 +49,8 @@ const SignUp = () => {
   };
 
   return (
-    <div>
-      <form onSubmit={handleSubmit}>
+    <div className="login-container"> {/* Add class to container div */}
+      <form className="login-form" onSubmit={handleSubmit}>
         <h3>Student Registration</h3>
         {error && <div className="alert alert-danger">{error}</div>}
         <div className="mb-3">

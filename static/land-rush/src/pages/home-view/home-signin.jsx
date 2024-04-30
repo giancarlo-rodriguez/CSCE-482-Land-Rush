@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { useNavigate } from "react-router-dom";
 import axios from 'axios';
 import Cookies from 'js-cookie';
+import React, { useState } from 'react';
+import { useNavigate } from "react-router-dom";
 
 const HomeSignIn = () => {
   const [email, setEmail] = useState('');
@@ -44,8 +44,8 @@ const HomeSignIn = () => {
   };
 
   return (
-    <div>
-      <form onSubmit={handleSubmit}>
+    <div className="login-container">
+      <form className="login-form" onSubmit={handleSubmit}>
         <h3>Login</h3>
         {error && <div className="alert alert-danger">{error}</div>}
         <div className="mb-3">
