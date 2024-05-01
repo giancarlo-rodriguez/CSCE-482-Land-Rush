@@ -3,6 +3,7 @@ import { BrowserRouter as Router } from 'react-router-dom';
 import './App.css';
 import Navbar from './Navbar';
 import Routelist from './Routelist';
+import pic from './logo.png';
 
 function App() {
   return (
@@ -10,7 +11,7 @@ function App() {
       <div className="content-container">
         <div className="header">
           <h1>Land Rush</h1>
-          <img src="image.png" alt="Logo" />
+          <img src={pic} alt="Logo" />
         </div>
         <div className="navbar">
           <Navbar />
