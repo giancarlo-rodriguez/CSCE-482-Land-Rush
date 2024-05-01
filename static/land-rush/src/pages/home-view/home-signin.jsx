@@ -1,6 +1,7 @@
+import axios from 'axios';
+import Cookies from 'js-cookie';
 import React, { useState } from 'react';
 import { useNavigate } from "react-router-dom";
-
 
 const HomeSignIn = () => {
   const [email, setEmail] = useState('');
@@ -12,20 +13,26 @@ const HomeSignIn = () => {
     e.preventDefault();
     
     // Check if email and password match the expected values
-    if (email === 'admin@gmail.com' && password === 'admin') {
-      // Authentication successful
-      console.log('Login successful');
-      // Redirect to dashboard or perform any necessary action
-      navigate('/org');
+    axios.post("http://127.0.0.1:8000/login", {
+      email: email,
+      password: password,
+    }).then((res) => {
+      Cookies.set('token', res.data.token, { expires: 7 });
+      console.log("token : ",res.data.token);
 
-      // For now, let's just clear the form fields
-      setEmail('');
-      setPassword('');
-      setError('');
-    } else {
-      // Authentication failed
-      setError('Invalid email or password');
-    }
+      // Determine where to redirect based on user role
+      const userRole = res.data.user_role;
+      if (userRole === 'university') {
+        navigate('/college'); // Redirect to university dashboard
+      } else if (userRole === 'student') {
+        navigate('/student'); // Redirect to student dashboard
+      } else {
+        setError("Invalid user role: "+userRole); // Handle unexpected user role
+      }
+    }).catch((err) =>{
+      console.log(err);
+      setError("Invalid email or password"); // Handle authentication error
+    });
   };
 
   const handleEmailChange = (e) => {
@@ -37,8 +44,8 @@ const HomeSignIn = () => {
   };
 
   return (
-    <div>
-      <form onSubmit={handleSubmit}>
+    <div className="login-container">
+      <form className="login-form" onSubmit={handleSubmit}>
         <h3>Login</h3>
         {error && <div className="alert alert-danger">{error}</div>}
         <div className="mb-3">

@@ -1,63 +1,101 @@
 /* Login.css */
 .login-container {
-    position: relative;
-    height: 100vh;
-  }
-  /*
-  .background-image {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-image: url("path/to/your/image.jpg");
-    background-size: cover;
-    background-position: center;
-    filter: brightness(0.5); /* Adjust the brightness as needed */
-  
-  
-  .login-form {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background-color: white;
-    padding: 20px;
-    border-radius: 8px;
-  }
-  
-  .signup-buttons {
-    margin-top: 20px;
-  }
-  
-  .login-buttons {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-  }
-  
-  .modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  
-  .modal-content {
-    background-color: white;
-    padding: 20px;
-    border-radius: 8px;
-  }
-  
-  .close {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    cursor: pointer;
-  }
-  
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.login-form {
+  padding: 40px;
+  width: 300px;
+}
+
+.login-form h3 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.login-form label {
+  font-weight: bold;
+}
+
+.login-form input[type="text"],
+.login-form input[type="email"],
+.login-form input[type="password"],
+.login-form select {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 20px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.login-form button {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: 4px;
+  background-color: #f4efd0;
+  color: #000;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+  border: 1px solid transparent;
+}
+
+.login-form button:hover {
+  color: #000;
+  background-color: #B4A269;
+}
+
+.alert {
+  padding: 10px;
+  margin-bottom: 20px;
+  border-radius: 4px;
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  color: #721c24;
+}
+
+.instructions-container {
+  background-color: #fff;
+  padding: 20px;
+  max-width: calc(80% + 40px);
+  margin: 20px auto;
+}
+
+.instructions {
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 20px;
+  max-width: 80%;
+  margin: 20px auto;
+  font-size: 1em;
+}
+
+.instructions h1 {
+  text-decoration: underline;
+  font-weight: bold;
+  text-align: center;
+}
+
+.instructions h2,
+.instructions h3,
+.instructions h4 {
+  text-align: center;
+  font-weight: unset;
+}
+
+.instructions p {
+  margin-bottom: 15px;
+  text-align:center;
+  justify-content: space-between;
+  display: flex;
+}
+
+.instructions p strong {
+  font-weight: bold;
+  text-decoration: underline;
+}

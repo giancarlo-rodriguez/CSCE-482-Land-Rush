@@ -1,62 +1,70 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios'; // Import axios for making API requests
+import axios from 'axios';
+import Cookies from 'js-cookie';
+import React, { useEffect, useState } from 'react';
+import './Login.css';
 
-const SignIn = () => {
-  const [options, setOptions] = useState([]);
-  const [selectedOption, setSelectedOption] = useState('');
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
+const SignUp = () => {
+  const [universities, setUniversities] = useState([]);
+  const [selectedUniversity, setSelectedUniversity] = useState('');
+  const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    // Fetch data from API when component mounts
-    axios.get('your_api_endpoint')
+    // Fetch universities when component mounts
+    axios.get('http://127.0.0.1:8000/choose/uni')
       .then(response => {
-        // Assuming the response data is an array of options
-        setOptions(response.data);
+        setUniversities(response.data);
       })
       .catch(error => {
-        console.error('Error fetching options:', error);
+        console.error('Error fetching universities:', error);
       });
-  }, []); // Empty dependency array ensures effect only runs once on mount
+  }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // You can handle form submission here
-  };
 
-  const handleClose = () => {
-    // Navigate to home page ("/")
-    window.location.href = '/';
+    axios.post("http://127.0.0.1:8000/register/student", {
+      fullName: fullName,
+      email: email,
+      password: password,
+      university: selectedUniversity
+    }).then((res) => {
+      axios.post("http://127.0.0.1:8000/login", {
+      email: email,
+      password: password,
+    }).then((res) => {
+      Cookies.set('token', res.data.token, { expires: 7 });
+      window.location.href = '/student';
+    }).catch((err) =>{
+      console.log(err);
+      setError("Invalid email or password"); // Handle authentication error
+    });
+      
+    }).catch((err) => {
+      console.error('Error signing up:', err);
+      setError('Error signing up. Please try again.');
+    });
   };
 
   return (
-    <div>
-      <form onSubmit={handleSubmit}>
-        <h3>Sign Up Student: </h3>
+    <div className="login-container"> {/* Add class to container div */}
+      <form className="login-form" onSubmit={handleSubmit}>
+        <h3>Student Registration</h3>
+        {error && <div className="alert alert-danger">{error}</div>}
         <div className="mb-3">
-          <label>First Name</label>
+          <label>Full Name:</label>
           <input
             type="text"
             className="form-control"
-            placeholder="Enter first name"
-            value={firstName}
-            onChange={(e) => setFirstName(e.target.value)}
+            placeholder="Enter full name"
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
           />
         </div>
         <div className="mb-3">
-          <label>Last Name: </label>
-          <input
-            type="text"
-            className="form-control"
-            placeholder="Enter last name"
-            value={lastName}
-            onChange={(e) => setLastName(e.target.value)}
-          />
-        </div>
-        <div className="mb-3">
-          <label>Email address: </label>
+          <label>Email address:</label>
           <input
             type="email"
             className="form-control"
@@ -66,7 +74,7 @@ const SignIn = () => {
           />
         </div>
         <div className="mb-3">
-          <label>Password: </label>
+          <label>Password:</label>
           <input
             type="password"
             className="form-control"
@@ -75,31 +83,23 @@ const SignIn = () => {
             onChange={(e) => setPassword(e.target.value)}
           />
         </div>
-        {/* Dropdown for options fetched from API */}
         <div className="mb-3">
-          <label>Select University: </label>
+          <label>Select University:</label>
           <select
             className="form-control"
-            value={selectedOption}
-            onChange={(e) => setSelectedOption(e.target.value)}
+            value={selectedUniversity}
+            onChange={(e) => setSelectedUniversity(e.target.value)}
           >
             <option value="">Select a university</option>
-            {options.map(option => (
-              <option key={option.id} value={option.value}>{option.label}</option>
+            {universities.map(university => (
+              <option key={university} value={university}>{university}</option>
             ))}
           </select>
         </div>
-        <div className="d-grid">
-          <button type="submit" className="btn btn-primary">
-            Sign Up
-          </button>
-          <button type="button" className="btn btn-secondary" onClick={handleClose}>
-            Close
-          </button>
-        </div>
+        <button type="submit" className="btn btn-primary">Register</button>
       </form>
     </div>
   );
 };
 
-export default SignIn;
+export default SignUp;

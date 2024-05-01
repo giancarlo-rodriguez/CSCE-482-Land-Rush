@@ -1,9 +1,12 @@
-from django.db import models
+import io
 
 from django.contrib.auth.models import AbstractBaseUser
 from django.contrib.auth.models import BaseUserManager
+from django.core.files.base import ContentFile
+from django.db import models
+from django.utils import timezone
 
-# Create your models here.
+
 class University(models.Model):
     """
     Model for University table
@@ -25,7 +28,6 @@ class UserManager(BaseUserManager):
     """
     Custom user manager for user creation
     """
-
     def create_user(self, email, password, is_university=False, **extra_fields):
         """
         Creates and saves a user with the given email, password, and other fields.
@@ -55,14 +57,14 @@ class User(AbstractBaseUser):
     id = models.IntegerField(primary_key=True)
     email = models.EmailField(max_length=255, unique=True)
     name = models.CharField(max_length=255)
-    university = models.ForeignKey(University, on_delete=models.CASCADE, related_name='user', null=True, blank=True)
+    password = models.CharField(max_length=255)
+    university = models.ForeignKey(University, on_delete=models.SET_NULL, related_name='user', null=True, blank=True)#not sure 
     is_university = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)  # for admin users
     is_superuser = models.BooleanField(default=False)  # for superuser
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
-
     objects = UserManager()
 
     def __str__(self):
@@ -98,7 +100,7 @@ class Organization(models.Model):
         verbose_name_plural = "Organizations"
 
     def __str__(self):
-        return self.university.name + '_' + self.name
+        return self.name
 
 
 class Role(models.Model):
@@ -111,13 +113,47 @@ class Role(models.Model):
     organization = models.ForeignKey(Organization, related_name='role', on_delete=models.CASCADE, null=True, blank=True)
     is_admin = models.BooleanField(default=False)
 
-
     class Meta:
         db_table = "roles"
         verbose_name_plural = "Roles"
 
     def __str__(self):
-        return self.user.email + 'is admin of ' + self.organization.name + '?'
+        if(self.is_admin):
+            return self.user.email + ' is admin of ' + self.organization.name
+        else:
+            return self.user.email + ' is member of ' + self.organization.name
+    
+
+    
+class Plot(models.Model):
+    """
+    Model for Plot table
+    Each row is a plot within a section
+    """
+    id = models.IntegerField(primary_key=True)
+    university = models.ForeignKey(University, related_name='plot', on_delete = models.CASCADE, default = None, null = True)
+    name = models.CharField(max_length = 250, default = "Aggie Plot", null=True)
+
+    class Meta:
+        db_table = "plots"
+        verbose_name_plural = "Plots"
+
+    def __str__(self):
+        return self.name + " at " + self.university.name
+
+
+class Coordinates(models.Model):
+    """
+    Model for Coordinates table
+    Each row is a coordinate for a plot within a section
+    """
+    id = models.IntegerField(primary_key = True)
+    plot = models.ForeignKey(Plot, related_name = "event", on_delete=models.CASCADE)
+    latitude = models.CharField(max_length=250)
+    longitude = models.CharField(max_length=250)
+
+    def __str__(self):
+        return "(" + str(self.latitude) + " , " + str(self.longitude) + ") for plot id " + str(self.plot.id)  
 
 
 class Event(models.Model):
@@ -127,51 +163,24 @@ class Event(models.Model):
     """
     id = models.IntegerField(primary_key=True)
     university = models.ForeignKey(University, related_name='event', on_delete=models.CASCADE)
-    created = models.DateTimeField(auto_now_add=True)
+    created = models.DateTimeField(default=timezone.now)
+    name = models.CharField(max_length = 90, default=None)
+    plot = models.ForeignKey(Plot, related_name='event_plot', on_delete=models.CASCADE)
+    timestamp = models.DateTimeField(default=timezone.now)
     
     class Meta:
         db_table = "events"
         verbose_name_plural = "Events"
 
     def __str__(self):
-        return self.university.name + '_' + str(self.id)
-
-
-class Section(models.Model):
-    """
-    Model for Section table
-    Each row is a section within a university
-    """
-    id = models.IntegerField(primary_key=True)
-    university = models.ForeignKey(University, related_name='section', on_delete=models.CASCADE)
-    
-    class Meta:
-        db_table = "sections"
-        verbose_name_plural = "Sections"
-
-    def __str__(self):
-        return self.university.name + '_' + str(self.id)
-
-
-class Plot(models.Model):
-    """
-    Model for Plot table
-    Each row is a plot within a section
-    """
-    id = models.IntegerField(primary_key=True)
-    section = models.ForeignKey(Section, related_name='plot', on_delete=models.CASCADE)
-    university = models.ForeignKey(University, related_name='plot', on_delete = models.CASCADE, default = None)
-
-    class Meta:
-        db_table = "plots"
-        verbose_name_plural = "Plots"
-
-    def __str__(self):
-        return self.university.name + '_' + str(self.section.id) + '_' + str(self.id)
-
+        return "'" + self.name + "' at " + self.plot.name 
 
 
 class PendingJoinOrg(models.Model):
+    """
+    Model for PendingJoinOrg table
+    Each row represents a student awaiting approval to join an organization
+    """
     id = models.IntegerField(primary_key=True)
     requester = models.ForeignKey(User, related_name='join_requester', on_delete = models.CASCADE)
     organization = models.ForeignKey(Organization, related_name = 'requested_org', on_delete = models.CASCADE)
@@ -182,7 +191,12 @@ class PendingJoinOrg(models.Model):
     def __str__(self):
         return self.requester.email + ' wants to join ' + self.organization.name
 
+
 class PendingCreateOrg(models.Model):
+    """
+    Model for PendingCreateOrg table
+    Each row represents an organization awaiting approval to join a university
+    """
     id = models.IntegerField(primary_key=True)
     requester = models.ForeignKey(User, related_name='create_requester', on_delete = models.CASCADE)
     university = models.ForeignKey(University, related_name = 'requested_org', on_delete = models.CASCADE)
@@ -194,3 +208,47 @@ class PendingCreateOrg(models.Model):
     def __str__(self):
         return self.requester.email + ' wants to create ' + self.org_name
 
+class OrgRegisteredEvent(models.Model):
+    """
+    Model for OrgRegisteredEvent table
+    Each row represents an organization registered for an event
+    """
+    id = models.IntegerField(primary_key = True)
+    organization = models.ForeignKey(Organization, related_name = 'registered_org', on_delete=models.CASCADE)
+    event = models.ForeignKey(Event, related_name= 'event', on_delete=models.CASCADE)
+    date_registered = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.organization.name + ' registered for  ' + self.event.name
+
+
+class StudentRegisteredEvent(models.Model):
+    """
+    Model for StudentRegisteredEvent table
+    Each row represents a student registered for an event
+    """
+    id = models.IntegerField(primary_key = True)
+    organization = models.ForeignKey(Organization, related_name = 'registered_member_org', on_delete=models.CASCADE)
+    member = models.ForeignKey(User, related_name= 'registered_member', on_delete=models.CASCADE)
+    event = models.ForeignKey(Event, related_name= 'registered_member_event', on_delete=models.CASCADE)
+    date_time_registered = models.DateTimeField(default=timezone.now)
+    
+    def __str__(self):
+        return self.member.name + " attending " + self.event.name + " through " + self.organization.name
+
+
+class FilledPlot(models.Model):
+    """
+    Model for FilledPlot table
+    Each row represents a filled plot within an event
+    """
+    id = models.IntegerField(primary_key=True)
+    event = models.ForeignKey(Event, related_name='filled_plots', on_delete=models.CASCADE)
+    image = models.ImageField(upload_to='filled_plots/')
+
+    class Meta:
+        db_table = "filled_plots"
+        verbose_name_plural = "Filled Plots"
+
+    def __str__(self):
+        return f"Filled Plot for {self.event.name}"

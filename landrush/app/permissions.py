@@ -1,13 +1,17 @@
 from rest_framework import permissions
-from .models import Role, Organization
+from .models import Organization
+from .models import Role
+
 
 class IsUniversity(permissions.BasePermission):
     def has_permission(self, request, view):
         return(request.user.is_university)
 
+
 class IsStudent(permissions.BasePermission):
     def has_permission(self,request,view):
         return(not request.user.is_university)
+
 
 class IsOrgAdmin(permissions.BasePermission):
     def has_permission(self,request,view):
@@ -18,5 +22,3 @@ class IsOrgAdmin(permissions.BasePermission):
             if(org_admin.user.email == request.user.email):
                 return True
         return False
-
-
