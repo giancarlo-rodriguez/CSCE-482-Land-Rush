@@ -8,6 +8,8 @@ const OrgEvents = () => {
   const [plotImageUrl, setPlotImageUrl] = useState('');
   const [orgs, setOrgs] = useState([]);
   const [selectedOrgIds, setSelectedOrgIds] = useState({});
+    const [selectedEventId, setSelectedEventId] = useState(null);
+
 
   useEffect(() => {
     fetchOrganizations();
@@ -141,7 +143,13 @@ const OrgEvents = () => {
       });
 
       const imageUrl = URL.createObjectURL(response.data);
-      setPlotImageUrl(imageUrl);
+      if (selectedEventId === eventId) {
+        setPlotImageUrl('');
+        setSelectedEventId(null);
+      } else {
+        setPlotImageUrl(imageUrl);
+        setSelectedEventId(eventId);
+      }
     } catch (error) {
       console.error('Error fetching plot image:', error);
     }
@@ -191,16 +199,20 @@ const OrgEvents = () => {
         <span className="timer">
           Registration Locks In: {daysDiff}:{hoursDiff}:{minutesDiff}:{secondsDiff}
           <button className='events-button' onClick={handleRegisterClick}>Unregister</button>
-          <button className='events-button' onClick={() => handleEventClick(event.id)}>View Plot</button>
-          {plotImageUrl && <img src={plotImageUrl} alt="Filled Plot" />}
+          <button className='events-button' onClick={() => handleEventClick(event.id)}>
+            {selectedEventId === event.id && plotImageUrl ? 'Hide Plot' : 'View Plot'}
+          </button>          
+          {selectedEventId === event.id && plotImageUrl && <img src={plotImageUrl} alt="Filled Plot" />}
         </span>
       );
     } else if (event.isRegistered) {
       return (
         <span className="registration-message">
           You registered successfully.
-          <button className='events-button' onClick={() => handleEventClick(event.id)}>View Plot</button>
-          {plotImageUrl && <img src={plotImageUrl} alt="Filled Plot" />}
+          <button className='events-button' onClick={() => handleEventClick(event.id)}>
+            {selectedEventId === event.id && plotImageUrl ? 'Hide Plot' : 'View Plot'}
+          </button>
+          {selectedEventId === event.id && plotImageUrl && <img src={plotImageUrl} alt="Filled Plot" />}
         </span>
       );
     } else {

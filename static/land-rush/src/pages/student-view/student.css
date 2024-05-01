@@ -16,6 +16,10 @@
     top: 0;
     left: 0; /* Start with sidebar visible */
   }
+
+  .registration-message {
+    display: flex;
+  }
   
   .sidebar.closed {
     left: -200px; /* Move sidebar out of view */
